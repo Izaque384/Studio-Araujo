@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agendamento | Studio Araújo Fotografia</title>
+<meta name="description" content="Agende sua sessão com o Studio Araújo Fotografia. Escolha o serviço, a data e o horário — resposta rápida pelo WhatsApp.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<!-- O hero é o maior elemento da primeira tela: baixá-lo cedo melhora o LCP.
+     O media casa com o <source> do <picture>, então só um dos dois é buscado. -->
+<link rel="preload" as="image" href="assets/hero-agendamento.jpg" media="(min-width:821px)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/hero-agendamento-mobile.jpg" media="(max-width:820px)" fetchpriority="high">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" href="fav-180.png">
+<link rel="manifest" href="site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Agendamento | Studio Araújo Fotografia">
+<meta property="og:description" content="Agende sua sessão com o Studio Araújo Fotografia. Escolha o serviço, a data e o horário — resposta rápida pelo WhatsApp.">
+<meta property="og:image" content="https://studioaraujo.com.br/assets/foto-casal.jpg">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://studioaraujo.com.br/agendamento.html">
+<meta property="og:url" content="https://studioaraujo.com.br/agendamento.html">
+<meta name="theme-color" content="#0e0d0b">
+</head>
+<body>
+
+<header id="siteHeader">
+  <div class="wrap">
+    <nav>
+      <a href="index.html" class="logo-mark">
+        <img src="assets/logo-gold.png" width="716" height="724" alt="Studio Araújo Fotografia" class="logo-img" decoding="async">
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html">Início</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="contato.html">Contato</a>
+        <a href="agendamento.html" class="nav-cta active">Agendar horário</a>
+      </div>
+      <button class="burger" id="burger" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="page-hero hero-agendamento">
+    <div class="hero-photo" aria-hidden="true">
+      <picture>
+        <source media="(max-width:820px)" srcset="assets/hero-agendamento-mobile.jpg">
+        <img src="assets/hero-agendamento.jpg" alt="" fetchpriority="high" decoding="async">
+      </picture>
+    </div>
+    <div class="wrap">
+      <div class="eyebrow">
+        <svg class="aperture closed" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="currentColor" stroke-width="2">
+              <path d="M50 8 L64 40 L50 50 Z"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(60 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(120 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(180 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(240 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(300 50 50)"/>
+            </g>
+          </svg>
+        Agendamento
+      </div>
+      <h1>Vamos marcar seu horário</h1>
+    </div>
+  </section>
+
+  <section class="tight">
+    <div class="wrap">
+      <div class="agenda-layout">
+
+        <!-- O essencial fica à vista na hora de decidir -->
+        <div class="agenda-selos reveal">
+          <span><b>Seg a sáb</b> · 9h–11h e 14h–18h</span>
+          <span>Estúdio, externas e <b>eventos</b></span>
+          <span>Confirmação rápida no <b>WhatsApp</b></span>
+        </div>
+
+        <!-- O formulário abre a página, sem nada antes dele -->
+        <div class="agenda-painel">
+<div class="booking-panel reveal" id="bkPanel">
+          <div class="booking-glow"></div>
+
+          <div class="bk-progresso">
+            <div class="bk-barra"><i id="bkBarra"></i></div>
+            <p class="bk-passo"><span id="bkPassoNum">Etapa 1 de 6</span> · <span id="bkPassoNome">Tipo de atendimento</span></p>
+          </div>
+
+          <div class="bk-corpo">
+          <!-- 1 · TIPO DE ATENDIMENTO -->
+          <section class="bk-etapa" data-etapa="1">
+            <span class="booking-label">O que você procura?</span>
+            <div class="bk-tipos" id="bkTipos" role="radiogroup" aria-label="Tipo de atendimento"></div>
+          </section>
+
+          <!-- 2 · SERVIÇO -->
+          <section class="bk-etapa" data-etapa="2" hidden>
+            <span class="booking-label" id="bkServicoLabel">Escolha a sessão</span>
+            <div class="bk-servicos" id="bkServicos" role="radiogroup" aria-labelledby="bkServicoLabel"></div>
+          </section>
+
+          <!-- 3 · PACOTE -->
+          <section class="bk-etapa" data-etapa="3" hidden>
+            <p class="bk-escolhido">Pacotes para <strong id="bkEscolhidoNome"></strong><span id="bkEscolhidoMeta"></span><button type="button" class="bk-trocar" id="bkTrocar">trocar</button></p>
+            <span class="booking-label" id="bkPacotesLabel">Escolha o pacote</span>
+            <div class="bk-pacotes" id="bkPacotes"></div>
+          </section>
+
+          <!-- 3 · DATA E HORÁRIO -->
+          <section class="bk-etapa" data-etapa="4" hidden>
+            <span class="booking-label">Escolha o dia</span>
+            <div class="bk-cal">
+              <div class="bk-cal-topo">
+                <button type="button" class="bk-cal-nav" id="bkMesAnt" aria-label="Mês anterior">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+                </button>
+                <strong id="bkMesNome" aria-live="polite"></strong>
+                <button type="button" class="bk-cal-nav" id="bkMesProx" aria-label="Próximo mês">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+                </button>
+              </div>
+              <div class="bk-cal-sem" aria-hidden="true">
+                <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
+              </div>
+              <div class="bk-cal-dias" id="bkDias" role="grid" aria-label="Dias disponíveis"></div>
+              <p class="bk-legenda">
+                <i class="livre"></i> Disponível
+                <i class="cheio"></i> Sem vaga
+              </p>
+            </div>
+            <div id="bkHorarioBloco">
+              <span class="booking-label" style="margin-top:26px;">Qual horário prefere?</span>
+              <div class="slot-grid" id="bkSlots"></div>
+              <p class="booking-hint" id="bkSlotHint"></p>
+            </div>
+            <p class="booking-hint" id="bkCombinarHint" hidden>Para este tipo de atendimento o horário é combinado com você pelo WhatsApp, conforme a programação do dia.</p>
+          </section>
+
+          <!-- 4 · SEUS DADOS -->
+          <section class="bk-etapa" data-etapa="5" hidden>
+            <div class="booking-step">
+              <label class="booking-label" for="bkName">Seu nome</label>
+              <input type="text" id="bkName" class="booking-input" placeholder="Como podemos te chamar?" maxlength="60" autocomplete="name">
+            </div>
+            <div class="booking-step">
+              <label class="booking-label" for="bkFone">Seu WhatsApp</label>
+              <input type="tel" id="bkFone" class="booking-input" placeholder="(88) 90000-0000" maxlength="16" inputmode="numeric" autocomplete="tel">
+              <p class="booking-hint">Guardamos o contato para confirmar a data com você.</p>
+            </div>
+            <div class="booking-step" id="bkLocalBloco" hidden>
+              <label class="booking-label" for="bkLocal">Onde será?</label>
+              <input type="text" id="bkLocal" class="booking-input" placeholder="Bairro, cidade ou nome do local" maxlength="90">
+            </div>
+            <div class="booking-step">
+              <label class="booking-label" for="bkNote">Alguma observação? <em>(opcional)</em></label>
+              <input type="text" id="bkNote" class="booking-input" placeholder="Ex.: sessão para 2 pessoas, tema natalino..." maxlength="140">
+            </div>
+            <p class="aviso-privacidade">Usamos esses dados só para confirmar sua sessão pelo WhatsApp — nada é enviado antes de você apertar enviar. Veja a <a href="privacidade.html" target="_blank" rel="noopener">Política de Privacidade</a>.</p>
+          </section>
+
+          <!-- 5 · REVISÃO -->
+          <section class="bk-etapa" data-etapa="6" hidden>
+            <span class="booking-label">Confira antes de enviar</span>
+            <div class="bk-revisao" id="bkRevisao"></div>
+            <p class="bk-sinal" id="bkSinal" hidden></p>
+            <p class="booking-hint">Seu pedido abre no WhatsApp já preenchido — é só enviar. A data fica garantida assim que confirmarmos por lá.</p>
+          </section>
+          </div>
+
+          <div class="bk-nav">
+            <button type="button" class="bk-voltar" id="bkVoltar" hidden>Voltar</button>
+            <button type="button" class="btn btn-solid bk-avancar" id="bkEnviar" hidden disabled>Continuar</button>
+          </div>
+        </div>
+        </div>
+
+        <!-- Apresentação e câmera passaram para o fim da página -->
+        <div class="agenda-rodape reveal">
+          <div class="agenda-rodape-texto">
+            <h2>Escolha o dia. O resto é com a gente.</h2>
+            <p>Escolha o serviço, o dia e o horário que funcionam melhor para você. Ao confirmar, seu pedido chega direto no nosso WhatsApp, já organizado — e respondemos rapidinho para garantir a sua data.</p>
+            <p>Se preferir conversar antes de escolher, fale com a gente: ajudamos a montar a sessão do jeito que você imaginou.</p>
+            <a href="https://wa.me/5588981886579" target="_blank" rel="noopener" class="btn btn-outline">Falar no WhatsApp</a>
+          </div>
+          <div class="agenda-rodape-cam">
+<div class="agenda-logo">
+            <div class="lens-glow"></div>
+            <svg class="lens" viewBox="0 0 520 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="rimGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#e6c878"/>
+                <stop offset="0.5" stop-color="#c9a24b"/>
+                <stop offset="1" stop-color="#6e5526"/>
+              </linearGradient>
+              <radialGradient id="glass" cx="0.35" cy="0.3" r="0.85">
+                <stop offset="0" stop-color="#3b301b"/>
+                <stop offset="0.35" stop-color="#201a11"/>
+                <stop offset="0.7" stop-color="#120f0b"/>
+                <stop offset="1" stop-color="#0a0908"/>
+              </radialGradient>
+              <linearGradient id="glare" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f3ecdc" stop-opacity="0.35"/>
+                <stop offset="0.6" stop-color="#f3ecdc" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="bodyShade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#1c1812"/>
+                <stop offset="0.5" stop-color="#15120d"/>
+                <stop offset="1" stop-color="#0f0d0a"/>
+              </linearGradient>
+            </defs>
+
+            <!-- sapata e prisma no topo -->
+            <rect x="234" y="58" width="52" height="14" rx="2" stroke="url(#rimGold)" stroke-width="1.3" fill="#15120d"/>
+            <path d="M196 112 L212 74 H308 L324 112 Z" fill="#17140f" stroke="url(#rimGold)" stroke-width="1.6"/>
+
+            <!-- placa superior com botão e seletor -->
+            <rect x="62" y="90" width="396" height="36" rx="11" fill="#141110" stroke="#c9a24b" stroke-opacity="0.55" stroke-width="1.2"/>
+            <circle cx="104" cy="90" r="16" fill="#15120d" stroke="url(#rimGold)" stroke-width="1.4"/>
+            <circle cx="104" cy="90" r="16" stroke="#c9a24b" stroke-opacity="0.5" stroke-width="3" stroke-dasharray="1.5 4.5"/>
+            <circle cx="420" cy="88" r="9" fill="url(#rimGold)"/>
+            <circle cx="420" cy="88" r="12" stroke="#c9a24b" stroke-opacity="0.45" stroke-width="1.2"/>
+
+            <!-- corpo da câmera -->
+            <rect x="40" y="118" width="440" height="252" rx="26" fill="url(#bodyShade)" stroke="url(#rimGold)" stroke-width="2.2"/>
+
+            <!-- alças laterais -->
+            <circle cx="40" cy="152" r="5" stroke="#c9a24b" stroke-opacity="0.6" stroke-width="1.4" fill="#0c0a08"/>
+            <circle cx="480" cy="152" r="5" stroke="#c9a24b" stroke-opacity="0.6" stroke-width="1.4" fill="#0c0a08"/>
+
+            <!-- empunhadura texturizada -->
+            <path d="M63 148 v196" stroke="#c9a24b" stroke-opacity="0.22" stroke-width="1"/>
+            <path d="M72 144 v204" stroke="#c9a24b" stroke-opacity="0.16" stroke-width="1"/>
+            <path d="M81 142 v208" stroke="#c9a24b" stroke-opacity="0.1" stroke-width="1"/>
+
+            <!-- janela do visor -->
+            <rect x="98" y="142" width="62" height="34" rx="6" fill="#0c0a08" stroke="#c9a24b" stroke-opacity="0.6" stroke-width="1.3"/>
+            <rect x="106" y="149" width="46" height="20" rx="3" fill="#17130c" opacity="0.9"/>
+
+            <!-- ponto de marca -->
+            <circle cx="416" cy="152" r="6" fill="#c9a24b" opacity="0.9"/>
+
+            <!-- objetiva -->
+            <circle cx="260" cy="244" r="108" fill="#15120d" stroke="url(#rimGold)" stroke-width="3"/>
+            <circle cx="260" cy="244" r="98" stroke="#c9a24b" stroke-opacity="0.5" stroke-width="5" stroke-dasharray="2.5 7"/>
+            <circle cx="260" cy="244" r="86" stroke="url(#rimGold)" stroke-width="1.3" opacity="0.85"/>
+            <circle cx="260" cy="244" r="80" fill="url(#glass)"/>
+
+            <!-- lâminas do diafragma -->
+            <g class="lens-blades" stroke="#c9a24b" stroke-width="1.1" opacity="0.55">
+              <path d="M260 177 L282.4 228 L260 244 Z"/>
+              <path d="M260 177 L282.4 228 L260 244 Z" transform="rotate(60 260 244)"/>
+              <path d="M260 177 L282.4 228 L260 244 Z" transform="rotate(120 260 244)"/>
+              <path d="M260 177 L282.4 228 L260 244 Z" transform="rotate(180 260 244)"/>
+              <path d="M260 177 L282.4 228 L260 244 Z" transform="rotate(240 260 244)"/>
+              <path d="M260 177 L282.4 228 L260 244 Z" transform="rotate(300 260 244)"/>
+            </g>
+
+            <!-- elemento central da lente -->
+            <circle cx="260" cy="244" r="32" fill="#0c0a08" stroke="#c9a24b" stroke-opacity="0.5" stroke-width="0.8"/>
+            <circle cx="260" cy="244" r="31" fill="url(#glass)" opacity="0.9"/>
+
+            <!-- reflexos de vidro -->
+            <ellipse cx="228" cy="208" rx="44" ry="20" fill="url(#glare)" transform="rotate(-32 228 208)"/>
+            <ellipse cx="294" cy="288" rx="28" ry="11" fill="url(#glare)" opacity="0.4" transform="rotate(-32 294 288)"/>
+            <circle cx="296" cy="204" r="4.5" fill="#f3ecdc" opacity="0.5"/>
+            <circle cx="306" cy="214" r="2.2" fill="#f3ecdc" opacity="0.35"/>
+          </svg>
+          </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <img src="assets/logo-gold.png" width="716" height="724" alt="Studio Araújo Fotografia" style="height:36px; width:auto; opacity:0.85;" loading="lazy" decoding="async">
+      <p>© <span id="year"></span> Studio Araújo Fotografia. Todos os direitos reservados.<br>
+        <a href="privacidade.html" class="footer-link">Política de Privacidade</a></p>
+    </div>
+    <div class="social">
+      <a href="https://www.instagram.com/studioaraujofoto" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect pathLength="1" x="3" y="3" width="18" height="18" rx="5"/><circle pathLength="1" cx="12" cy="12" r="4"/><circle pathLength="1" cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
+      </a>
+      <a href="https://wa.me/5588981886579" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path pathLength="1" d="M4 4h4l2 6-3 2c1 3 3 5 6 6l2-3 6 2v4c0 1-1 2-2 2C10 23 1 14 1 6c0-1 1-2 2-2z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script src="dados-servicos.js"></script>
+<script src="agenda.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Manda o tráfego do subdomínio do Netlify para o domínio próprio.
+# O 301 avisa ao Google que a mudança é permanente, para ele juntar os dois
+# endereços num só e parar de mostrar o netlify.app nos resultados.
+https://studioaraujo.netlify.app/*  https://studioaraujo.com.br/:splat  301!

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studio Araújo Fotografia | Morrinhos - CE</title>
+<meta name="description" content="Studio Araújo Fotografia — casamentos, ensaios de casal, gestantes, formaturas, aniversários e retratos em Morrinhos, CE.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<!-- O hero é o maior elemento da primeira tela: baixá-lo cedo melhora o LCP.
+     O media casa com o <source> do <picture>, então só um dos dois é buscado. -->
+<link rel="preload" as="image" href="assets/hero-bg.jpg" media="(min-width:961px)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/hero-bg-mobile.jpg" media="(max-width:960px)" fetchpriority="high">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+<link rel="apple-touch-icon" href="fav-180.png">
+<link rel="manifest" href="site.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Studio Araújo Fotografia | Morrinhos - CE">
+<meta property="og:description" content="Studio Araújo Fotografia — casamentos, ensaios de casal, gestantes, formaturas, aniversários e retratos em Morrinhos, CE.">
+<meta property="og:image" content="https://studioaraujo.com.br/assets/foto-casal.jpg">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="https://studioaraujo.com.br/">
+<meta property="og:url" content="https://studioaraujo.com.br/">
+<meta name="theme-color" content="#0e0d0b">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Photographer",
+  "name": "Studio Araújo Fotografia",
+  "image": "https://studioaraujo.com.br/assets/foto-casal.jpg",
+  "description": "Estúdio de fotografia em Morrinhos, CE — casamentos, ensaios de casal, gestantes, formaturas, aniversários e retratos.",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "R. Raimundo Erivan, Sítio Alegre",
+    "addressLocality": "Morrinhos",
+    "addressRegion": "CE",
+    "postalCode": "62550-000",
+    "addressCountry": "BR"
+  },
+  "telephone": "+55-88-98188-6579",
+  "url": "https://studioaraujo.com.br",
+  "sameAs": ["https://www.instagram.com/studioaraujofoto"],
+  "openingHoursSpecification": [{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    "opens": "09:00", "closes": "11:00"
+  },{
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],
+    "opens": "14:00", "closes": "18:00"
+  }]
+}
+</script>
+</head>
+<body>
+
+<header id="siteHeader">
+  <div class="wrap">
+    <nav>
+      <a href="index.html" class="logo-mark">
+        <img src="assets/logo-gold.png" width="716" height="724" alt="Studio Araújo Fotografia" class="logo-img" decoding="async">
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="index.html" class="active">Início</a>
+        <a href="sobre.html">Sobre</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="contato.html">Contato</a>
+        <a href="agendamento.html" class="nav-cta">Agendar horário</a>
+      </div>
+      <button class="burger" id="burger" aria-label="Abrir menu">
+        <span></span><span></span><span></span>
+      </button>
+    </nav>
+  </div>
+</header>
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true">
+      <picture>
+        <source media="(max-width:960px)" srcset="assets/hero-bg-mobile.jpg">
+        <img src="assets/hero-bg.jpg" alt="" fetchpriority="high" decoding="async">
+      </picture>
+    </div>
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <div class="badge-pill">
+          <span class="dot"></span>
+          Agenda aberta para novas sessões
+        </div>
+        <h1>Mais que uma fotografia, <em>uma experiência</em>!</h1>
+        <p class="lede">Casamentos, ensaios, formaturas e retratos de estúdio, registrados com carinho, cuidado e profissionalismo.</p>
+        <div class="hero-actions">
+          <a href="agendamento.html" class="btn btn-solid">Agendar horário</a>
+          <a href="#portfolio" class="btn btn-outline">Ver portfólio</a>
+        </div>
+      </div>
+    </div>
+
+    <svg class="hero-sign" viewBox="0 0 618 353" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="presentation">
+            <defs>
+              <linearGradient id="logoGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#e6c878"/>
+                <stop offset="0.5" stop-color="#c9a24b"/>
+                <stop offset="1" stop-color="#a8853c"/>
+              </linearGradient>
+            </defs>
+            <g fill="url(#logoGold)" stroke="none" transform="translate(0.000000,353.000000) scale(0.100000,-0.100000)">
+<path d="M2314 3488 c-83 -87 -94 -109 -104 -205 -5 -48 -10 -145 -10 -215 l0
+-128 -49 -24 c-26 -14 -62 -37 -80 -51 -58 -49 -29 -84 34 -41 39 27 52 30 79
+20 13 -5 16 -26 16 -124 0 -139 11 -206 46 -277 65 -134 201 -135 332 -3 29
+29 54 51 55 49 1 -2 11 -20 21 -39 39 -72 89 -110 147 -110 63 0 133 96 175
+238 8 27 21 9 32 -46 16 -79 50 -142 92 -170 29 -20 43 -23 84 -18 55 6 121
+41 171 92 19 18 36 34 39 34 2 0 16 -21 31 -46 45 -77 143 -106 224 -65 37 19
+90 72 122 121 l16 24 13 -23 c19 -36 91 -111 121 -127 16 -8 43 -14 62 -14 36
+0 118 38 157 73 33 29 94 105 111 139 53 100 71 134 78 141 4 4 11 -43 15
+-104 7 -123 25 -177 70 -219 23 -21 37 -25 90 -25 53 0 70 5 120 35 32 19 73
+52 92 73 19 20 37 37 41 36 5 0 22 -19 38 -42 116 -160 348 -135 443 47 22 43
+26 64 26 131 0 88 -17 134 -75 199 -91 104 -268 106 -371 4 -57 -58 -80 -118
+-79 -214 l0 -83 -38 -30 c-69 -55 -127 -66 -150 -29 -12 20 -27 203 -30 380
+-1 15 -11 39 -24 53 -22 26 -24 27 -58 12 -47 -19 -67 -46 -140 -190 -102
+-199 -146 -258 -206 -273 -39 -10 -69 4 -98 46 -31 45 -85 188 -85 225 0 13
+34 96 74 183 156 332 198 459 176 526 -13 41 -35 51 -98 41 -141 -21 -239
+-150 -293 -383 -26 -112 -37 -366 -20 -462 11 -59 10 -72 -4 -99 -9 -18 -31
+-39 -50 -48 -33 -16 -37 -16 -71 0 -62 30 -91 133 -62 218 17 52 66 118 109
+147 51 36 52 57 2 47 -58 -11 -112 -43 -165 -97 -58 -60 -91 -122 -108 -201
+-9 -46 -20 -68 -54 -103 -82 -85 -133 -53 -180 116 -14 52 -26 100 -26 107 0
+30 -53 176 -70 193 -40 40 -60 3 -95 -169 -21 -100 -71 -208 -104 -225 -32
+-16 -65 -6 -81 25 -30 56 -62 174 -72 269 -7 58 -16 108 -22 112 -12 8 -48 -9
+-59 -29 -7 -11 -12 -11 -23 -2 -7 6 -22 8 -31 5 -10 -4 -62 5 -115 20 l-98 27
+0 51 c0 28 5 153 11 279 9 179 9 230 -1 242 -18 21 -21 20 -66 -27z m1795 -67
+c31 -20 4 -103 -140 -436 -43 -98 -44 -99 -47 -60 -5 55 26 278 49 350 22 70
+61 133 92 145 28 11 29 11 46 1z m1031 -600 c54 -44 90 -121 90 -195 -1 -107
+-46 -175 -122 -183 -57 -6 -104 20 -145 80 -126 186 16 426 177 298z m-2540 3
+c-13 -34 -13 -118 1 -207 l11 -72 -52 -47 c-32 -30 -61 -48 -76 -48 -56 0
+-100 98 -111 248 l-6 75 47 -6 c55 -8 94 6 146 52 43 37 52 39 40 5z M1410
+3485 c-162 -32 -264 -75 -342 -144 -64 -56 -88 -110 -88 -194 0 -158 91 -234
+361 -302 346 -88 496 -153 564 -243 71 -92 30 -200 -100 -265 -27 -14 -62 -28
+-77 -32 -29 -7 -20 -29 -97 230 -33 111 -52 125 -164 125 -166 0 -214 -52
+-171 -186 14 -47 14 -51 -6 -96 -11 -27 -25 -48 -31 -48 -14 0 -91 40 -111 57
+-15 14 -14 18 23 52 34 33 39 43 39 82 -1 66 -35 99 -105 99 -51 0 -85 -36
+-85 -90 0 -55 20 -98 66 -142 37 -35 129 -88 154 -88 15 0 8 -22 -42 -130 -22
+-47 -50 -110 -63 -140 -13 -30 -52 -118 -86 -195 -34 -77 -88 -201 -121 -275
+-32 -74 -75 -170 -95 -212 l-37 -78 -120 0 c-165 1 -399 16 -545 36 -67 9
+-125 13 -129 9 -4 -4 22 -34 58 -67 118 -109 334 -194 544 -213 51 -5 76 -12
+76 -20 0 -7 -11 -37 -24 -66 -14 -30 -68 -153 -121 -274 -53 -121 -135 -306
+-182 -411 -55 -126 -83 -201 -81 -219 7 -63 74 -57 119 10 29 45 122 242 180
+380 36 87 140 329 159 370 5 11 27 63 49 115 35 83 43 95 63 93 97 -9 950 -23
+1054 -17 l131 6 114 -114 c129 -130 173 -156 280 -168 83 -9 138 1 161 30 16
+19 16 25 3 50 -8 15 -57 65 -110 110 -52 46 -95 88 -95 95 0 7 22 15 57 19 99
+12 163 72 163 154 0 32 -7 49 -31 77 -55 63 -82 69 -277 70 l-173 0 -28 45
+c-39 64 -141 260 -141 271 0 6 13 29 29 52 35 51 114 208 130 260 14 40 14 40
+108 21 31 -6 44 -36 54 -123 11 -98 37 -206 62 -256 27 -56 90 -112 140 -126
+83 -23 197 23 286 115 19 20 38 36 41 36 3 0 12 -15 18 -34 24 -67 116 -126
+192 -126 59 1 142 61 199 143 17 26 34 47 36 47 1 0 17 -24 33 -54 35 -61 101
+-122 144 -131 70 -16 211 56 267 134 28 39 36 39 57 -1 107 -210 270 -171 353
+84 13 38 24 68 25 68 2 0 11 -30 21 -67 25 -94 63 -171 99 -196 70 -50 193
+-16 289 78 63 61 185 207 252 301 53 76 60 82 67 63 5 -12 7 -83 6 -157 l-3
+-134 -63 -23 c-112 -40 -200 -120 -262 -236 -62 -117 -49 -201 46 -288 92 -84
+240 -120 320 -78 49 26 101 94 124 162 32 96 39 204 36 545 -2 272 -5 319 -19
+347 -24 46 -51 58 -98 44 -48 -14 -105 -78 -204 -225 -133 -199 -238 -306
+-300 -306 -49 0 -101 108 -140 290 -25 118 -55 203 -82 230 l-24 25 -19 -23
+c-10 -12 -30 -74 -45 -140 -40 -175 -71 -256 -111 -292 -19 -16 -41 -30 -48
+-30 -25 0 -63 40 -84 88 -28 64 -62 236 -62 310 0 68 -15 91 -48 73 -36 -19
+-70 -69 -82 -122 -14 -55 -8 -186 10 -249 9 -31 7 -39 -19 -75 -38 -52 -68
+-74 -112 -81 -29 -5 -41 -1 -69 22 -32 28 -87 131 -131 250 -38 101 -83 108
+-107 18 -40 -152 -54 -186 -89 -224 -30 -34 -41 -40 -75 -40 -32 0 -46 6 -68
+30 -80 86 -59 234 49 339 74 72 115 81 249 55 45 -9 44 22 -2 41 -92 39 -224
+24 -317 -36 -100 -64 -187 -191 -204 -299 -10 -59 -45 -103 -108 -135 -64 -31
+-88 -32 -125 0 -32 27 -70 133 -92 255 -21 120 -37 166 -65 178 -14 7 -78 17
+-143 22 -115 10 -132 17 -132 51 0 26 -44 59 -77 59 -37 0 -73 -39 -73 -77 0
+-28 50 -83 75 -83 14 0 16 -6 11 -31 -13 -67 -138 -285 -156 -274 -22 13 -206
+518 -195 535 3 4 22 11 42 14 21 4 73 19 116 33 144 49 221 149 222 287 0 97
+-23 154 -87 211 -27 24 -77 58 -111 74 -57 28 -108 44 -427 130 -138 38 -240
+84 -299 137 -38 35 -44 46 -48 89 -4 42 -1 55 21 84 64 86 205 146 377 161
+241 21 436 -48 465 -165 7 -27 6 -28 -22 -19 -58 17 -105 10 -130 -20 -65 -75
+17 -170 119 -137 47 16 78 52 84 99 17 128 -68 215 -255 263 -89 23 -279 25
+-382 4z m4 -1361 c55 -164 91 -253 164 -406 54 -114 164 -317 206 -380 15 -22
+15 -29 5 -32 -28 -9 -859 -41 -859 -33 0 2 23 60 51 128 28 68 83 201 121 294
+134 326 156 380 178 430 58 134 68 151 82 137 5 -5 29 -67 52 -138z m3446
+-631 c0 -177 -43 -310 -111 -347 -36 -19 -36 -19 -81 3 -114 55 -104 224 19
+342 45 44 133 97 161 99 9 0 12 -26 12 -97z M4376 3169 c-56 -66 -13 -159 73
+-159 55 0 90 32 98 87 5 37 2 45 -25 73 -25 24 -39 30 -75 30 -38 0 -49 -5
+-71 -31z M5630 2402 c-178 -3 -194 -10 -206 -88 l-6 -44 -100 0 c-117 0 -162
+-18 -196 -79 -19 -33 -21 -55 -23 -256 -2 -233 1 -255 48 -297 183 -166 188
+-169 303 -176 79 -4 93 -2 143 21 31 14 75 43 99 65 l44 41 171 3 c193 3 207
+8 250 84 22 37 23 50 23 252 0 177 -3 218 -16 245 -24 48 -53 75 -93 88 -20 7
+-46 23 -58 35 -31 33 -85 33 -111 -1 -27 -34 -32 -32 -32 14 0 44 -28 87 -62
+92 -13 2 -93 3 -178 1z m180 -127 l5 -60 120 -5 c164 -8 185 -24 185 -141 l0
+-60 -30 16 c-21 11 -61 15 -147 15 l-118 0 -48 49 c-66 69 -110 81 -263 77
+-143 -3 -193 -22 -287 -105 -32 -28 -63 -49 -68 -46 -14 9 -11 92 6 131 21 51
+61 64 200 64 63 0 116 3 116 8 1 4 2 27 3 52 1 25 5 51 10 58 6 9 45 12 159
+10 l152 -3 5 -60z m-99 -171 c61 -31 109 -125 109 -211 0 -79 -15 -99 -24 -32
+-9 69 -55 165 -101 212 -20 20 -41 37 -46 37 -5 0 -9 5 -9 11 0 11 29 5 71
+-17z m-124 -20 c98 -47 153 -138 161 -264 3 -56 0 -86 -12 -115 -26 -62 -67
+-115 -108 -141 -56 -35 -58 -29 -5 12 32 25 57 57 78 100 29 59 31 70 27 143
+-5 87 -29 140 -90 198 -98 95 -269 88 -359 -15 -53 -60 -74 -117 -74 -202 0
+-90 26 -150 92 -211 23 -21 37 -39 31 -39 -6 0 -33 22 -59 49 -57 59 -82 127
+-81 221 1 141 98 264 229 288 62 12 106 6 170 -24z m-2 -77 c68 -47 100 -111
+100 -202 -1 -140 -88 -221 -183 -171 -154 81 -166 350 -17 398 38 12 53 8 100
+-25z m-210 -475 c-3 -3 -11 0 -18 7 -9 10 -8 11 6 5 10 -3 15 -9 12 -12z m165
+-7 c-42 -16 -109 -19 -130 -5 -10 7 -1 8 30 5 25 -3 59 -2 75 4 45 14 65 11
+25 -4z M5602 2298 c-18 -18 -14 -56 7 -68 27 -14 134 -13 149 2 7 7 12 21 12
+33 0 35 -20 45 -90 45 -38 0 -71 -5 -78 -12z M2687 923 c-4 -3 -7 -62 -7 -130
+l0 -124 27 3 c26 3 27 5 24 51 l-3 47 36 0 c33 0 36 2 36 30 0 28 -3 30 -36
+30 -28 0 -35 3 -32 18 3 14 12 17 51 15 l47 -3 0 35 0 35 -68 0 c-38 0 -72 -3
+-75 -7z M3087 919 c-48 -28 -64 -155 -28 -215 36 -59 114 -53 144 12 54 111
+-28 254 -116 203z m73 -80 c21 -38 7 -100 -24 -112 -25 -10 -46 21 -46 65 0
+67 44 96 70 47z M3420 894 c0 -31 3 -36 20 -31 33 9 42 -16 39 -108 l-4 -85
+27 0 27 0 3 98 c3 94 4 97 26 94 19 -3 22 1 22 32 l0 36 -80 0 -80 0 0 -36z
+M3816 900 c-47 -56 -44 -171 4 -215 25 -23 81 -25 106 -4 24 20 44 72 44 114
+0 111 -94 175 -154 105z m93 -73 c13 -36 -1 -92 -25 -101 -23 -9 -54 30 -54
+69 0 39 31 78 54 69 8 -3 19 -20 25 -37z M4227 919 c-28 -16 -47 -65 -47 -121
+0 -109 58 -160 137 -122 37 18 38 21 39 72 1 50 0 52 -25 52 -14 0 -36 3 -48
+6 -20 6 -23 3 -23 -25 0 -26 4 -31 25 -31 28 0 33 -15 9 -24 -9 -4 -27 1 -40
+9 -19 12 -24 24 -24 58 0 24 5 48 12 55 17 17 53 15 69 -4 14 -17 20 -10 33
+33 12 38 -72 68 -117 42z M4587 923 c-4 -3 -7 -62 -7 -130 l0 -124 27 3 c26 3
+28 6 25 46 -3 31 0 42 11 42 13 0 23 -18 41 -72 3 -12 16 -18 36 -18 36 0 36
+0 9 51 -18 36 -19 43 -6 57 34 39 26 121 -13 142 -21 11 -113 14 -123 3z m101
+-80 c-2 -12 -12 -18 -28 -18 -16 0 -26 6 -28 18 -3 13 3 17 28 17 25 0 31 -4
+28 -17z M5016 918 c-2 -7 -16 -58 -31 -113 -15 -55 -30 -108 -33 -117 -3 -14
+2 -18 27 -18 27 0 31 4 31 25 0 15 7 28 16 32 24 9 50 -11 46 -36 -3 -18 2
+-21 32 -21 20 0 36 4 36 8 0 4 -16 54 -35 111 -19 57 -34 106 -33 109 2 23 -5
+32 -27 32 -14 0 -27 -6 -29 -12z M5350 799 l0 -130 27 3 c26 3 27 5 24 51 l-3
+49 34 -4 c31 -3 33 -1 36 30 3 31 2 32 -32 32 -24 0 -36 5 -36 14 0 15 47 28
+77 20 16 -4 22 0 27 21 4 14 4 30 1 35 -4 6 -40 10 -81 10 l-74 0 0 -131z
+M5719 923 c0 -4 0 -62 0 -128 l0 -120 26 -3 26 -3 -3 128 c-3 124 -4 128 -25
+131 -13 2 -23 0 -24 -5z M6040 906 c0 -14 -13 -68 -30 -119 -16 -52 -30 -99
+-30 -106 0 -6 14 -11 30 -11 25 0 30 4 30 25 0 15 7 28 16 32 22 8 49 -10 49
+-33 0 -14 8 -20 34 -22 28 -3 33 -1 27 14 -13 33 -55 189 -58 214 -2 20 -9 26
+-35 28 -29 3 -33 1 -33 -22z"/>
+</g>
+          </svg>
+
+    <div class="scroll-hint">
+      <span>Role para explorar</span>
+      <span class="line"></span>
+    </div>
+  </section>
+
+  <!-- FAIXA DE CATEGORIAS -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span class="m-item">Casamentos</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Ensaios de Gestante</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Formaturas</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Aniversários</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Batizados</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Chá Revelação</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Acompanhamento Mensal</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Estúdio</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Moda</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Casamentos</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Ensaios de Gestante</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Formaturas</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Aniversários</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Batizados</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Chá Revelação</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Acompanhamento Mensal</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Estúdio</span><span class="m-sep">&#10022;</span>
+      <span class="m-item">Moda</span><span class="m-sep">&#10022;</span>
+    </div>
+  </div>
+
+  <!-- PORTFOLIO EM DESTAQUE -->
+  <section id="portfolio">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">
+          <svg class="aperture closed" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="currentColor" stroke-width="2">
+              <path d="M50 8 L64 40 L50 50 Z"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(60 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(120 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(180 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(240 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(300 50 50)"/>
+            </g>
+          </svg>
+          Portfólio
+        </div>
+        <h2>Registros que contam histórias</h2>
+      </div>
+
+      <div class="mosaic reveal">
+        <div class="mosaic-item" style="--mi:0;" data-slide-prefix="assets/portfolio/casamentos"><img src="assets/portfolio/casamentos.jpg" width="753" height="1000" alt="Casamento" loading="lazy" decoding="async"><span class="mosaic-label">Casamentos</span></div>
+        <div class="mosaic-item" style="--mi:1;" data-slide-prefix="assets/portfolio/gestante"><img src="assets/portfolio/gestante.jpg" width="995" height="999" alt="Ensaio de gestante" loading="lazy" decoding="async"><span class="mosaic-label">Ensaios de Gestante</span></div>
+        <div class="mosaic-item" style="--mi:2;" data-slide-prefix="assets/portfolio/formaturas"><img src="assets/portfolio/formaturas.jpg" width="809" height="1000" alt="Formatura" loading="lazy" decoding="async"><span class="mosaic-label">Formaturas</span></div>
+        <div class="mosaic-item" style="--mi:3;" data-slide-prefix="assets/portfolio/moda"><img src="assets/portfolio/moda.jpg" width="878" height="1000" alt="Fotografia de moda" loading="lazy" decoding="async"><span class="mosaic-label">Moda</span></div>
+        <div class="mosaic-item" style="--mi:4;" data-slide-prefix="assets/portfolio/aniversario"><img src="assets/portfolio/aniversario.jpg" width="1000" height="982" alt="Aniversário" loading="lazy" decoding="async"><span class="mosaic-label">Aniversários</span></div>
+        <div class="mosaic-item" style="--mi:5;" data-slide-prefix="assets/portfolio/foto-studio"><img src="assets/portfolio/foto-studio.jpg" width="713" height="1000" alt="Foto de estúdio" loading="lazy" decoding="async"><span class="mosaic-label">Estúdio</span></div>
+      </div>
+
+      <div class="portfolio-cta reveal" style="gap:18px;">
+        <a href="servicos.html" class="btn btn-solid">Ver serviços e valores</a>
+        <a href="https://www.instagram.com/studioaraujofoto" target="_blank" rel="noopener" class="btn btn-outline">Ver mais no Instagram</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 ANOS -->
+  <section class="alt stats-band">
+    <div class="wrap">
+      <div class="stats-solo reveal">
+        <span class="stat-inline"><span class="stat-num" data-target="11">0</span> anos de história</span>
+        <span class="stat-sep">&#10022;</span>
+        <p class="stat-phrase">dedicação, fé e amor em cada trabalho.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUEM SOMOS (teaser) -->
+  <section>
+    <div class="wrap teaser-grid reveal">
+      <div class="photo-frame teaser-photo">
+        <img src="assets/foto-equipe.jpg" width="900" height="1224" alt="Michele Araújo e Wellington Araújo, fotógrafos do Studio Araújo" loading="lazy" decoding="async">
+        <p class="photo-caption">Michele &amp; Wellington Araújo</p>
+      </div>
+      <div class="teaser-copy">
+        <div class="eyebrow">
+          <svg class="aperture closed" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="currentColor" stroke-width="2">
+              <path d="M50 8 L64 40 L50 50 Z"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(60 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(120 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(180 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(240 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(300 50 50)"/>
+            </g>
+          </svg>
+          Quem somos
+        </div>
+        <h2>Uma família por trás de <em>cada clique</em></h2>
+        <p>Somos Michele e Wellington Araújo — casal, pais e fotógrafos. Desde 2015, transformamos momentos em memórias que atravessam gerações, com um trabalho que nasceu em Sítio Alegre e hoje alcança diversas cidades do norte do Ceará.</p>
+        <a href="sobre.html" class="btn btn-outline">Conheça nossa história</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- DEPOIMENTOS -->
+  <section class="testimonials alt">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <div class="eyebrow">
+          <svg class="aperture closed" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="currentColor" stroke-width="2">
+              <path d="M50 8 L64 40 L50 50 Z"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(60 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(120 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(180 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(240 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(300 50 50)"/>
+            </g>
+          </svg>
+          Depoimentos
+        </div>
+        <h2>O que as famílias <em>dizem de nós</em></h2>
+        <p class="section-sub">A confiança de quem nos escolheu para eternizar seus momentos é o nosso maior orgulho.</p>
+      </div>
+
+      <!-- CARROSSEL DE DEPOIMENTOS (fixos + dinâmicos da planilha) -->
+      <div class="testi-carousel reveal" id="testiCarrossel">
+        <div class="carousel-wrapper">
+          <button class="carousel-nav carousel-prev" id="testiPrev" aria-label="Depoimento anterior">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <div class="carousel-track" id="testiTrack"></div>
+          <button class="carousel-nav carousel-next" id="testiNext" aria-label="Próximo depoimento">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="carousel-dots" id="testiDots"></div>
+      </div>
+
+      <!-- FORMULÁRIO DE DEPOIMENTO -->
+      <div class="dep-form-wrap reveal">
+        <div id="formMsg" class="dep-msg" hidden></div>
+        <form class="dep-form" id="formDepoimento">
+          <div class="dep-left">
+            <h3>Deixe seu depoimento</h3>
+            <p>Sua experiência inspira outras famílias. Conte como foi!</p>
+            <div class="dep-field">
+              <label for="depNome">Seu nome *</label>
+              <input type="text" id="depNome" maxlength="60" required placeholder="Ex.: Maria Silva">
+            </div>
+            <div class="dep-field">
+              <label for="depInstagram">Instagram <span class="dep-opcional">(opcional)</span></label>
+              <input type="text" id="depInstagram" maxlength="30" placeholder="@seu.perfil">
+            </div>
+          </div>
+          <div class="dep-right">
+            <div class="dep-field dep-field-grow">
+              <label for="depComentario">Seu comentário *</label>
+              <textarea id="depComentario" maxlength="500" rows="6" required placeholder="Conte como foi sua experiência com o Studio Araújo…"></textarea>
+              <span class="dep-contador" id="depContador">500</span>
+            </div>
+            <p class="aviso-privacidade">Ao enviar, seu nome e comentário ficam <strong>visíveis publicamente</strong> nesta página. Você pode pedir a remoção quando quiser. Veja a <a href="privacidade.html">Política de Privacidade</a>.</p>
+            <button type="submit" class="btn btn-solid dep-submit" id="btnEnviarDep">Enviar depoimento</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="testi-cta reveal">
+        <a href="https://www.instagram.com/studioaraujofoto" target="_blank" rel="noopener" class="btn btn-outline">Ver mais no Instagram</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- CTA FINAL -->
+<section class="cta-band">
+  <div class="wrap">
+    <div class="cta-panel reveal">
+      <div class="eyebrow">
+        <svg class="aperture closed" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="currentColor" stroke-width="2">
+              <path d="M50 8 L64 40 L50 50 Z"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(60 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(120 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(180 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(240 50 50)"/>
+              <path d="M92 50 L60 64 L50 50 Z" transform="rotate(300 50 50)"/>
+            </g>
+          </svg>
+        Vamos conversar?
+      </div>
+      <h2>Pronto para eternizar o seu <em>próximo capítulo</em>?</h2>
+      <p>A agenda do estúdio está aberta. Escolha a data e deixe o resto com a gente.</p>
+      <div class="cta-actions">
+        <a href="agendamento.html" class="btn btn-solid">Agendar horário</a>
+        <a href="https://wa.me/5588981886579" target="_blank" rel="noopener" class="btn btn-outline">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-inner">
+    <div style="display:flex; align-items:center; gap:16px;">
+      <img src="assets/logo-gold.png" width="716" height="724" alt="Studio Araújo Fotografia" style="height:36px; width:auto; opacity:0.85;" loading="lazy" decoding="async">
+      <p>© <span id="year"></span> Studio Araújo Fotografia. Todos os direitos reservados.<br>
+        <a href="privacidade.html" class="footer-link">Política de Privacidade</a></p>
+    </div>
+    <div class="social">
+      <a href="https://www.instagram.com/studioaraujofoto" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect pathLength="1" x="3" y="3" width="18" height="18" rx="5"/><circle pathLength="1" cx="12" cy="12" r="4"/><circle pathLength="1" cx="17.5" cy="6.5" r="0.6" fill="currentColor"/></svg>
+      </a>
+      <a href="https://wa.me/5588981886579" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path pathLength="1" d="M4 4h4l2 6-3 2c1 3 3 5 6 6l2-3 6 2v4c0 1-1 2-2 2C10 23 1 14 1 6c0-1 1-2 2-2z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- VISUALIZADOR DE FOTOS DO PORTFÓLIO -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Visualização das fotos" hidden>
+  <button class="lb-close" id="lbClose" aria-label="Fechar">&times;</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Foto anterior">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+  </button>
+  <figure class="lb-stage">
+    <div class="lb-imgwrap">
+      <img id="lbImg" src="" alt="">
+      <span class="lb-spinner" aria-hidden="true"></span>
+    </div>
+    <figcaption class="lb-caption">
+      <span class="lb-cat" id="lbCat"></span>
+      <span class="lb-count" id="lbCount"></span>
+    </figcaption>
+  </figure>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Próxima foto">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script src="script.js"></script>
+<script src="depoimentos.js"></script>
+</body>
+</html>
