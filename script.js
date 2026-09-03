@@ -102,8 +102,6 @@ if (statNums.length) {
 }
 
 // ===== VISUALIZADOR DE FOTOS (lightbox) =====
-// Abre a foto em tela cheia para o visitante ver com calma e passar
-// manualmente pelas fotos daquela categoria (setas, teclado ou deslizar).
 const lightbox = document.getElementById('lightbox');
 const lbImg = document.getElementById('lbImg');
 const lbCat = document.getElementById('lbCat');
@@ -113,7 +111,6 @@ const lbNext = document.getElementById('lbNext');
 const lbClose = document.getElementById('lbClose');
 
 let lbPhotos = [], lbIndex = 0, lbLabel = '', lbOpener = null;
-
 function lbRender() {
   lbImg.classList.remove('loaded');
   lbImg.src = lbPhotos[lbIndex];
@@ -123,13 +120,11 @@ function lbRender() {
   const sozinha = lbPhotos.length < 2;
   lbPrev.hidden = sozinha;
   lbNext.hidden = sozinha;
-  // Deixa as fotos vizinhas prontas, para a troca ser instantânea
   [lbIndex + 1, lbIndex - 1].forEach((i) => {
     const j = (i + lbPhotos.length) % lbPhotos.length;
     new Image().src = lbPhotos[j];
   });
 }
-
 function lbOpen(fotos, indice, rotulo, origem) {
   if (!lightbox || !fotos || !fotos.length) return;
   lbPhotos = fotos;
@@ -142,36 +137,29 @@ function lbOpen(fotos, indice, rotulo, origem) {
   requestAnimationFrame(() => lightbox.classList.add('open'));
   lbClose.focus();
 }
-
 function lbHide() {
   lightbox.classList.remove('open');
   document.body.style.overflow = '';
   setTimeout(() => { lightbox.hidden = true; lbImg.removeAttribute('src'); }, 280);
   if (lbOpener) lbOpener.focus();
 }
-
 function lbGo(passo) {
   if (lbPhotos.length < 2) return;
   lbIndex = (lbIndex + passo + lbPhotos.length) % lbPhotos.length;
   lbRender();
 }
-
 if (lightbox) {
   lbImg.addEventListener('load', () => lbImg.classList.add('loaded'));
   lbNext.addEventListener('click', (e) => { e.stopPropagation(); lbGo(1); });
   lbPrev.addEventListener('click', (e) => { e.stopPropagation(); lbGo(-1); });
   lbClose.addEventListener('click', lbHide);
-  // clicar no fundo (fora da foto) fecha
   lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lbHide(); });
-
   document.addEventListener('keydown', (e) => {
     if (lightbox.hidden) return;
     if (e.key === 'Escape') lbHide();
     else if (e.key === 'ArrowRight') lbGo(1);
     else if (e.key === 'ArrowLeft') lbGo(-1);
   });
-
-  // deslizar o dedo no celular
   let tX = 0, tY = 0;
   lightbox.addEventListener('touchstart', (e) => {
     tX = e.changedTouches[0].clientX; tY = e.changedTouches[0].clientY;
@@ -184,10 +172,45 @@ if (lightbox) {
 }
 
 // ===== GALERIAS DOS SERVIÇOS (página Serviços) =====
-// Cada card pode ter uma amostra de fotos daquele serviço. O site procura
-// sozinho os arquivos em assets/galeria/<serviço>-1.jpg, -2.jpg, ...
-// Se a pasta ainda não tiver fotos daquele serviço, o botão simplesmente
-// não aparece — nada quebra e nada precisa ser configurado à mão.
+// A partir de agora, as galerias podem vir do painel administrativo (Neon).
+// Enquanto uma categoria ainda não tiver fotos no painel, o site mantém o
+// comportamento antigo e usa automaticamente os arquivos locais em assets/.
+const NEON_AUTH_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
+const NEON_DATA_API_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
+let neonPublicClientPromise = null;
+
+async function neonPublicClient() {
+  if (!neonPublicClientPromise) {
+    neonPublicClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle').then(({ createClient, BetterAuthVanillaAdapter }) =>
+      createClient({
+        auth: {
+          adapter: BetterAuthVanillaAdapter(),
+          url: NEON_AUTH_URL_PUBLIC,
+          allowAnonymous: true
+        },
+        dataApi: { url: NEON_DATA_API_URL_PUBLIC }
+      })
+    );
+  }
+  return neonPublicClientPromise;
+}
+
+async function fotosDoPainel(categoria) {
+  try {
+    const neon = await neonPublicClient();
+    const { data, error } = await neon
+      .from('site_images')
+      .select('public_url,alt_text,is_cover,sort_order')
+      .eq('category', categoria)
+      .eq('is_visible', true)
+      .order('sort_order', { ascending: true });
+    if (error || !Array.isArray(data)) return [];
+    return data;
+  } catch (e) {
+    return [];
+  }
+}
+
 function testarFoto(src) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -197,51 +220,26 @@ function testarFoto(src) {
   });
 }
 
-// ===== CONFIGURAÇÃO DAS GALERIAS =====
-// CAPAS_DOS_SERVICOS diz QUAL foto da galeria é a capa do card daquele
-// serviço. Por padrão é a -1.jpg; troque só onde o enquadramento não
-// ficou bom (rosto cortado, etc.).
-// ⚠ Este mesmo objeto existe em agenda.js (miniatura do agendamento).
-//   Alterou aqui, altere lá — assim as duas páginas mostram a mesma foto.
 const CAPAS_DOS_SERVICOS = {
-  casamento: 3,        // única em paisagem da pasta: cabe quase inteira na capa,
-                       // com os dois rostos em close e nada cortado
-  "ensaio-casal": 7,   // casal centralizado, os dois rostos inteiros no recorte
-  formatura: 4,        // única em que beca, capelo, canudo E rosto sobrevivem
-                       // juntos ao recorte largo do card
-  gestante: 4,         // rosto inteiro e centralizado; nas outras a faixa
-                       // visível pega só do pescoço para baixo
-  moda: 9              // rosto inteiro e a peça de roupa bem legível — nas de
-                       // passarela o recorte corta a cabeça ou a modelo fica
-                       // pequena demais no meio do público
+  casamento: 3,
+  "ensaio-casal": 7,
+  formatura: 4,
+  gestante: 4,
+  moda: 9
 };
-
-// Fotos que NÃO devem entrar em nenhuma galeria (marca d'água, @ de
-// cliente, enquadramento ruim). Formato: "prefixo-numero".
 const FOTOS_IGNORADAS = new Set([
-  "gestante-5",      // @katarinasoaresl gravado no meio da foto
-  "casamento-6",     // @caiovasconcelos_zootecnista e @suyaneepereiraa_
-  "casamento-7",     // @suyaneepereiraa_ e @caiovasconcelos_zootecnista
-  "ensaio-casal-9"   // @llaryssaaraujo
+  "gestante-5",
+  "casamento-6",
+  "casamento-7",
+  "ensaio-casal-9"
 ]);
-
 function fotoIgnorada(prefixo, n) {
   return FOTOS_IGNORADAS.has(prefixo + "-" + n);
 }
-
-// Trava de segurança: se algum dia a capa configurada apontar para uma foto
-// que está na lista de ignoradas, o site volta para a -1.jpg em vez de exibir
-// justamente a imagem que deveria ficar de fora.
 function capaDoServico(chave) {
   const n = CAPAS_DOS_SERVICOS[chave] || 1;
   return fotoIgnorada(chave, n) ? 1 : n;
 }
-
-// Procura as fotos numeradas de um prefixo, UMA DE CADA VEZ, e para
-// assim que encontra buracos seguidos. Antes o site disparava 20 buscas
-// por categoria de uma vez — com 16 categorias na página de Serviços
-// isso dava mais de 300 requisições simultâneas, quase todas erro 404,
-// e a fila do navegador travava o carregamento dos cards.
 async function procurarFotos(base, prefixo, maximo) {
   const achadas = [];
   let seguidasSemAchar = 0;
@@ -253,67 +251,82 @@ async function procurarFotos(base, prefixo, maximo) {
       seguidasSemAchar = 0;
     } else {
       seguidasSemAchar++;
-      // Dois números vazios em sequência: a numeração acabou.
       if (seguidasSemAchar >= 2) break;
     }
   }
   return achadas;
+}
+function aplicarCapaCard(btn, src) {
+  const card = btn.closest('.servico-card');
+  if (!card) return;
+  let moldura = card.querySelector('.card-photo');
+  if (!moldura) {
+    moldura = document.createElement('div');
+    moldura.className = 'card-photo';
+    moldura.setAttribute('aria-hidden', 'true');
+    const foto = document.createElement('img');
+    foto.alt = '';
+    foto.loading = 'lazy';
+    foto.decoding = 'async';
+    moldura.appendChild(foto);
+    card.insertBefore(moldura, card.firstChild);
+    card.classList.add('has-photo');
+  }
+  const img = moldura.querySelector('img');
+  if (img) img.src = src;
 }
 
 document.querySelectorAll('.gallery-btn[data-gallery]').forEach((btn) => {
   const chave = btn.dataset.gallery;
   const base = 'assets/galeria/' + chave + '-';
   const rotulo = btn.dataset.label || '';
-  const capaN = capaDoServico(chave);
-
-  // Primeiro só a foto de capa: o card ganha imagem quase de imediato,
-  // sem esperar o restante da galeria ser vasculhado.
-  testarFoto(base + capaN + '.jpg').then((capa) => {
-    if (!capa) return;
-
-    const card = btn.closest('.servico-card');
-    if (card && !card.querySelector('.card-photo')) {
-      const molduraCapa = document.createElement('div');
-      molduraCapa.className = 'card-photo';
-      molduraCapa.setAttribute('aria-hidden', 'true');
-      const foto = document.createElement('img');
-      foto.src = capa;
-      foto.alt = '';
-      foto.loading = 'lazy';
-      foto.decoding = 'async';
-      molduraCapa.appendChild(foto);
-      card.insertBefore(molduraCapa, card.firstChild);
-      card.classList.add('has-photo');
-    }
-
-    // Só então procura o resto, uma foto por vez, parando nos buracos.
-    procurarFotos(base, chave, 20).then((fotos) => {
-      if (!fotos.length) return;
+  (async () => {
+    const remotas = await fotosDoPainel(chave);
+    if (remotas.length) {
+      const capaObj = remotas.find(f => f.is_cover) || remotas[0];
+      const capa = capaObj.public_url;
+      aplicarCapaCard(btn, capa);
+      const ordenadas = [capa].concat(remotas.map(f => f.public_url).filter(url => url !== capa));
       const contador = btn.querySelector('.g-count');
-      if (contador) contador.textContent = fotos.length;
+      if (contador) contador.textContent = ordenadas.length;
       btn.hidden = false;
       requestAnimationFrame(() => btn.classList.add('pulsando'));
-      // A capa abre primeiro no visualizador
-      const ordenadas = [capa].concat(fotos.filter((f) => f !== capa));
       btn.addEventListener('click', () => lbOpen(ordenadas, 0, rotulo, btn));
-    });
-  });
+      return;
+    }
+    const capaN = capaDoServico(chave);
+    const capa = await testarFoto(base + capaN + '.jpg');
+    if (!capa) return;
+    aplicarCapaCard(btn, capa);
+    const fotos = await procurarFotos(base, chave, 20);
+    if (!fotos.length) return;
+    const contador = btn.querySelector('.g-count');
+    if (contador) contador.textContent = fotos.length;
+    btn.hidden = false;
+    requestAnimationFrame(() => btn.classList.add('pulsando'));
+    const ordenadas = [capa].concat(fotos.filter((f) => f !== capa));
+    btn.addEventListener('click', () => lbOpen(ordenadas, 0, rotulo, btn));
+  })();
 });
-// O site procura sozinho as fotos numeradas de cada categoria (prefixo-1.jpg
-// até prefixo-15.jpg). Basta salvar a foto com o nome certo na pasta e ela
-// entra no slide automaticamente. Números podem ter buracos (ex.: 1, 2 e 5).
+
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const PORTFOLIO_NEON = {
+  casamentos: 'portfolio-casamentos',
+  gestante: 'portfolio-gestante',
+  formaturas: 'portfolio-formaturas',
+  moda: 'portfolio-moda',
+  aniversario: 'portfolio-aniversario',
+  'foto-studio': 'portfolio-foto-studio'
+};
 document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx) => {
   const prefix = item.dataset.slidePrefix;
   const baseImg = item.querySelector('img');
   const rotulo = (item.querySelector('.mosaic-label') || {}).textContent || '';
   const label = rotulo.trim();
-
-  // A foto de capa já vale como primeira foto do visualizador
+  const nomePrefixo = prefix.split('/').pop();
+  const categoriaRemota = PORTFOLIO_NEON[nomePrefixo];
   item.__fotos = [baseImg.getAttribute('src')];
   item.__cur = 0;
-
-  // O bloco vira clicável (mouse e teclado) desde o início
   item.classList.add('is-zoomable');
   item.setAttribute('role', 'button');
   item.setAttribute('tabindex', '0');
@@ -323,24 +336,36 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
   item.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); }
   });
-
-  // Testa os nomes um a um; só as fotos que existirem entram no slide
-  procurarFotos(prefix + '-', prefix, 15).then(valid => {
-    if (!valid.length) return; // só a foto de capa: bloco fica estático
-
-    // O visualizador passa a conhecer todas as fotos da categoria
-    item.__fotos = [baseImg.getAttribute('src')].concat(valid);
-
-    const slides = valid.map(src => {
+  (async () => {
+    let fotos = [];
+    if (categoriaRemota) {
+      const remotas = await fotosDoPainel(categoriaRemota);
+      if (remotas.length) {
+        const capaObj = remotas.find(f => f.is_cover) || remotas[0];
+        baseImg.src = capaObj.public_url;
+        baseImg.alt = capaObj.alt_text || label;
+        fotos = remotas.map(f => f.public_url).filter(url => url !== capaObj.public_url);
+        item.__fotos = [capaObj.public_url].concat(fotos);
+      }
+    }
+    if (!fotos.length && item.__fotos.length === 1 && item.__fotos[0] === baseImg.getAttribute('src')) {
+      const locais = await procurarFotos(prefix + '-', nomePrefixo, 15);
+      if (!locais.length) return;
+      fotos = locais;
+      item.__fotos = [baseImg.getAttribute('src')].concat(locais);
+    }
+    if (!fotos.length) return;
+    const slides = fotos.map(src => {
       const img = document.createElement('img');
       img.src = src;
       img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
       img.className = 'slide';
       item.insertBefore(img, item.querySelector('.mosaic-label'));
       return img;
     });
-
-    const total = slides.length + 1; // + a foto base
+    const total = slides.length + 1;
     const dots = document.createElement('span');
     dots.className = 'slide-dots';
     const dotEls = [];
@@ -351,20 +376,17 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
       dotEls.push(d);
     }
     item.appendChild(dots);
-
     let cur = 0;
     let paused = false;
     item.addEventListener('mouseenter', () => { paused = true; });
     item.addEventListener('mouseleave', () => { paused = false; });
-
-    if (reducedMotion) return; // sem rotação automática, mas o clique continua valendo
-
+    if (reducedMotion) return;
     setInterval(() => {
       if (paused) return;
       cur = (cur + 1) % total;
-      item.__cur = cur;   // o visualizador abre na foto que está à mostra
-      slides.forEach((s, i) => s.classList.toggle('active', i === cur - 1));
-      dotEls.forEach((d, i) => d.classList.toggle('on', i === cur));
+      item.__cur = cur;
+      slides.forEach((slide, i) => slide.classList.toggle('active', i === cur - 1));
+      dotEls.forEach((dot, i) => dot.classList.toggle('on', i === cur));
     }, 5500 + idx * 450);
-  });
+  })();
 });
