@@ -42,11 +42,139 @@ const formDepoimento     = document.getElementById("formDepoimento");
 const formMsg            = document.getElementById("formMsg");
 const btnEnviar          = document.getElementById("btnEnviarDep");
 const campoComentario    = document.getElementById("depComentario");
+const formWrap           = document.querySelector(".dep-form-wrap");
 
 const MAX_CHARS = 500;
 let carrosselIndex = 0;
 let carrosselTotal = 0;
 let autoplayTimer = null;
+
+// ── Formulário recolhível ─────────────────────────────────────────────
+// Na home, o formulário continua disponível, mas começa compacto para a
+// prova social não perder protagonismo. Ao tocar no convite, o mesmo card
+// cresce e revela o formulário completo.
+function prepararFormularioRecolhivel() {
+  if (!formWrap || !formDepoimento || document.getElementById("depToggle")) return;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    .dep-form-wrap.dep-collapsible{
+      padding:24px 28px;
+      transition:padding .38s ease, border-color .38s ease, background .38s ease;
+    }
+    .dep-form-wrap.dep-collapsible.is-open{
+      padding:36px 40px 40px;
+      border-color:rgba(201,162,75,.24);
+    }
+    .dep-invite{
+      position:relative;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:28px;
+    }
+    .dep-invite-copy{ min-width:0; }
+    .dep-invite h3{
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(1.35rem,2.2vw,1.7rem);
+      line-height:1.2;
+      color:var(--cream);
+      margin:0 0 5px;
+      font-weight:500;
+    }
+    .dep-invite p{
+      margin:0;
+      color:var(--muted);
+      font-size:.86rem;
+      line-height:1.5;
+    }
+    .dep-toggle{
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      gap:9px;
+      border:1px solid rgba(201,162,75,.42);
+      border-radius:999px;
+      background:rgba(201,162,75,.06);
+      color:var(--gold-light);
+      padding:10px 16px;
+      font-family:'Jost',sans-serif;
+      font-size:.7rem;
+      letter-spacing:.09em;
+      text-transform:uppercase;
+      cursor:pointer;
+      transition:background .25s ease,border-color .25s ease,color .25s ease;
+    }
+    .dep-toggle:hover{
+      background:rgba(201,162,75,.13);
+      border-color:var(--gold);
+      color:var(--cream);
+    }
+    .dep-toggle svg{
+      width:14px;
+      height:14px;
+      transition:transform .32s ease;
+    }
+    .dep-form-wrap.is-open .dep-toggle svg{ transform:rotate(180deg); }
+    .dep-form-wrap.is-open .dep-invite{
+      padding-bottom:26px;
+      margin-bottom:28px;
+      border-bottom:1px solid rgba(201,162,75,.12);
+    }
+    .dep-form-wrap.dep-collapsible .dep-form[hidden]{ display:none !important; }
+    .dep-form-wrap.dep-collapsible .dep-form:not([hidden]){
+      animation:depFormIn .38s cubic-bezier(.16,.84,.44,1) both;
+    }
+    @keyframes depFormIn{
+      from{ opacity:0; transform:translateY(-8px); }
+      to{ opacity:1; transform:none; }
+    }
+    @media (max-width:700px){
+      .dep-form-wrap.dep-collapsible,
+      .dep-form-wrap.dep-collapsible.is-open{ padding:22px 20px 24px; }
+      .dep-invite{ align-items:flex-start; flex-direction:column; gap:17px; }
+      .dep-toggle{ width:100%; justify-content:center; }
+      .dep-form-wrap.is-open .dep-invite{ padding-bottom:22px; margin-bottom:24px; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const convite = document.createElement("div");
+  convite.className = "dep-invite";
+  convite.innerHTML =
+    '<div class="dep-invite-copy">' +
+      '<h3>Fotografou com a gente?</h3>' +
+      '<p>Sua experiência pode ajudar outras famílias a conhecerem nosso trabalho.</p>' +
+    '</div>' +
+    '<button type="button" class="dep-toggle" id="depToggle" aria-expanded="false" aria-controls="formDepoimento">' +
+      '<span>Deixar meu depoimento</span>' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
+    '</button>';
+
+  formWrap.classList.add("dep-collapsible");
+  formWrap.insertBefore(convite, formWrap.firstChild);
+  formDepoimento.hidden = true;
+
+  const toggle = document.getElementById("depToggle");
+  const toggleTxt = toggle.querySelector("span");
+  toggle.addEventListener("click", () => {
+    const abrir = formDepoimento.hidden;
+    formDepoimento.hidden = !abrir;
+    formWrap.classList.toggle("is-open", abrir);
+    toggle.setAttribute("aria-expanded", abrir ? "true" : "false");
+    toggleTxt.textContent = abrir ? "Recolher formulário" : "Deixar meu depoimento";
+
+    if (abrir) {
+      requestAnimationFrame(() => {
+        const nome = document.getElementById("depNome");
+        if (nome) nome.focus({ preventScroll: true });
+      });
+    }
+  });
+}
+
+prepararFormularioRecolhivel();
 
 // ── SVG das 5 estrelas ────────────────────────────────────────────────
 function estrelasSVG() {
