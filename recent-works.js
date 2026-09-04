@@ -148,3 +148,74 @@
   organizarCards();
   new MutationObserver(organizarCards).observe(track, { childList:true, subtree:true });
 })();
+
+// =====================================================================
+// DEPOIMENTOS — dados legados, fotos do site antigo e pausa no hover.
+// =====================================================================
+(function integrarDepoimentosLegados() {
+  const avataresFixos = {
+    'Leane Santos': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_0184.jpg?t=1586453358',
+    'Gessilene': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_6294.jpg?t=1586455182',
+    'Josineide': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_7149.jpg?t=1586455991'
+  };
+
+  try {
+    DEPOIMENTOS_FIXOS.forEach(dep => {
+      const url = avataresFixos[dep.nome];
+      if (url) dep.avatar_url = url;
+    });
+  } catch (_) {}
+
+  let pausadoPorHover = false;
+  try {
+    const iniciarAutoplayBase = iniciarAutoplay;
+    iniciarAutoplay = function() {
+      if (pausadoPorHover) return;
+      return iniciarAutoplayBase();
+    };
+
+    if (carrosselContainer) {
+      carrosselContainer.addEventListener('mouseenter', () => {
+        pausadoPorHover = true;
+        clearInterval(autoplayTimer);
+      });
+      carrosselContainer.addEventListener('mouseleave', () => {
+        pausadoPorHover = false;
+        clearInterval(autoplayTimer);
+        if (carrosselTotal > 1) iniciarAutoplay();
+      });
+    }
+  } catch (_) {}
+
+  try {
+    carregarDepoimentos = async function() {
+      let planilha = [], neonDeps = [];
+      montarCarrossel(DEPOIMENTOS_FIXOS);
+      await Promise.all([
+        fetch(DEPOIMENTOS_API_URL)
+          .then(r => r.json())
+          .then(d => {
+            if (!Array.isArray(d.depoimentos)) return;
+            planilha = d.depoimentos.filter(dep => {
+              const nome = String(dep.nome || '').trim().toLowerCase();
+              const comentario = String(dep.comentario || '').trim().toLowerCase();
+              const instagram = String(dep.instagram || '').replace(/^@/, '').trim().toLowerCase();
+              const isIzaqueLegado = nome === 'izaque' && instagram === 'izakinho_' && comentario.includes('o trabalho de vocês é incrível');
+              return !isIzaqueLegado;
+            });
+          })
+          .catch(() => {}),
+        neonPublicClient()
+          .then(n => n.from('site_testimonials').select('id,name,instagram,comment,avatar_url,created_at').eq('is_visible', true).order('created_at', { ascending: false }))
+          .then(({ data, error }) => {
+            if (!error && Array.isArray(data)) {
+              neonDeps = data.map(x => ({ id:x.id, nome:x.name, instagram:x.instagram, comentario:x.comment, avatar_url:x.avatar_url, data:'' }));
+            }
+          })
+          .catch(() => {})
+      ]);
+      montarCarrossel([...DEPOIMENTOS_FIXOS, ...neonDeps, ...planilha]);
+    };
+    carregarDepoimentos();
+  } catch (_) {}
+})();
