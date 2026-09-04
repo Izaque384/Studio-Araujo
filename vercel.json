@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "redirects": [
+    {
+      "source": "/admin.html",
+      "destination": "/painel",
+      "permanent": true
+    }
+  ]
+}
