@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Biblioteca de Mídia | Studio Araújo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  <main class="admin-shell">
+    <section id="authView" class="auth-card">
+      <img src="/assets/logo-gold.png" alt="Studio Araújo Fotografia" class="auth-logo">
+      <p class="eyebrow">Área administrativa</p>
+      <h1>Biblioteca de Mídia</h1>
+      <p class="auth-copy">Entre para publicar, organizar e atualizar as fotos e vídeos exibidos no site.</p>
+
+      <button type="button" id="googleBtn" class="btn btn-primary">Entrar com Google</button>
+
+      <div class="divider"><span>ou</span></div>
+      <form id="loginForm" class="login-form">
+        <label>E-mail
+          <input id="loginEmail" type="email" autocomplete="email" value="michelearaujofotografia@gmail.com" required>
+        </label>
+        <label>Senha
+          <input id="loginPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="btn" type="submit">Entrar com e-mail</button>
+      </form>
+      <p id="authMsg" class="msg" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="panelView" class="panel" hidden>
+      <header class="panel-header">
+        <div>
+          <p class="eyebrow">Studio Araújo</p>
+          <h1>Gerenciar mídia</h1>
+          <p id="welcome" class="muted"></p>
+        </div>
+        <div class="header-actions">
+          <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">Ver site</a>
+          <button type="button" id="logoutBtn" class="btn btn-ghost">Sair</button>
+        </div>
+      </header>
+
+      <section class="upload-card">
+        <div class="upload-head">
+          <div>
+            <p class="eyebrow">Nova publicação</p>
+            <h2>Enviar fotos ou vídeos</h2>
+          </div>
+          <span class="upload-note">Fotos: JPG, PNG, WebP ou AVIF · até 25 MB · Vídeos: MP4 ou WebM · até 100 MB</span>
+        </div>
+        <div class="upload-grid">
+          <label>Onde a mídia vai aparecer
+            <select id="uploadCategory"></select>
+          </label>
+          <label>Descrição <span class="muted">(opcional)</span>
+            <input id="uploadAlt" type="text" maxlength="180" placeholder="Ex.: Noivos durante a cerimônia">
+          </label>
+        </div>
+        <label class="dropzone" id="dropzone">
+          <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple hidden>
+          <strong>Selecionar fotos ou vídeos</strong>
+          <span>ou arraste os arquivos para esta área</span>
+        </label>
+        <div id="uploadQueue" class="upload-queue" aria-live="polite"></div>
+        <button type="button" id="uploadBtn" class="btn btn-primary" disabled>Enviar selecionadas</button>
+      </section>
+
+      <section class="library">
+        <div class="library-head">
+          <div>
+            <p class="eyebrow">Biblioteca</p>
+            <h2>Mídias do site</h2>
+          </div>
+          <div class="filters">
+            <select id="filterCategory" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
+            <button type="button" id="refreshBtn" class="btn btn-ghost">Atualizar</button>
+          </div>
+        </div>
+        <p id="libraryMsg" class="msg" role="status" aria-live="polite"></p>
+        <div id="imageGrid" class="image-grid"></div>
+      </section>
+    </section>
+  </main>
+  <script type="module" src="/admin.js"></script>
+</body>
+</html>
