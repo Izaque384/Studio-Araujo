@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
-  <title>Painel de Fotos | Studio Araújo</title>
+  <title>Biblioteca de Mídia | Studio Araújo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -16,8 +16,8 @@
     <section id="authView" class="auth-card">
       <img src="assets/logo-gold.png" alt="Studio Araújo Fotografia" class="auth-logo">
       <p class="eyebrow">Área administrativa</p>
-      <h1>Painel de Fotos</h1>
-      <p class="auth-copy">Entre para publicar, organizar e atualizar as fotografias exibidas no site.</p>
+      <h1>Biblioteca de Mídia</h1>
+      <p class="auth-copy">Entre para publicar, organizar e atualizar as fotos e vídeos exibidos no site.</p>
 
       <button type="button" id="googleBtn" class="btn btn-primary">Entrar com Google</button>
 
@@ -38,7 +38,7 @@
       <header class="panel-header">
         <div>
           <p class="eyebrow">Studio Araújo</p>
-          <h1>Gerenciar fotos</h1>
+          <h1>Gerenciar mídia</h1>
           <p id="welcome" class="muted"></p>
         </div>
         <div class="header-actions">
@@ -51,21 +51,21 @@
         <div class="upload-head">
           <div>
             <p class="eyebrow">Nova publicação</p>
-            <h2>Enviar fotografias</h2>
+            <h2>Enviar fotos ou vídeos</h2>
           </div>
-          <span class="upload-note">JPG, PNG, WebP ou AVIF · até 25 MB por arquivo</span>
+          <span class="upload-note">Fotos: JPG, PNG, WebP ou AVIF · até 25 MB · Vídeos: MP4 ou WebM · até 100 MB</span>
         </div>
         <div class="upload-grid">
-          <label>Onde as fotos vão aparecer
+          <label>Onde a mídia vai aparecer
             <select id="uploadCategory"></select>
           </label>
-          <label>Texto alternativo <span class="muted">(opcional)</span>
+          <label>Descrição <span class="muted">(opcional)</span>
             <input id="uploadAlt" type="text" maxlength="180" placeholder="Ex.: Noivos durante a cerimônia">
           </label>
         </div>
         <label class="dropzone" id="dropzone">
-          <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden>
-          <strong>Selecionar fotos</strong>
+          <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple hidden>
+          <strong>Selecionar fotos ou vídeos</strong>
           <span>ou arraste os arquivos para esta área</span>
         </label>
         <div id="uploadQueue" class="upload-queue" aria-live="polite"></div>
@@ -76,7 +76,7 @@
         <div class="library-head">
           <div>
             <p class="eyebrow">Biblioteca</p>
-            <h2>Fotos publicadas</h2>
+            <h2>Mídias do site</h2>
           </div>
           <div class="filters">
             <select id="filterCategory" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
