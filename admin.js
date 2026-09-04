@@ -26,7 +26,7 @@ async function boot(){try{const s=await getSession();if(!s?.user)return showAuth
 function showAuth(){authView.hidden=false;panelView.hidden=true;}
 async function showPanel(){authView.hidden=true;panelView.hidden=false;$('welcome').textContent=currentUser?.email||'';await loadCategories();await loadMedia();}
 
-googleBtn.addEventListener('click',async()=>{setMsg(authMsg,'Abrindo o Google…');try{await neon.auth.signIn.social({provider:'google',callbackURL:location.origin+'/admin.html'});}catch(e){console.error(e);setMsg(authMsg,'Não foi possível iniciar o login com Google.','error');}});
+googleBtn.addEventListener('click',async()=>{setMsg(authMsg,'Abrindo o Google…');try{await neon.auth.signIn.social({provider:'google',callbackURL:location.origin+'/painel'});}catch(e){console.error(e);setMsg(authMsg,'Não foi possível iniciar o login com Google.','error');}});
 loginForm.addEventListener('submit',async e=>{e.preventDefault();setMsg(authMsg,'Entrando…');try{const email=$('loginEmail').value.trim(),password=$('loginPassword').value;const r=await neon.auth.signIn.email({email,password});if(r?.error)throw new Error(r.error.message||'Credenciais inválidas.');const s=await getSession();currentUser=s?.user;if(!currentUser||!(await checkAdmin())){await neon.auth.signOut();throw new Error('Esta conta não tem acesso administrativo.');}setMsg(authMsg,'');await showPanel();}catch(err){setMsg(authMsg,err?.message||'Não foi possível entrar.','error');}});
 logoutBtn.addEventListener('click',async()=>{await neon.auth.signOut();currentUser=null;showAuth();});
 
