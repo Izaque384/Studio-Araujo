@@ -1,3 +1,6 @@
+# URL curta oficial do painel administrativo.
+/admin.html  /painel  301
+
 # Manda o tráfego do subdomínio do Netlify para o domínio próprio.
 # O 301 avisa ao Google que a mudança é permanente, para ele juntar os dois
 # endereços num só e parar de mostrar o netlify.app nos resultados.
