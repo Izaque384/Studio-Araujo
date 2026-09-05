@@ -125,9 +125,9 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
     style.textContent = `
       .cta-band{padding:72px 0 126px!important}
       .cta-band>.wrap{max-width:1260px!important}
-      .cta-panel{position:relative!important;min-height:410px!important;padding:72px 64px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;border:1px solid rgba(201,162,75,.22)!important;border-radius:20px!important;overflow:hidden!important;background-color:#0e0d0b!important;background-image:linear-gradient(90deg,rgba(14,13,11,.98) 0%,rgba(14,13,11,.94) 29%,rgba(14,13,11,.74) 48%,rgba(14,13,11,.28) 68%,rgba(14,13,11,.63) 100%),url('assets/cta-final.webp')!important;background-repeat:no-repeat!important;background-size:100% 100%,auto 155%!important;background-position:center,73% 45%!important;box-shadow:0 30px 80px rgba(0,0,0,.28)!important}
-      .cta-panel::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(180deg,rgba(14,13,11,.04),rgba(14,13,11,.32))!important;animation:none!important;pointer-events:none!important}
-      .cta-panel::after{content:'HISTÓRIAS\\A REAIS.\\A PESSOAS\\A REAIS.'!important;white-space:pre!important;position:absolute!important;right:44px!important;bottom:42px!important;padding-left:22px!important;border-left:1px solid rgba(230,200,120,.62)!important;color:rgba(230,200,120,.58)!important;font:400 .64rem/1.65 'Jost',sans-serif!important;letter-spacing:.24em!important;text-transform:uppercase!important;z-index:1!important}
+      .cta-panel{position:relative!important;min-height:410px!important;padding:72px 64px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;border:1px solid rgba(201,162,75,.22)!important;border-radius:20px!important;overflow:hidden!important;background-color:#0e0d0b!important;background-image:linear-gradient(90deg,rgba(14,13,11,.99) 0%,rgba(14,13,11,.97) 20%,rgba(14,13,11,.88) 34%,rgba(14,13,11,.60) 48%,rgba(14,13,11,.28) 60%,rgba(14,13,11,.08) 72%,rgba(14,13,11,.02) 100%),url('assets/cta-final.webp')!important;background-repeat:no-repeat!important;background-size:100% 100%,cover!important;background-position:center,73% 45%!important;box-shadow:0 30px 80px rgba(0,0,0,.28)!important}
+      .cta-panel::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(180deg,rgba(14,13,11,.02),rgba(14,13,11,.18))!important;animation:none!important;pointer-events:none!important}
+      .cta-panel::after{content:none!important;display:none!important}
       .cta-panel>.eyebrow,.cta-panel>h2,.cta-panel>p,.cta-panel>.cta-actions{z-index:2!important}
       .cta-panel .eyebrow{justify-content:flex-start!important;margin:0 0 18px!important;font-size:.72rem!important;letter-spacing:.24em!important;color:var(--gold-light)!important}
       .cta-panel .eyebrow .aperture{width:27px!important;height:27px!important}
@@ -140,13 +140,12 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
       .cta-panel .cta-actions .btn-outline:hover{border-color:var(--gold)!important;background:rgba(14,13,11,.52)!important}
       @media(max-width:820px){
         .cta-band{padding:54px 0 92px!important}
-        .cta-panel{min-height:500px!important;padding:54px 38px!important;background-image:linear-gradient(180deg,rgba(14,13,11,.82) 0%,rgba(14,13,11,.72) 46%,rgba(14,13,11,.92) 100%),url('assets/cta-final.webp')!important;background-size:100% 100%,auto 120%!important;background-position:center,68% 46%!important;justify-content:flex-end!important}
-        .cta-panel::after{display:none!important}
+        .cta-panel{min-height:500px!important;padding:54px 38px!important;background-image:linear-gradient(180deg,rgba(14,13,11,.72) 0%,rgba(14,13,11,.54) 42%,rgba(14,13,11,.90) 100%),url('assets/cta-final.webp')!important;background-size:100% 100%,cover!important;background-position:center,68% 46%!important;justify-content:flex-end!important}
         .cta-panel h2{max-width:560px!important}
         .cta-panel p{max-width:520px!important}
       }
       @media(max-width:560px){
-        .cta-panel{min-height:540px!important;padding:42px 24px!important;border-radius:16px!important;background-size:100% 100%,auto 105%!important;background-position:center,58% 36%!important}
+        .cta-panel{min-height:540px!important;padding:42px 24px!important;border-radius:16px!important;background-size:100% 100%,cover!important;background-position:center,58% 36%!important}
         .cta-panel .eyebrow{font-size:.63rem!important;letter-spacing:.2em!important}
         .cta-panel h2{font-size:clamp(2rem,10vw,2.7rem)!important}
         .cta-panel .cta-actions{width:100%!important;flex-direction:column!important;align-items:stretch!important}
