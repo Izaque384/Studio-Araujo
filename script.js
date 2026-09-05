@@ -90,7 +90,7 @@ if (lightbox) {
 
 // ===== MÍDIA GERENCIADA PELO PAINEL =====
 const NEON_AUTH_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
-const NEON_DATA_API_URL_PUBLIC = 'https://ep-lucky-rice-axxtumld.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
+const NEON_DATA_API_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
 let neonPublicClientPromise = null;
 async function neonPublicClient() { if (!neonPublicClientPromise) neonPublicClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle').then(({ createClient, BetterAuthVanillaAdapter }) => createClient({ auth: { adapter: BetterAuthVanillaAdapter(), url: NEON_AUTH_URL_PUBLIC, allowAnonymous: true }, dataApi: { url: NEON_DATA_API_URL_PUBLIC } })); return neonPublicClientPromise; }
 async function midiasDoPainel(categoria) { try { const neon = await neonPublicClient(); const { data, error } = await neon.from('site_images').select('public_url,alt_text,is_cover,sort_order,mime_type').eq('category', categoria).eq('is_visible', true).order('sort_order', { ascending: true }); if (error || !Array.isArray(data)) return { ok: false, items: [] }; return { ok: true, items: data.map(normalizeMedia) }; } catch (_) { return { ok: false, items: [] }; } }
