@@ -90,7 +90,7 @@ if (lightbox) {
 
 // ===== MÍDIA GERENCIADA PELO PAINEL =====
 const NEON_AUTH_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
-const NEON_DATA_API_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
+const NEON_DATA_API_URL_PUBLIC = 'https://ep-lucky-rice-axxtumld.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
 let neonPublicClientPromise = null;
 async function neonPublicClient() { if (!neonPublicClientPromise) neonPublicClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle').then(({ createClient, BetterAuthVanillaAdapter }) => createClient({ auth: { adapter: BetterAuthVanillaAdapter(), url: NEON_AUTH_URL_PUBLIC, allowAnonymous: true }, dataApi: { url: NEON_DATA_API_URL_PUBLIC } })); return neonPublicClientPromise; }
 async function midiasDoPainel(categoria) { try { const neon = await neonPublicClient(); const { data, error } = await neon.from('site_images').select('public_url,alt_text,is_cover,sort_order,mime_type').eq('category', categoria).eq('is_visible', true).order('sort_order', { ascending: true }); if (error || !Array.isArray(data)) return { ok: false, items: [] }; return { ok: true, items: data.map(normalizeMedia) }; } catch (_) { return { ok: false, items: [] }; } }
@@ -113,3 +113,58 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
   const prefix = item.dataset.slidePrefix, baseImg = item.querySelector('img'); const label = ((item.querySelector('.mosaic-label') || {}).textContent || '').trim(); const nomePrefixo = prefix.split('/').pop(), categoriaRemota = PORTFOLIO_NEON[nomePrefixo]; item.__media = [mediaItem(baseImg.getAttribute('src'),'image',baseImg.alt || label)]; item.__cur = 0; item.classList.add('is-zoomable'); item.setAttribute('role','button'); item.setAttribute('tabindex','0'); item.setAttribute('aria-label','Ampliar fotos de '+label); const abrir = () => lbOpen(item.__media, item.__cur, label, item); item.addEventListener('click', abrir); item.addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); abrir(); } });
   (async () => { let remoto = categoriaRemota ? await midiasDoPainel(categoriaRemota) : {ok:false,items:[]}; let itens = remoto.items; if (!remoto.ok) { const locais = await procurarFotos(prefix + '-', nomePrefixo, 15); itens = [mediaItem(baseImg.getAttribute('src'),'image',baseImg.alt || label), ...locais.map(src=>mediaItem(src,'image'))]; } if (!itens.length) return; const capa = itens.find(i => !isVideo(i) && i.is_cover) || itens.find(i => !isVideo(i)); if (capa) { baseImg.src = capa.url; baseImg.alt = capa.alt || label; } item.__media = itens; const extras = itens.filter(i => !capa || i.url !== capa.url); const slides = extras.filter(i => !isVideo(i)).map(m => { const img=document.createElement('img'); img.src=m.url; img.alt=''; img.loading='lazy'; img.decoding='async'; img.className='slide'; item.insertBefore(img,item.querySelector('.mosaic-label')); return img; }); if (!slides.length) return; const total=slides.length+1, dots=document.createElement('span'); dots.className='slide-dots'; const dotEls=[]; for(let i=0;i<total;i++){const d=document.createElement('i'); if(i===0)d.className='on'; dots.appendChild(d); dotEls.push(d);} item.appendChild(dots); let cur=0,paused=false; item.addEventListener('mouseenter',()=>paused=true); item.addEventListener('mouseleave',()=>paused=false); if(reducedMotion)return; setInterval(()=>{ if(paused)return; cur=(cur+1)%total; slides.forEach((s,i)=>s.classList.toggle('active',i===cur-1)); dotEls.forEach((d,i)=>d.classList.toggle('on',i===cur)); },5500+idx*450); })();
 });
+
+// ===== CTA FINAL — direção emocional e imersiva =====
+(function aprimorarCtaFinal(){
+  const paineis = document.querySelectorAll('.cta-panel');
+  if (!paineis.length) return;
+
+  if (!document.getElementById('ctaFinalImersivoStyle')) {
+    const style = document.createElement('style');
+    style.id = 'ctaFinalImersivoStyle';
+    style.textContent = `
+      .cta-band{padding:72px 0 126px!important}
+      .cta-band>.wrap{max-width:1260px!important}
+      .cta-panel{position:relative!important;min-height:410px!important;padding:72px 64px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;border:1px solid rgba(201,162,75,.22)!important;border-radius:20px!important;overflow:hidden!important;background-color:#0e0d0b!important;background-image:linear-gradient(90deg,rgba(14,13,11,.98) 0%,rgba(14,13,11,.94) 29%,rgba(14,13,11,.74) 48%,rgba(14,13,11,.28) 68%,rgba(14,13,11,.63) 100%),url('assets/cta-final.webp')!important;background-repeat:no-repeat!important;background-size:100% 100%,auto 155%!important;background-position:center,73% 45%!important;box-shadow:0 30px 80px rgba(0,0,0,.28)!important}
+      .cta-panel::before{content:''!important;position:absolute!important;inset:0!important;background:linear-gradient(180deg,rgba(14,13,11,.04),rgba(14,13,11,.32))!important;animation:none!important;pointer-events:none!important}
+      .cta-panel::after{content:'HISTÓRIAS\\A REAIS.\\A PESSOAS\\A REAIS.'!important;white-space:pre!important;position:absolute!important;right:44px!important;bottom:42px!important;padding-left:22px!important;border-left:1px solid rgba(230,200,120,.62)!important;color:rgba(230,200,120,.58)!important;font:400 .64rem/1.65 'Jost',sans-serif!important;letter-spacing:.24em!important;text-transform:uppercase!important;z-index:1!important}
+      .cta-panel>.eyebrow,.cta-panel>h2,.cta-panel>p,.cta-panel>.cta-actions{z-index:2!important}
+      .cta-panel .eyebrow{justify-content:flex-start!important;margin:0 0 18px!important;font-size:.72rem!important;letter-spacing:.24em!important;color:var(--gold-light)!important}
+      .cta-panel .eyebrow .aperture{width:27px!important;height:27px!important}
+      .cta-panel h2{max-width:520px!important;margin:0 0 14px!important;font-size:clamp(2.2rem,4.1vw,3.45rem)!important;line-height:1.02!important;color:var(--cream)!important}
+      .cta-panel h2 em{font-style:italic!important;color:var(--gold-light)!important}
+      .cta-panel p{max-width:490px!important;margin:0 0 30px!important;color:rgba(243,236,220,.7)!important;font-size:.95rem!important;line-height:1.65!important}
+      .cta-panel .cta-actions{justify-content:flex-start!important;gap:16px!important}
+      .cta-panel .cta-actions .btn-solid{padding:15px 26px!important}
+      .cta-panel .cta-actions .btn-outline{border-color:rgba(243,236,220,.18)!important;background:rgba(14,13,11,.28)!important;backdrop-filter:blur(4px)!important}
+      .cta-panel .cta-actions .btn-outline:hover{border-color:var(--gold)!important;background:rgba(14,13,11,.52)!important}
+      @media(max-width:820px){
+        .cta-band{padding:54px 0 92px!important}
+        .cta-panel{min-height:500px!important;padding:54px 38px!important;background-image:linear-gradient(180deg,rgba(14,13,11,.82) 0%,rgba(14,13,11,.72) 46%,rgba(14,13,11,.92) 100%),url('assets/cta-final.webp')!important;background-size:100% 100%,auto 120%!important;background-position:center,68% 46%!important;justify-content:flex-end!important}
+        .cta-panel::after{display:none!important}
+        .cta-panel h2{max-width:560px!important}
+        .cta-panel p{max-width:520px!important}
+      }
+      @media(max-width:560px){
+        .cta-panel{min-height:540px!important;padding:42px 24px!important;border-radius:16px!important;background-size:100% 100%,auto 105%!important;background-position:center,58% 36%!important}
+        .cta-panel .eyebrow{font-size:.63rem!important;letter-spacing:.2em!important}
+        .cta-panel h2{font-size:clamp(2rem,10vw,2.7rem)!important}
+        .cta-panel .cta-actions{width:100%!important;flex-direction:column!important;align-items:stretch!important}
+        .cta-panel .cta-actions .btn{justify-content:center!important;width:100%!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  paineis.forEach(panel => {
+    const eyebrow = panel.querySelector('.eyebrow');
+    if (eyebrow) {
+      const texto = Array.from(eyebrow.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+      if (texto) texto.textContent = ' Seus momentos merecem ser eternos';
+    }
+    const titulo = panel.querySelector('h2');
+    if (titulo) titulo.innerHTML = 'Vamos registrar o seu <em>momento</em>?';
+    const apoio = panel.querySelector('p');
+    if (apoio) apoio.textContent = 'Conte um pouco sobre o que você está planejando e vamos conversar.';
+  });
+})();
