@@ -125,9 +125,9 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
     style.textContent = `
       .cta-band{padding:72px 0 126px!important}
       .cta-band>.wrap{max-width:1260px!important}
-      .cta-panel{position:relative!important;min-height:410px!important;padding:72px 64px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;border:1px solid rgba(201,162,75,.22)!important;border-radius:20px!important;overflow:hidden!important;background:#0e0d0b!important;box-shadow:0 30px 80px rgba(0,0,0,.28)!important}
-      .cta-panel::before{content:''!important;position:absolute!important;top:0!important;right:0!important;bottom:0!important;left:34%!important;background-image:url('assets/cta-final.webp')!important;background-repeat:no-repeat!important;background-position:right center!important;background-size:auto 155%!important;animation:none!important;transform:none!important;transition:none!important;filter:none!important;opacity:1!important;pointer-events:none!important;z-index:0!important}
-      .cta-panel::after{content:''!important;display:block!important;position:absolute!important;inset:0!important;background:linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 30%,rgba(14,13,11,.995) 36%,rgba(14,13,11,.97) 42%,rgba(14,13,11,.88) 48%,rgba(14,13,11,.72) 54%,rgba(14,13,11,.50) 60%,rgba(14,13,11,.28) 66%,rgba(14,13,11,.12) 72%,rgba(14,13,11,.04) 78%,rgba(14,13,11,0) 84%)!important;animation:none!important;transform:none!important;transition:none!important;pointer-events:none!important;z-index:1!important}
+      .cta-panel{position:relative!important;min-height:420px!important;padding:72px 64px!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:flex-start!important;text-align:left!important;border:1px solid rgba(201,162,75,.22)!important;border-radius:20px!important;overflow:hidden!important;background:#0e0d0b!important;box-shadow:0 30px 80px rgba(0,0,0,.28)!important}
+      .cta-panel::before{content:''!important;position:absolute!important;inset:0!important;background-image:url('assets/cta-final-hq.webp')!important;background-repeat:no-repeat!important;background-position:right 43%!important;background-size:58% auto!important;animation:none!important;transform:none!important;transition:none!important;filter:brightness(1.02) contrast(1.02) saturate(1.02)!important;opacity:1!important;pointer-events:none!important;z-index:0!important}
+      .cta-panel::after{content:''!important;display:block!important;position:absolute!important;inset:0!important;background:radial-gradient(60% 120% at 85% 35%,rgba(224,177,84,.07) 0%,rgba(224,177,84,0) 56%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 30%,rgba(14,13,11,.995) 36%,rgba(14,13,11,.97) 42%,rgba(14,13,11,.88) 48%,rgba(14,13,11,.72) 54%,rgba(14,13,11,.51) 60%,rgba(14,13,11,.30) 66%,rgba(14,13,11,.14) 72%,rgba(14,13,11,.05) 78%,rgba(14,13,11,0) 84%)!important;animation:none!important;transform:none!important;transition:none!important;pointer-events:none!important;z-index:1!important}
       .cta-panel>.eyebrow,.cta-panel>h2,.cta-panel>p,.cta-panel>.cta-actions{position:relative!important;z-index:2!important}
       .cta-panel .eyebrow{justify-content:flex-start!important;margin:0 0 18px!important;font-size:.72rem!important;letter-spacing:.24em!important;color:var(--gold-light)!important}
       .cta-panel .eyebrow .aperture{width:27px!important;height:27px!important}
@@ -140,16 +140,16 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
       .cta-panel .cta-actions .btn-outline:hover{border-color:var(--gold)!important;background:rgba(14,13,11,.52)!important}
       @media(max-width:820px){
         .cta-band{padding:54px 0 92px!important}
-        .cta-panel{min-height:500px!important;padding:54px 38px!important;justify-content:flex-end!important}
-        .cta-panel::before{left:0!important;background-position:68% 46%!important;background-size:auto 120%!important;animation:none!important;transform:none!important;transition:none!important}
-        .cta-panel::after{background:linear-gradient(180deg,rgba(14,13,11,.10) 0%,rgba(14,13,11,.04) 22%,rgba(14,13,11,.22) 42%,rgba(14,13,11,.56) 62%,rgba(14,13,11,.90) 82%,rgba(14,13,11,.98) 100%)!important}
+        .cta-panel{min-height:520px!important;padding:54px 38px!important;justify-content:flex-end!important}
+        .cta-panel::before{background-position:70% 24%!important;background-size:auto 128%!important;animation:none!important;transform:none!important;transition:none!important}
+        .cta-panel::after{background:linear-gradient(180deg,rgba(14,13,11,.08) 0%,rgba(14,13,11,.04) 18%,rgba(14,13,11,.18) 36%,rgba(14,13,11,.52) 56%,rgba(14,13,11,.84) 74%,rgba(14,13,11,.97) 100%)!important}
         .cta-panel h2{max-width:560px!important}
         .cta-panel p{max-width:520px!important}
       }
       @media(max-width:560px){
         .cta-panel{min-height:540px!important;padding:42px 24px!important;border-radius:16px!important}
-        .cta-panel::before{left:0!important;background-position:58% 36%!important;background-size:auto 105%!important;animation:none!important;transform:none!important;transition:none!important}
-        .cta-panel::after{background:linear-gradient(180deg,rgba(14,13,11,.12) 0%,rgba(14,13,11,.04) 20%,rgba(14,13,11,.28) 44%,rgba(14,13,11,.64) 64%,rgba(14,13,11,.92) 84%,rgba(14,13,11,.99) 100%)!important}
+        .cta-panel::before{background-position:62% 18%!important;background-size:auto 112%!important;animation:none!important;transform:none!important;transition:none!important}
+        .cta-panel::after{background:linear-gradient(180deg,rgba(14,13,11,.08) 0%,rgba(14,13,11,.05) 20%,rgba(14,13,11,.24) 42%,rgba(14,13,11,.58) 60%,rgba(14,13,11,.86) 78%,rgba(14,13,11,.98) 100%)!important}
         .cta-panel .eyebrow{font-size:.63rem!important;letter-spacing:.2em!important}
         .cta-panel h2{font-size:clamp(2rem,10vw,2.7rem)!important}
         .cta-panel .cta-actions{width:100%!important;flex-direction:column!important;align-items:stretch!important}
