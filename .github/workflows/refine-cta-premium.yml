@@ -1,0 +1,87 @@
+name: Refine CTA premium
+
+on:
+  push:
+    paths:
+      - '.cta-premium-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: python -m pip install --quiet pillow
+
+      - name: Refine CTA image and CSS
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageFilter
+          from pathlib import Path
+
+          # Improve the existing full-frame CTA asset without cropping/repositioning.
+          image_path = Path('assets/cta-final-hq.webp')
+          img = Image.open(image_path).convert('RGB')
+          w, h = img.size
+          new_size = (round(w * 1.2), round(h * 1.2))
+          img = img.resize(new_size, Image.Resampling.LANCZOS)
+          img = img.filter(ImageFilter.UnsharpMask(radius=1.0, percent=108, threshold=3))
+          img.save(image_path, 'WEBP', quality=98, method=6, exact=True)
+
+          # Refine only the CTA styles already injected by script.js.
+          script_path = Path('script.js')
+          s = script_path.read_text(encoding='utf-8')
+
+          replacements = {
+            "box-shadow:0 30px 80px rgba(0,0,0,.28)!important":
+              "box-shadow:0 34px 90px rgba(0,0,0,.38),inset 0 1px 0 rgba(230,200,120,.08),inset 0 0 0 1px rgba(255,255,255,.018)!important",
+            "filter:brightness(1.02) contrast(1.02) saturate(1.02)!important":
+              "filter:brightness(1.025) contrast(1.035) saturate(1.015)!important",
+            "background:radial-gradient(60% 120% at 85% 35%,rgba(224,177,84,.07) 0%,rgba(224,177,84,0) 56%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 30%,rgba(14,13,11,.995) 36%,rgba(14,13,11,.97) 42%,rgba(14,13,11,.88) 48%,rgba(14,13,11,.72) 54%,rgba(14,13,11,.51) 60%,rgba(14,13,11,.30) 66%,rgba(14,13,11,.14) 72%,rgba(14,13,11,.05) 78%,rgba(14,13,11,0) 84%)!important":
+              "background:radial-gradient(72% 125% at 86% 34%,rgba(230,200,120,.085) 0%,rgba(201,162,75,.025) 34%,rgba(201,162,75,0) 62%),linear-gradient(180deg,rgba(255,255,255,.018) 0%,transparent 24%,transparent 72%,rgba(0,0,0,.12) 100%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 30%,rgba(14,13,11,.995) 36%,rgba(14,13,11,.97) 42%,rgba(14,13,11,.88) 48%,rgba(14,13,11,.72) 54%,rgba(14,13,11,.51) 60%,rgba(14,13,11,.30) 66%,rgba(14,13,11,.14) 72%,rgba(14,13,11,.05) 78%,rgba(14,13,11,0) 84%)!important",
+            "line-height:1.02!important;color:var(--cream)!important":
+              "line-height:1.02!important;color:var(--cream)!important;text-shadow:0 2px 22px rgba(0,0,0,.24)!important",
+            ".cta-panel .cta-actions .btn-solid{padding:15px 26px!important}":
+              ".cta-panel .cta-actions .btn-solid{padding:15px 26px!important;box-shadow:0 12px 28px rgba(0,0,0,.22),0 0 0 1px rgba(230,200,120,.08)!important}"
+          }
+
+          for old, new in replacements.items():
+            if old not in s:
+              raise SystemExit(f'Expected CTA style fragment not found: {old[:80]}')
+            s = s.replace(old, new, 1)
+
+          script_path.write_text(s, encoding='utf-8')
+          print(f'CTA image: {w}x{h} -> {new_size[0]}x{new_size[1]}')
+          PY
+
+      - name: Validate asset and script
+        run: |
+          python - <<'PY'
+          from PIL import Image
+          im = Image.open('assets/cta-final-hq.webp')
+          im.verify()
+          print('Valid WebP binary')
+          PY
+          node --check script.js
+
+      - name: Commit refinement
+        run: |
+          rm -f .cta-premium-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/cta-final-hq.webp script.js .cta-premium-trigger
+          git commit -m 'Refine CTA image quality and premium finish'
+          git push origin main
