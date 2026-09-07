@@ -7,5 +7,11 @@
       "destination": "/painel",
       "permanent": true
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/painel",
+      "destination": "/admin.html"
+    }
   ]
 }
