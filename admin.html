@@ -31,6 +31,17 @@
         </label>
         <button class="btn" type="submit">Entrar com e-mail</button>
       </form>
+
+      <div class="otp-login">
+        <button type="button" id="otpStartBtn" class="btn btn-ghost otp-start">Entrar com código por e-mail</button>
+        <form id="otpForm" class="otp-form" hidden>
+          <p class="otp-copy">Enviaremos um código de acesso para o e-mail informado acima.</p>
+          <label>Código de acesso
+            <input id="otpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Digite o código" required>
+          </label>
+          <button type="submit" id="otpConfirmBtn" class="btn">Confirmar código</button>
+        </form>
+      </div>
       <p id="authMsg" class="msg" role="status" aria-live="polite"></p>
     </section>
 
