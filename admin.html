@@ -38,7 +38,7 @@
       <header class="panel-header">
         <div>
           <p class="eyebrow">Studio Araújo</p>
-          <h1>Gerenciar mídia</h1>
+          <h1>Painel de mídia</h1>
           <p id="welcome" class="muted"></p>
         </div>
         <div class="header-actions">
@@ -47,43 +47,104 @@
         </div>
       </header>
 
-      <section class="upload-card">
-        <div class="upload-head">
+      <nav class="admin-nav" aria-label="Atalhos do painel">
+        <a href="#uploadSection">Enviar mídia</a>
+        <a href="#librarySection">Biblioteca</a>
+        <a href="#recentAdmin">Trabalhos recentes</a>
+      </nav>
+
+      <section class="media-summary" aria-label="Resumo da biblioteca">
+        <article><span id="statTotal">—</span><small>Total</small></article>
+        <article><span id="statVisible">—</span><small>Publicadas</small></article>
+        <article><span id="statHidden">—</span><small>Ocultas</small></article>
+        <article><span id="statCovers">—</span><small>Capas</small></article>
+      </section>
+
+      <section id="uploadSection" class="upload-card admin-section">
+        <div class="section-heading upload-head">
           <div>
-            <p class="eyebrow">Nova publicação</p>
+            <p class="eyebrow">Nova mídia</p>
             <h2>Enviar fotos ou vídeos</h2>
+            <p class="section-copy">Escolha onde a mídia deve aparecer, selecione os arquivos e confirme o envio.</p>
           </div>
-          <span class="upload-note">Fotos: JPG, PNG, WebP ou AVIF · até 25 MB · Vídeos: MP4 ou WebM · até 100 MB</span>
+          <span class="upload-note">Fotos até 25 MB · Vídeos até 100 MB</span>
         </div>
+
         <div class="upload-grid">
-          <label>Onde a mídia vai aparecer
+          <label>Destino no site
             <select id="uploadCategory"></select>
           </label>
           <label>Descrição <span class="muted">(opcional)</span>
             <input id="uploadAlt" type="text" maxlength="180" placeholder="Ex.: Noivos durante a cerimônia">
           </label>
         </div>
+
         <label class="dropzone" id="dropzone">
           <input id="fileInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple hidden>
+          <span class="drop-icon" aria-hidden="true">＋</span>
           <strong>Selecionar fotos ou vídeos</strong>
           <span>ou arraste os arquivos para esta área</span>
+          <small>JPG, PNG, WebP, AVIF, MP4 ou WebM</small>
         </label>
+
         <div id="uploadQueue" class="upload-queue" aria-live="polite"></div>
-        <button type="button" id="uploadBtn" class="btn btn-primary" disabled>Enviar selecionadas</button>
+        <div class="upload-footer">
+          <p id="uploadSummary" class="muted upload-summary">Nenhum arquivo selecionado.</p>
+          <button type="button" id="uploadBtn" class="btn btn-primary" disabled>Enviar selecionadas</button>
+        </div>
       </section>
 
-      <section class="library">
-        <div class="library-head">
+      <section id="librarySection" class="library admin-section">
+        <div class="section-heading library-head">
           <div>
             <p class="eyebrow">Biblioteca</p>
             <h2>Mídias do site</h2>
+            <p class="section-copy">Encontre uma mídia, altere sua categoria, ordem, visibilidade ou capa e salve somente o que mudou.</p>
           </div>
-          <div class="filters">
-            <select id="filterCategory" aria-label="Filtrar por categoria"><option value="">Todas as categorias</option></select>
-            <button type="button" id="refreshBtn" class="btn btn-ghost">Atualizar</button>
-          </div>
+          <button type="button" id="refreshBtn" class="btn btn-ghost">Atualizar biblioteca</button>
         </div>
-        <p id="libraryMsg" class="msg" role="status" aria-live="polite"></p>
+
+        <div class="library-toolbar">
+          <label class="search-field">
+            <span>Buscar</span>
+            <input id="filterSearch" type="search" placeholder="Descrição ou categoria…" autocomplete="off">
+          </label>
+          <label>
+            <span>Categoria</span>
+            <select id="filterCategory"><option value="">Todas</option></select>
+          </label>
+          <label>
+            <span>Tipo</span>
+            <select id="filterType">
+              <option value="">Fotos e vídeos</option>
+              <option value="image">Somente fotos</option>
+              <option value="video">Somente vídeos</option>
+            </select>
+          </label>
+          <label>
+            <span>Status</span>
+            <select id="filterVisibility">
+              <option value="">Todos</option>
+              <option value="visible">Publicadas</option>
+              <option value="hidden">Ocultas</option>
+              <option value="cover">Capas</option>
+            </select>
+          </label>
+          <label>
+            <span>Ordenar</span>
+            <select id="filterSort">
+              <option value="site">Ordem do site</option>
+              <option value="newest">Mais recentes</option>
+              <option value="oldest">Mais antigas</option>
+              <option value="category">Categoria</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="library-status-row">
+          <p id="libraryCount" class="muted"></p>
+          <p id="libraryMsg" class="msg" role="status" aria-live="polite"></p>
+        </div>
         <div id="imageGrid" class="image-grid"></div>
       </section>
     </section>
