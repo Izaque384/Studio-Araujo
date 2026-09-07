@@ -1,0 +1,56 @@
+name: Refine CTA original proportions
+
+on:
+  push:
+    paths:
+      - '.cta-original-proportions-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refine CTA
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('script.js')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = {
+            "min-height:420px!important;padding:72px 64px!important": "min-height:510px!important;padding:76px 68px!important",
+            "border:1px solid rgba(201,162,75,.22)!important": "border:1px solid rgba(230,200,120,.34)!important",
+            "background-position:right 43%!important;background-size:58% auto!important": "background-position:right center!important;background-size:auto 100%!important",
+            "filter:brightness(1.025) contrast(1.035) saturate(1.015)!important": "filter:brightness(1.015) contrast(1.025) saturate(1.01)!important",
+            "radial-gradient(72% 125% at 86% 34%,rgba(230,200,120,.085) 0%,rgba(201,162,75,.025) 34%,rgba(201,162,75,0) 62%),linear-gradient(180deg,rgba(255,255,255,.018) 0%,transparent 24%,transparent 72%,rgba(0,0,0,.12) 100%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 30%,rgba(14,13,11,.995) 36%,rgba(14,13,11,.97) 42%,rgba(14,13,11,.88) 48%,rgba(14,13,11,.72) 54%,rgba(14,13,11,.51) 60%,rgba(14,13,11,.30) 66%,rgba(14,13,11,.14) 72%,rgba(14,13,11,.05) 78%,rgba(14,13,11,0) 84%)": "radial-gradient(72% 135% at 87% 42%,rgba(230,200,120,.10) 0%,rgba(201,162,75,.03) 34%,rgba(201,162,75,0) 66%),linear-gradient(180deg,rgba(255,255,255,.018) 0%,transparent 22%,transparent 74%,rgba(0,0,0,.16) 100%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 33%,rgba(14,13,11,.998) 39%,rgba(14,13,11,.985) 45%,rgba(14,13,11,.94) 51%,rgba(14,13,11,.82) 57%,rgba(14,13,11,.63) 63%,rgba(14,13,11,.42) 69%,rgba(14,13,11,.24) 75%,rgba(14,13,11,.11) 81%,rgba(14,13,11,.035) 87%,rgba(14,13,11,0) 93%)",
+            "box-shadow:0 34px 90px rgba(0,0,0,.38),inset 0 1px 0 rgba(230,200,120,.08),inset 0 0 0 1px rgba(255,255,255,.018)!important": "box-shadow:0 38px 100px rgba(0,0,0,.44),0 0 0 1px rgba(201,162,75,.035),inset 0 1px 0 rgba(230,200,120,.11),inset 0 0 0 1px rgba(255,255,255,.018)!important"
+          }
+
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit('Expected CTA fragment not found: ' + old[:100])
+              s = s.replace(old, new, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Validate and commit
+        run: |
+          node --check script.js
+          grep -q "background-size:auto 100%" script.js
+          grep -q "background-position:right center" script.js
+          rm -f .cta-original-proportions-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add script.js .cta-original-proportions-trigger
+          git commit -m 'Refine CTA photo proportions and premium blend'
+          git push origin main
