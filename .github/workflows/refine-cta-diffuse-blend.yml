@@ -1,0 +1,61 @@
+name: Refine CTA diffuse blend
+
+on:
+  push:
+    paths:
+      - '.cta-diffuse-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  refine:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Refine CTA blend
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('script.js')
+          s = p.read_text(encoding='utf-8')
+
+          old_before = ".cta-panel::before{content:''!important;position:absolute!important;inset:0!important;background-image:url('assets/cta-final-hq.webp')!important;background-repeat:no-repeat!important;background-position:right center!important;background-size:auto 100%!important;animation:none!important;transform:none!important;transition:none!important;filter:brightness(1.015) contrast(1.025) saturate(1.01)!important;opacity:1!important;pointer-events:none!important;z-index:0!important}"
+          new_before = ".cta-panel::before{content:''!important;position:absolute!important;inset:0!important;background-image:url('assets/cta-final-hq.webp')!important;background-repeat:no-repeat!important;background-position:right center!important;background-size:auto 112%!important;animation:none!important;transform:none!important;transition:none!important;filter:brightness(.98) contrast(1.03) saturate(1.01)!important;opacity:1!important;pointer-events:none!important;z-index:0!important}"
+
+          old_after = ".cta-panel::after{content:''!important;display:block!important;position:absolute!important;inset:0!important;background:radial-gradient(72% 135% at 87% 42%,rgba(230,200,120,.10) 0%,rgba(201,162,75,.03) 34%,rgba(201,162,75,0) 66%),linear-gradient(180deg,rgba(255,255,255,.018) 0%,transparent 22%,transparent 74%,rgba(0,0,0,.16) 100%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 33%,rgba(14,13,11,.998) 39%,rgba(14,13,11,.985) 45%,rgba(14,13,11,.94) 51%,rgba(14,13,11,.82) 57%,rgba(14,13,11,.63) 63%,rgba(14,13,11,.42) 69%,rgba(14,13,11,.24) 75%,rgba(14,13,11,.11) 81%,rgba(14,13,11,.035) 87%,rgba(14,13,11,0) 93%)!important;animation:none!important;transform:none!important;transition:none!important;pointer-events:none!important;z-index:1!important}"
+          new_after = ".cta-panel::after{content:''!important;display:block!important;position:absolute!important;inset:0!important;background:radial-gradient(58% 120% at 82% 45%,rgba(230,200,120,.08) 0%,rgba(201,162,75,.03) 26%,rgba(201,162,75,0) 58%),linear-gradient(180deg,rgba(255,255,255,.014) 0%,transparent 22%,transparent 72%,rgba(0,0,0,.18) 100%),linear-gradient(90deg,#0e0d0b 0%,#0e0d0b 26%,rgba(14,13,11,.995) 34%,rgba(14,13,11,.985) 40%,rgba(14,13,11,.96) 46%,rgba(14,13,11,.91) 52%,rgba(14,13,11,.82) 58%,rgba(14,13,11,.70) 64%,rgba(14,13,11,.56) 70%,rgba(14,13,11,.40) 76%,rgba(14,13,11,.24) 82%,rgba(14,13,11,.12) 88%,rgba(14,13,11,.045) 93%,rgba(14,13,11,0) 100%)!important;animation:none!important;transform:none!important;transition:none!important;pointer-events:none!important;z-index:1!important}"
+
+          old_tablet = ".cta-panel::before{background-position:70% 24%!important;background-size:auto 128%!important;animation:none!important;transform:none!important;transition:none!important}"
+          new_tablet = ".cta-panel::before{background-position:72% 18%!important;background-size:auto 122%!important;animation:none!important;transform:none!important;transition:none!important}"
+
+          old_mobile = ".cta-panel::before{background-position:62% 18%!important;background-size:auto 112%!important;animation:none!important;transform:none!important;transition:none!important}"
+          new_mobile = ".cta-panel::before{background-position:66% 16%!important;background-size:auto 108%!important;animation:none!important;transform:none!important;transition:none!important}"
+
+          for old, new, label in [
+              (old_before, new_before, 'desktop photo'),
+              (old_after, new_after, 'desktop diffuse overlay'),
+              (old_tablet, new_tablet, 'tablet photo'),
+              (old_mobile, new_mobile, 'mobile photo')]:
+              if old not in s:
+                  raise SystemExit('Expected fragment not found: ' + label)
+              s = s.replace(old, new, 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Validate and commit
+        run: |
+          node --check script.js
+          grep -q "background-size:auto 112%" script.js
+          grep -q "rgba(14,13,11,0) 100%" script.js
+          grep -q "background-position:72% 18%" script.js
+          grep -q "background-position:66% 16%" script.js
+          rm -f .cta-diffuse-trigger
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add script.js .cta-diffuse-trigger
+          git commit -m 'Extend and soften CTA image blend'
+          git push origin main
