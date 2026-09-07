@@ -1,0 +1,25 @@
+name: Run CTA layered fix
+on:
+  push:
+    paths:
+      - '.cta-layered-run'
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/fix_cta_layered.py
+      - run: |
+          node --check script.js
+          grep -q "cta-photo-main" script.js
+          grep -q "filter:blur(26px)" script.js
+          rm -f .cta-layered-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add script.js .cta-layered-run
+          git commit -m 'Fix CTA with layered diffuse image blend'
+          git push origin main
