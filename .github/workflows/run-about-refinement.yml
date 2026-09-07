@@ -1,0 +1,22 @@
+name: Run About refinement
+on:
+  push:
+    paths:
+      - '.about-refinement-run'
+permissions:
+  contents: write
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/refine_about.py
+      - run: |
+          rm -f .about-refinement-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sobre.html .about-refinement-run
+          git commit -m 'Refine About page editorial structure'
+          git push origin main
