@@ -1,0 +1,31 @@
+name: Fix admin authentication
+on:
+  push:
+    paths:
+      - '.fix-admin-auth-run'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/fix-admin-auth.py
+      - name: Validate authentication patch
+        run: |
+          node --check admin.js
+          grep -q "@neondatabase/neon-js@latest" admin.js
+          grep -q "waitForSession" admin.js
+          grep -q "otpStartBtn" admin.html
+          grep -q "emailOtp.sendVerificationOtp" admin.js
+          grep -q "callbackURL:location.origin+'/painel?auth=google'" admin.js
+      - name: Commit fix
+        run: |
+          rm -f .fix-admin-auth-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.js admin.html admin.css .fix-admin-auth-run
+          git commit -m 'Fix admin authentication flow'
+          git push origin main
