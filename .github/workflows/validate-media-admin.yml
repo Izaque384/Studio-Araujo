@@ -1,0 +1,34 @@
+name: Validate media admin
+on:
+  push:
+    paths:
+      - '.validate-media-admin'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript syntax
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+      - name: Validate admin markup hooks
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class P(HTMLParser):
+              def __init__(self): super().__init__(); self.ids=[]
+              def handle_starttag(self, tag, attrs):
+                  d=dict(attrs)
+                  if 'id' in d: self.ids.append(d['id'])
+          p=P(); p.feed(Path('admin.html').read_text())
+          dup={x for x in p.ids if p.ids.count(x)>1}
+          assert not dup, f'Duplicate ids: {dup}'
+          required={'authView','panelView','uploadCategory','fileInput','uploadBtn','uploadQueue','uploadSummary','filterSearch','filterCategory','filterType','filterVisibility','filterSort','refreshBtn','libraryMsg','imageGrid','statTotal','statVisible','statHidden','statCovers'}
+          missing=required-set(p.ids)
+          assert not missing, f'Missing ids: {missing}'
+          print('Admin markup hooks OK')
+          PY
