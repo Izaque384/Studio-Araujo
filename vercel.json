@@ -1,10 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "rewrites": [
+  "redirects": [
     {
       "source": "/painel",
-      "destination": "/admin.html"
+      "destination": "/admin.html",
+      "permanent": false
     }
   ]
 }
