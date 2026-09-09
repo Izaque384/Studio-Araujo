@@ -51,10 +51,9 @@ document.querySelectorAll('.hero, .page-hero').forEach(hero => {
 });
 
 
-// Bokeh editorial sutil no corpo das páginas internas.
-// Mantém a Home limpa e usa menos intensidade do que os heros.
+// Bokeh editorial sutil no corpo das páginas.
+// Também atua na Home, sempre fora dos heros.
 (function adicionarBodyBokeh(){
-  if (!document.querySelector('.page-hero')) return;
 
   if (!document.getElementById('bodyBokehStyle')) {
     const style = document.createElement('style');
@@ -67,21 +66,21 @@ document.querySelectorAll('.hero, .page-hero').forEach(hero => {
         border-radius:50%;
         pointer-events:none;
         z-index:0;
-        background:radial-gradient(circle,rgba(255,232,170,.72) 0%,rgba(230,200,120,.38) 24%,rgba(201,162,75,.18) 48%,rgba(201,162,75,.05) 68%,transparent 82%);
-        filter:blur(10px);
-        opacity:.30;
+        background:radial-gradient(circle,rgba(255,232,170,.62) 0%,rgba(230,200,120,.30) 24%,rgba(201,162,75,.14) 48%,rgba(201,162,75,.04) 68%,transparent 82%);
+        filter:blur(12px);
+        opacity:.22;
         animation:bodyBokehFloat var(--body-bokeh-dur,32s) ease-in-out infinite alternate;
         will-change:transform;
         mix-blend-mode:screen;
       }
-      .body-bokeh-dot.is-soft{opacity:.18;filter:blur(18px)}
+      .body-bokeh-dot.is-soft{opacity:.13;filter:blur(18px)}
       @keyframes bodyBokehFloat{
         from{transform:translate3d(0,0,0) scale(1)}
-        to{transform:translate3d(12px,-10px,0) scale(1.04)}
+        to{transform:translate3d(10px,-8px,0) scale(1.03)}
       }
       @media(max-width:640px){
-        .body-bokeh-dot{opacity:.20;filter:blur(14px)}
-        .body-bokeh-dot.is-soft{opacity:.12}
+        .body-bokeh-dot{opacity:.16;filter:blur(14px)}
+        .body-bokeh-dot.is-soft{opacity:.10}
       }
       @media(prefers-reduced-motion:reduce){
         .body-bokeh-dot{animation:none!important}
@@ -90,19 +89,19 @@ document.querySelectorAll('.hero, .page-hero').forEach(hero => {
     document.head.appendChild(style);
   }
 
-  const secoes = document.querySelectorAll('main > section:not(.page-hero)');
+  const secoes = document.querySelectorAll('main > section:not(.page-hero):not(.hero)');
   secoes.forEach((secao, idx) => {
     if (secao.querySelector('.body-bokeh-dot')) return;
     secao.classList.add('body-bokeh-host');
 
     const configs = idx % 2 === 0
       ? [
-          { size: 220, left: '-3%', top: '14%', dur: '34s', soft: false },
-          { size: 170, left: '78%', top: '64%', dur: '39s', soft: true }
+          { size: 150, left: '-2%', top: '14%', dur: '34s', soft: false },
+          { size: 110, left: '84%', top: '66%', dur: '39s', soft: true }
         ]
       : [
-          { size: 200, left: '82%', top: '12%', dur: '37s', soft: false },
-          { size: 230, left: '-5%', top: '68%', dur: '42s', soft: true }
+          { size: 135, left: '84%', top: '12%', dur: '37s', soft: false },
+          { size: 160, left: '-3%', top: '68%', dur: '42s', soft: true }
         ];
 
     configs.forEach(cfg => {
