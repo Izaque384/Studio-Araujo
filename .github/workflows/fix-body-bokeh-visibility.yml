@@ -1,0 +1,28 @@
+name: Fix body bokeh visibility
+on:
+  push:
+    paths:
+      - '.fix-body-bokeh-visibility-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/fix-body-bokeh-visibility.py
+      - name: Validate patch
+        run: |
+          grep -q "z-index:0" script.js
+          grep -q "opacity:.18" script.js
+          grep -q ".body-bokeh-host>.wrap{position:relative;z-index:1}" script.js
+      - name: Commit patch
+        run: |
+          rm -f .fix-body-bokeh-visibility-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add script.js .fix-body-bokeh-visibility-run
+          git commit -m 'Make inner-page body bokeh visible'
+          git push origin main
