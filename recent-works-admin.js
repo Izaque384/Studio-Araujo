@@ -40,6 +40,7 @@ function injectStyles() {
     .recent-empty{padding:20px;text-align:center;color:#a89d86;border:1px dashed rgba(201,162,75,.16);border-radius:12px}
     .recent-status{min-height:20px;margin:10px 0;color:#a89d86;font-size:.82rem}
     .recent-status.ok{color:#8fcf92}.recent-status.err{color:#ef9a9a}
+    .recent-step-label{grid-column:1/-1;display:flex;align-items:center;gap:11px;margin:2px 0 14px;color:#f3ecdc}.recent-step-label>span{display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border:1px solid rgba(201,162,75,.35);border-radius:50%;color:#e6c878;font-size:.74rem;font-weight:600;background:rgba(201,162,75,.05)}.recent-step-label div{display:grid;gap:1px}.recent-step-label strong{font-size:.85rem;font-weight:500}.recent-step-label small{color:#a89d86;font-size:.72rem}.recent-step-media{margin:0 0 16px}
     .recent-media-manager{margin:22px 0 26px;padding:18px;border:1px solid rgba(201,162,75,.18);border-radius:14px;background:#0f0e0c}
     .recent-media-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}.recent-media-head h3{margin:0 0 4px;font-size:1.2rem}.recent-media-head p{margin:0;color:#a89d86;font-size:.8rem}
     .recent-media-upload{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.recent-media-upload input{display:none}.recent-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.recent-media-card{border:1px solid rgba(201,162,75,.14);border-radius:12px;overflow:hidden;background:#12100d}.recent-media-card figure{margin:0;aspect-ratio:4/3;background:#070706}.recent-media-card img,.recent-media-card video{width:100%;height:100%;object-fit:cover}.recent-media-card-body{padding:9px;display:grid;gap:8px}.recent-media-card-body input{width:100%;background:#0e0d0b;border:1px solid rgba(201,162,75,.18);color:#f3ecdc;border-radius:8px;padding:8px}.recent-media-actions{display:flex;gap:6px;flex-wrap:wrap}.recent-media-actions .btn{padding:7px 9px;font-size:.72rem}.recent-cover-on{color:#e6c878;border-color:rgba(230,200,120,.5)!important}
@@ -59,11 +60,12 @@ function buildSection(panel) {
       <div>
         <p class="eyebrow">Home</p>
         <h2>Trabalhos recentes</h2>
-        <p class="recent-admin-note">Cada trabalho pode ter suas próprias fotos e vídeos. A Home mostra os 3 primeiros itens ativos, de acordo com a ordem.</p>
+        <p class="recent-admin-note">Crie o trabalho primeiro e, em seguida, adicione suas fotos e vídeos. A Home mostra os 3 primeiros itens ativos, de acordo com a ordem.</p>
       </div>
       <button type="button" class="btn btn-ghost" id="recentRefresh">Atualizar</button>
     </div>
 
+    <div class="recent-step-label"><span>1</span><div><strong>Informações do trabalho</strong><small>Título, categoria, data e publicação</small></div></div>
     <form id="recentForm" class="recent-form">
       <label>Galeria
         <select id="recentGallery" required></select>
@@ -90,6 +92,7 @@ function buildSection(panel) {
       </div>
     </form>
     <section id="recentMediaManager" class="recent-media-manager" hidden>
+      <div class="recent-step-label recent-step-media"><span>2</span><div><strong>Fotos e vídeos</strong><small>Adicione as mídias, escolha a capa e organize a ordem</small></div></div>
       <div class="recent-media-head"><div><h3>Mídias deste trabalho</h3><p id="recentMediaTitle">Selecione um trabalho para gerenciar suas fotos e vídeos.</p></div><button type="button" class="btn btn-ghost" id="recentMediaClose">Fechar</button></div>
       <div class="recent-media-upload"><label class="btn btn-primary" for="recentMediaInput">Adicionar fotos ou vídeos</label><input id="recentMediaInput" type="file" accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm" multiple><span id="recentMediaStatus" class="recent-status"></span></div>
       <div id="recentMediaGrid" class="recent-media-grid"></div>
@@ -204,14 +207,23 @@ async function saveItem(e) {
   save.textContent = editingId ? 'Salvando…' : 'Adicionando…';
   setStatus('');
   try {
-    const query = editingId
-      ? neon.from('recent_works').update(payload).eq('id', editingId)
-      : neon.from('recent_works').insert(payload);
-    const { error } = await query;
-    if (error) throw error;
-    setStatus(editingId ? 'Trabalho atualizado.' : 'Trabalho adicionado.', 'ok');
+    const wasEditing = !!editingId;
+    let savedItem = null;
+    if (wasEditing) {
+      const { error } = await neon.from('recent_works').update(payload).eq('id', editingId);
+      if (error) throw error;
+    } else {
+      const { data, error } = await neon.from('recent_works').insert(payload).select('*').single();
+      if (error) throw error;
+      savedItem = data;
+    }
+    setStatus(wasEditing ? 'Trabalho atualizado.' : 'Trabalho criado. Agora adicione as fotos ou vídeos.', 'ok');
     resetForm();
     await loadRecentWorks();
+    if (savedItem) {
+      await openMediaManager(savedItem);
+      setMediaStatus('Trabalho criado com sucesso. Adicione as mídias abaixo para concluir.', 'ok');
+    }
   } catch (err) {
     console.error(err);
     setStatus('Não foi possível salvar este trabalho.', 'err');
