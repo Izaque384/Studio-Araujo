@@ -60,26 +60,27 @@ document.querySelectorAll('.hero, .page-hero').forEach(hero => {
     const style = document.createElement('style');
     style.id = 'bodyBokehStyle';
     style.textContent = `
-      .body-bokeh-host{position:relative!important;isolation:isolate}
+      .body-bokeh-host{position:relative!important;isolation:isolate;overflow:hidden}
+      .body-bokeh-host>.wrap{position:relative;z-index:1}
       .body-bokeh-dot{
         position:absolute;
         border-radius:50%;
         pointer-events:none;
-        z-index:-1;
-        background:radial-gradient(circle,rgba(230,200,120,.24) 0%,rgba(201,162,75,.10) 38%,rgba(201,162,75,.025) 62%,transparent 76%);
-        filter:blur(18px);
-        opacity:.11;
+        z-index:0;
+        background:radial-gradient(circle,rgba(230,200,120,.34) 0%,rgba(201,162,75,.15) 38%,rgba(201,162,75,.045) 62%,transparent 78%);
+        filter:blur(16px);
+        opacity:.18;
         animation:bodyBokehFloat var(--body-bokeh-dur,32s) ease-in-out infinite alternate;
         will-change:transform;
       }
-      .body-bokeh-dot.is-soft{opacity:.075;filter:blur(24px)}
+      .body-bokeh-dot.is-soft{opacity:.11;filter:blur(24px)}
       @keyframes bodyBokehFloat{
         from{transform:translate3d(0,0,0) scale(1)}
         to{transform:translate3d(12px,-10px,0) scale(1.04)}
       }
       @media(max-width:640px){
-        .body-bokeh-dot{opacity:.07;filter:blur(20px)}
-        .body-bokeh-dot.is-soft{opacity:.05}
+        .body-bokeh-dot{opacity:.12;filter:blur(20px)}
+        .body-bokeh-dot.is-soft{opacity:.075}
       }
       @media(prefers-reduced-motion:reduce){
         .body-bokeh-dot{animation:none!important}
