@@ -66,21 +66,21 @@ document.querySelectorAll('.hero, .page-hero').forEach(hero => {
         border-radius:50%;
         pointer-events:none;
         z-index:0;
-        background:radial-gradient(circle,rgba(255,232,170,.62) 0%,rgba(230,200,120,.30) 24%,rgba(201,162,75,.14) 48%,rgba(201,162,75,.04) 68%,transparent 82%);
+        background:radial-gradient(circle,rgba(255,232,170,.46) 0%,rgba(230,200,120,.22) 24%,rgba(201,162,75,.10) 48%,rgba(201,162,75,.028) 68%,transparent 82%);
         filter:blur(12px);
-        opacity:.22;
+        opacity:.14;
         animation:bodyBokehFloat var(--body-bokeh-dur,32s) ease-in-out infinite alternate;
         will-change:transform;
         mix-blend-mode:screen;
       }
-      .body-bokeh-dot.is-soft{opacity:.13;filter:blur(18px)}
+      .body-bokeh-dot.is-soft{opacity:.08;filter:blur(19px)}
       @keyframes bodyBokehFloat{
         from{transform:translate3d(0,0,0) scale(1)}
         to{transform:translate3d(10px,-8px,0) scale(1.03)}
       }
       @media(max-width:640px){
-        .body-bokeh-dot{opacity:.16;filter:blur(14px)}
-        .body-bokeh-dot.is-soft{opacity:.10}
+        .body-bokeh-dot{opacity:.11;filter:blur(15px)}
+        .body-bokeh-dot.is-soft{opacity:.065}
       }
       @media(prefers-reduced-motion:reduce){
         .body-bokeh-dot{animation:none!important}

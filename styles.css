@@ -239,7 +239,7 @@ header.scrolled .logo-mark .logo-img{
 .bokeh-dot{
   position:absolute;
   border-radius:50%;
-  background:radial-gradient(circle, rgba(230,200,120,0.55), rgba(201,162,75,0.18) 55%, transparent 72%);
+  background:radial-gradient(circle, rgba(230,200,120,0.38), rgba(201,162,75,0.11) 55%, transparent 74%);
   filter:blur(5px);
   pointer-events:none;
   z-index:1;
@@ -250,8 +250,8 @@ header.scrolled .logo-mark .logo-img{
 }
 @keyframes bokehFloat{
   0%{ transform:translateY(30px) scale(0.9); opacity:0; }
-  25%{ opacity:0.55; }
-  75%{ opacity:0.3; }
+  25%{ opacity:0.34; }
+  75%{ opacity:0.18; }
   100%{ transform:translateY(-90px) scale(1.05); opacity:0; }
 }
 
