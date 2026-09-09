@@ -203,9 +203,9 @@ async function loadCategories(){
   renderCategoryFolders();
 }
 function categoryLabel(slug){return categories.find(c=>c.slug===slug)?.label||slug;}
-function categoryArea(slug){return categories.find(c=>c.slug===slug)?.area||'';}
+function categoryArea(slug){if(slug==='recent-work-media')return'recent';return categories.find(c=>c.slug===slug)?.area||'';}
 function categoryRank(slug){const i=categories.findIndex(c=>c.slug===slug);return i<0?9999:i;}
-function categoriesForArea(area){return categories.filter(c=>c.area===area);}
+function categoriesForArea(area){return categories.filter(c=>categoryArea(c.slug)===area);}
 function syncUploadCategories(){
   const area=currentUploadArea==='servico'?'servico':'portfolio';
   const options=categoriesForArea(area);
@@ -341,6 +341,7 @@ function updateSummary(){
   const byArea=area=>allMedia.filter(m=>categoryArea(m.category)===area).length;
   if($('folderCountAll'))$('folderCountAll').textContent=`${allMedia.length} mídias`;
   if($('folderCountPortfolio'))$('folderCountPortfolio').textContent=`${byArea('portfolio')} mídias`;
+  if($('folderCountRecent'))$('folderCountRecent').textContent=`${byArea('recent')} mídias`;
   if($('folderCountServico'))$('folderCountServico').textContent=`${byArea('servico')} mídias`;
   renderCategoryFolders();
 }

@@ -23,11 +23,26 @@
     ]);
     if (error || !Array.isArray(trabalhos) || !trabalhos.length) return;
     const labels = new Map((categorias || []).map(c => [c.slug, c.label]));
+    const ids = trabalhos.map(t => t.id);
+    let links = [], linkedMedia = new Map();
+    if (ids.length) {
+      const { data: rels } = await neon.from('recent_work_media').select('recent_work_id,media_id,sort_order,is_cover').in('recent_work_id', ids).order('sort_order', { ascending: true });
+      links = Array.isArray(rels) ? rels : [];
+      const mediaIds = [...new Set(links.map(r => r.media_id))];
+      if (mediaIds.length) {
+        const { data: medias } = await neon.from('site_images').select('id,public_url,alt_text,mime_type').in('id', mediaIds).eq('is_visible', true);
+        linkedMedia = new Map((medias || []).map(m => [m.id, m]));
+      }
+    }
 
     const preparados = await Promise.all(trabalhos.map(async (t) => {
-      const remoto = await midiasDoPainel(t.gallery_category);
-      if (!remoto.ok || !remoto.items.length) return null;
-      const itens = remoto.items;
+      const proprias = links.filter(r => r.recent_work_id === t.id).map(r => { const m = linkedMedia.get(r.media_id); return m ? normalizeMedia({ ...m, is_cover:r.is_cover }) : null; }).filter(Boolean);
+      let itens = proprias;
+      if (!itens.length) {
+        const remoto = await midiasDoPainel(t.gallery_category);
+        if (!remoto.ok || !remoto.items.length) return null;
+        itens = remoto.items;
+      }
       const capa = itens.find(i => !isVideo(i) && i.is_cover) || itens.find(i => !isVideo(i));
       if (!capa) return null;
       return { ...t, itens, capa, label: labels.get(t.gallery_category) || t.gallery_category };
