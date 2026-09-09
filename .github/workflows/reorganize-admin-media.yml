@@ -1,0 +1,32 @@
+name: Reorganize admin media
+on:
+  push:
+    paths:
+      - '.reorganize-admin-media-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/reorganize-admin-media.py
+      - name: Validate admin files
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+          grep -q 'data-upload-area="portfolio"' admin.html
+          grep -q 'libraryFolders' admin.html
+          grep -q "currentUploadArea='portfolio'" admin.js
+          grep -q "currentLibraryArea='all'" admin.js
+          grep -q 'PAINEL V2: áreas' admin.css
+      - name: Commit patch
+        run: |
+          rm -f .reorganize-admin-media-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html admin.js admin.css recent-works-admin.js .reorganize-admin-media-run
+          git commit -m 'Reorganize admin media management'
+          git push origin main
