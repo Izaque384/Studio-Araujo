@@ -63,7 +63,6 @@
         <a href="#uploadSection" data-jump-area="portfolio">Portfólio</a>
         <a href="#recentAdmin">Trabalhos recentes</a>
         <a href="#uploadSection" data-jump-area="servico">Galerias de serviços</a>
-        <a href="#librarySection">Biblioteca</a>
       </nav>
 
       <section id="panelHome" class="media-summary" aria-label="Resumo da biblioteca">
@@ -149,14 +148,17 @@
         </div>
       </section>
 
-      <section id="librarySection" class="library admin-section">
+      <section id="librarySection" class="library admin-section" hidden>
         <div class="section-heading library-head">
           <div>
             <p class="eyebrow">Biblioteca</p>
             <h2>Mídias do site</h2>
             <p class="section-copy">Encontre uma mídia, altere sua categoria, ordem, visibilidade ou capa e salve somente o que mudou.</p>
           </div>
-          <button type="button" id="refreshBtn" class="btn btn-ghost">Atualizar biblioteca</button>
+          <div class="library-head-actions">
+            <button type="button" id="refreshBtn" class="btn btn-ghost">Atualizar biblioteca</button>
+            <button type="button" id="closeLibraryBtn" class="btn btn-ghost">Fechar biblioteca</button>
+          </div>
         </div>
 
         <div class="library-folders" id="libraryFolders">

@@ -16,7 +16,7 @@ const fileInput=$('fileInput'), uploadBtn=$('uploadBtn'), uploadQueue=$('uploadQ
 const imageGrid=$('imageGrid'), dropzone=$('dropzone'), refreshBtn=$('refreshBtn');
 const filterSearch=$('filterSearch'), filterType=$('filterType'), filterVisibility=$('filterVisibility'), filterSort=$('filterSort');
 const uploadAreaTabs=[...document.querySelectorAll('[data-upload-area]')], standardUploadFields=$('standardUploadFields'), recentUploadNotice=$('recentUploadNotice'), uploadContextHelp=$('uploadContextHelp');
-const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders');
+const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders'), librarySection=$('librarySection'), closeLibraryBtn=$('closeLibraryBtn');
 let categories=[], queueEntries=[], currentUser=null, allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all';
 
 function setMsg(el,text='',type=''){if(!el)return;el.textContent=text;el.className='msg'+(type?' '+type:'');}
@@ -227,10 +227,21 @@ function setUploadArea(area){
 uploadAreaTabs.forEach(btn=>btn.addEventListener('click',()=>setUploadArea(btn.dataset.uploadArea)));
 $('goRecentAdmin')?.addEventListener('click',()=>document.getElementById('recentAdmin')?.scrollIntoView({behavior:'smooth',block:'start'}));
 document.querySelectorAll('[data-jump-area]').forEach(link=>link.addEventListener('click',()=>setUploadArea(link.dataset.jumpArea)));
+function openLibrary(){
+  if(!librarySection)return;
+  librarySection.hidden=false;
+  librarySection.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function closeLibrary(){
+  if(!librarySection)return;
+  librarySection.hidden=true;
+  document.querySelector('.admin-hub')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+closeLibraryBtn?.addEventListener('click',closeLibrary);
 document.querySelectorAll('[data-hub-area]').forEach(btn=>btn.addEventListener('click',()=>{
   const area=btn.dataset.hubArea;
   if(area==='recent')return document.getElementById('recentAdmin')?.scrollIntoView({behavior:'smooth',block:'start'});
-  if(area==='library')return document.getElementById('librarySection')?.scrollIntoView({behavior:'smooth',block:'start'});
+  if(area==='library')return openLibrary();
   setUploadArea(area);document.getElementById('uploadSection')?.scrollIntoView({behavior:'smooth',block:'start'});
 }));
 
@@ -307,7 +318,7 @@ uploadBtn.addEventListener('click',async()=>{
     setMsg(libraryMsg,`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'} com sucesso.`,'success');
     queueEntries=[];fileInput.value='';uploadAlt.value='';renderQueue();
     await loadMedia();
-    $('librarySection')?.scrollIntoView({behavior:'smooth',block:'start'});
+    setMsg(libraryMsg,`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'} com sucesso. Abra a Biblioteca pelo card 04 quando quiser organizar as mídias.`,'success');
   }catch(err){
     console.error(err);setMsg(libraryMsg,err?.message||'Não foi possível concluir o envio.','error');
   }finally{
