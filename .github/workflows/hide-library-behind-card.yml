@@ -1,0 +1,31 @@
+name: Hide library behind card
+on:
+  push:
+    paths:
+      - '.hide-library-behind-card-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/hide-library-behind-card.py
+      - name: Validate library visibility
+        run: |
+          node --check admin.js
+          grep -q 'id="librarySection" class="library admin-section" hidden' admin.html
+          grep -q 'id="closeLibraryBtn"' admin.html
+          grep -q 'function openLibrary()' admin.js
+          grep -q 'function closeLibrary()' admin.js
+          if grep -q 'href="#librarySection">Biblioteca</a>' admin.html; then exit 1; fi
+      - name: Commit change
+        run: |
+          rm -f .hide-library-behind-card-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html admin.js admin.css .hide-library-behind-card-run
+          git commit -m 'Show library only from card 04'
+          git push origin main
