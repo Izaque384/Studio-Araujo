@@ -1,0 +1,29 @@
+name: Refine recent work flow
+on:
+  push:
+    paths:
+      - '.refine-recent-work-flow-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/refine-recent-work-flow.py
+      - name: Validate recent work flow
+        run: |
+          node --check recent-works-admin.js
+          grep -q "Trabalho criado com sucesso. Adicione as mídias abaixo para concluir." recent-works-admin.js
+          grep -q "recent-step-label" recent-works-admin.js
+          grep -q "insert(payload).select('\*').single()" recent-works-admin.js
+      - name: Commit refinement
+        run: |
+          rm -f .refine-recent-work-flow-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add recent-works-admin.js .refine-recent-work-flow-run
+          git commit -m 'Streamline recent work creation flow'
+          git push origin main
