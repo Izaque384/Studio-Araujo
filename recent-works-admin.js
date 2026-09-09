@@ -50,7 +50,7 @@ function buildSection(panel) {
       <div>
         <p class="eyebrow">Home</p>
         <h2>Trabalhos recentes</h2>
-        <p class="recent-admin-note">Cadastre os trabalhos que aparecem na página inicial. A home mostra os 3 primeiros itens ativos, de acordo com a ordem.</p>
+        <p class="recent-admin-note">Cada trabalho usa uma pasta do Portfólio como galeria. A Home mostra os 3 primeiros itens ativos, de acordo com a ordem.</p>
       </div>
       <button type="button" class="btn btn-ghost" id="recentRefresh">Atualizar</button>
     </div>
@@ -98,9 +98,9 @@ function setStatus(text='', type='') {
 async function loadCategories() {
   const { data, error } = await neon.from('site_categories').select('slug,label,area,sort_order').order('sort_order',{ascending:true});
   if (error) throw error;
-  categories = data || [];
+  categories = (data || []).filter(c => c.area === 'portfolio');
   const sel = document.getElementById('recentGallery');
-  if (sel) sel.innerHTML = categories.map(c => `<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
+  if (sel) sel.innerHTML = categories.map(c => `<option value="${esc(c.slug)}">${esc(c.label.replace(/^Portfólio\s*[—-]\s*/i, ''))}</option>`).join('');
 }
 
 function categoryLabel(slug) {

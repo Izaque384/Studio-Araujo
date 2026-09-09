@@ -59,30 +59,73 @@
       </header>
 
       <nav class="admin-nav" aria-label="Atalhos do painel">
-        <a href="#uploadSection">Enviar mídia</a>
-        <a href="#librarySection">Biblioteca</a>
+        <a href="#panelHome">Início</a>
+        <a href="#uploadSection" data-jump-area="portfolio">Portfólio</a>
         <a href="#recentAdmin">Trabalhos recentes</a>
+        <a href="#uploadSection" data-jump-area="servico">Galerias de serviços</a>
+        <a href="#librarySection">Biblioteca</a>
       </nav>
 
-      <section class="media-summary" aria-label="Resumo da biblioteca">
+      <section id="panelHome" class="media-summary" aria-label="Resumo da biblioteca">
         <article><span id="statTotal">—</span><small>Total</small></article>
         <article><span id="statVisible">—</span><small>Publicadas</small></article>
         <article><span id="statHidden">—</span><small>Ocultas</small></article>
         <article><span id="statCovers">—</span><small>Capas</small></article>
       </section>
 
+      <section class="admin-hub" aria-label="Áreas de gerenciamento">
+        <button type="button" class="hub-card" data-hub-area="portfolio">
+          <span class="hub-icon" aria-hidden="true">01</span>
+          <strong>Portfólio</strong>
+          <small>Fotos e vídeos que compõem o portfólio principal.</small>
+          <span class="hub-link">Gerenciar →</span>
+        </button>
+        <button type="button" class="hub-card" data-hub-area="recent">
+          <span class="hub-icon" aria-hidden="true">02</span>
+          <strong>Trabalhos recentes</strong>
+          <small>Cadastre e organize os trabalhos exibidos na Home.</small>
+          <span class="hub-link">Gerenciar →</span>
+        </button>
+        <button type="button" class="hub-card" data-hub-area="servico">
+          <span class="hub-icon" aria-hidden="true">03</span>
+          <strong>Galerias de serviços</strong>
+          <small>Mídias e capas abertas pelos cards de serviços.</small>
+          <span class="hub-link">Gerenciar →</span>
+        </button>
+        <button type="button" class="hub-card" data-hub-area="library">
+          <span class="hub-icon" aria-hidden="true">04</span>
+          <strong>Biblioteca</strong>
+          <small>Encontre arquivos por área e por pasta.</small>
+          <span class="hub-link">Abrir biblioteca →</span>
+        </button>
+      </section>
+
       <section id="uploadSection" class="upload-card admin-section">
         <div class="section-heading upload-head">
           <div>
-            <p class="eyebrow">Nova mídia</p>
+            <p class="eyebrow">Atualizar o site</p>
             <h2>Enviar fotos ou vídeos</h2>
-            <p class="section-copy">Escolha onde a mídia deve aparecer, selecione os arquivos e confirme o envio.</p>
+            <p id="uploadContextHelp" class="section-copy">Escolha uma área abaixo. O painel mostra apenas as pastas compatíveis com esse destino.</p>
           </div>
           <span class="upload-note">Fotos até 25 MB · Vídeos até 100 MB</span>
         </div>
 
+        <div class="upload-area-tabs" role="tablist" aria-label="Destino da nova mídia">
+          <button type="button" class="upload-area-tab active" data-upload-area="portfolio" role="tab" aria-selected="true">Portfólio</button>
+          <button type="button" class="upload-area-tab" data-upload-area="recent" role="tab" aria-selected="false">Trabalhos recentes</button>
+          <button type="button" class="upload-area-tab" data-upload-area="servico" role="tab" aria-selected="false">Galeria de serviços</button>
+        </div>
+        <div id="recentUploadNotice" class="recent-upload-notice" hidden>
+          <div>
+            <strong>Trabalhos recentes são gerenciados como trabalhos completos.</strong>
+            <span>Abra a seção de trabalhos recentes para escolher a galeria, título, data, descrição e publicação.</span>
+          </div>
+          <button type="button" class="btn btn-primary" id="goRecentAdmin">Gerenciar trabalhos recentes</button>
+        </div>
+
+        <div id="standardUploadFields">
         <div class="upload-grid">
-          <label>Destino no site
+          <label>Pasta / categoria
             <select id="uploadCategory"></select>
           </label>
           <label>Descrição <span class="muted">(opcional)</span>
@@ -103,6 +146,7 @@
           <p id="uploadSummary" class="muted upload-summary">Nenhum arquivo selecionado.</p>
           <button type="button" id="uploadBtn" class="btn btn-primary" disabled>Enviar selecionadas</button>
         </div>
+        </div>
       </section>
 
       <section id="librarySection" class="library admin-section">
@@ -114,6 +158,19 @@
           </div>
           <button type="button" id="refreshBtn" class="btn btn-ghost">Atualizar biblioteca</button>
         </div>
+
+        <div class="library-folders" id="libraryFolders">
+          <button type="button" class="folder-card active" data-folder-area="all">
+            <span class="folder-mark">⌂</span><span><strong>Todas as mídias</strong><small id="folderCountAll">—</small></span>
+          </button>
+          <button type="button" class="folder-card" data-folder-area="portfolio">
+            <span class="folder-mark">P</span><span><strong>Portfólio</strong><small id="folderCountPortfolio">—</small></span>
+          </button>
+          <button type="button" class="folder-card" data-folder-area="servico">
+            <span class="folder-mark">S</span><span><strong>Galerias de serviços</strong><small id="folderCountServico">—</small></span>
+          </button>
+        </div>
+        <div id="categoryFolders" class="category-folders" aria-live="polite"></div>
 
         <div class="library-toolbar">
           <label class="search-field">

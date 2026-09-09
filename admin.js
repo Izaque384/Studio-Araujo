@@ -15,7 +15,9 @@ const uploadCategory=$('uploadCategory'), filterCategory=$('filterCategory'), up
 const fileInput=$('fileInput'), uploadBtn=$('uploadBtn'), uploadQueue=$('uploadQueue'), uploadSummary=$('uploadSummary');
 const imageGrid=$('imageGrid'), dropzone=$('dropzone'), refreshBtn=$('refreshBtn');
 const filterSearch=$('filterSearch'), filterType=$('filterType'), filterVisibility=$('filterVisibility'), filterSort=$('filterSort');
-let categories=[], queueEntries=[], currentUser=null, allMedia=[];
+const uploadAreaTabs=[...document.querySelectorAll('[data-upload-area]')], standardUploadFields=$('standardUploadFields'), recentUploadNotice=$('recentUploadNotice'), uploadContextHelp=$('uploadContextHelp');
+const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders');
+let categories=[], queueEntries=[], currentUser=null, allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all';
 
 function setMsg(el,text='',type=''){if(!el)return;el.textContent=text;el.className='msg'+(type?' '+type:'');}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -196,11 +198,41 @@ async function loadCategories(){
   const {data,error}=await neon.from('site_categories').select('slug,label,area,sort_order').order('sort_order',{ascending:true});
   if(error)throw error;
   categories=data||[];
-  uploadCategory.innerHTML=categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
-  filterCategory.innerHTML='<option value="">Todas</option>'+categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
+  syncUploadCategories();
+  filterCategory.innerHTML='<option value="">Todas as pastas</option>'+categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
+  renderCategoryFolders();
 }
 function categoryLabel(slug){return categories.find(c=>c.slug===slug)?.label||slug;}
+function categoryArea(slug){return categories.find(c=>c.slug===slug)?.area||'';}
 function categoryRank(slug){const i=categories.findIndex(c=>c.slug===slug);return i<0?9999:i;}
+function categoriesForArea(area){return categories.filter(c=>c.area===area);}
+function syncUploadCategories(){
+  const area=currentUploadArea==='servico'?'servico':'portfolio';
+  const options=categoriesForArea(area);
+  uploadCategory.innerHTML=options.map(c=>`<option value="${esc(c.slug)}">${esc(c.label.replace(/^Portfólio\s*[—-]\s*/i,''))}</option>`).join('');
+}
+function setUploadArea(area){
+  currentUploadArea=area;
+  uploadAreaTabs.forEach(btn=>{const on=btn.dataset.uploadArea===area;btn.classList.toggle('active',on);btn.setAttribute('aria-selected',String(on));});
+  const recent=area==='recent';
+  if(standardUploadFields)standardUploadFields.hidden=recent;
+  if(recentUploadNotice)recentUploadNotice.hidden=!recent;
+  if(uploadContextHelp)uploadContextHelp.textContent=recent
+    ? 'Trabalhos recentes têm título, data, descrição, ordem e publicação próprios.'
+    : area==='portfolio'
+      ? 'Envie fotos e vídeos diretamente para uma pasta do Portfólio.'
+      : 'Envie fotos e vídeos para a galeria de um serviço. A capa pode ser definida depois na Biblioteca.';
+  if(!recent)syncUploadCategories();
+}
+uploadAreaTabs.forEach(btn=>btn.addEventListener('click',()=>setUploadArea(btn.dataset.uploadArea)));
+$('goRecentAdmin')?.addEventListener('click',()=>document.getElementById('recentAdmin')?.scrollIntoView({behavior:'smooth',block:'start'}));
+document.querySelectorAll('[data-jump-area]').forEach(link=>link.addEventListener('click',()=>setUploadArea(link.dataset.jumpArea)));
+document.querySelectorAll('[data-hub-area]').forEach(btn=>btn.addEventListener('click',()=>{
+  const area=btn.dataset.hubArea;
+  if(area==='recent')return document.getElementById('recentAdmin')?.scrollIntoView({behavior:'smooth',block:'start'});
+  if(area==='library')return document.getElementById('librarySection')?.scrollIntoView({behavior:'smooth',block:'start'});
+  setUploadArea(area);document.getElementById('uploadSection')?.scrollIntoView({behavior:'smooth',block:'start'});
+}));
 
 fileInput.addEventListener('change',()=>setFiles([...fileInput.files]));
 ['dragenter','dragover'].forEach(t=>dropzone.addEventListener(t,e=>{e.preventDefault();dropzone.classList.add('drag');}));
@@ -285,7 +317,7 @@ uploadBtn.addEventListener('click',async()=>{
 });
 
 [filterSearch,filterCategory,filterType,filterVisibility,filterSort].forEach(el=>{
-  el.addEventListener(el===filterSearch?'input':'change',applyFilters);
+  el.addEventListener(el===filterSearch?'input':'change',()=>{if(el===filterCategory)renderCategoryFolders();applyFilters();});
 });
 refreshBtn.addEventListener('click',loadMedia);
 
@@ -306,10 +338,41 @@ function updateSummary(){
   $('statVisible').textContent=allMedia.filter(m=>m.is_visible).length;
   $('statHidden').textContent=allMedia.filter(m=>!m.is_visible).length;
   $('statCovers').textContent=allMedia.filter(m=>m.is_cover).length;
+  const byArea=area=>allMedia.filter(m=>categoryArea(m.category)===area).length;
+  if($('folderCountAll'))$('folderCountAll').textContent=`${allMedia.length} mídias`;
+  if($('folderCountPortfolio'))$('folderCountPortfolio').textContent=`${byArea('portfolio')} mídias`;
+  if($('folderCountServico'))$('folderCountServico').textContent=`${byArea('servico')} mídias`;
+  renderCategoryFolders();
+}
+function setLibraryArea(area){
+  currentLibraryArea=area;
+  filterCategory.value='';
+  libraryFolders?.querySelectorAll('[data-folder-area]').forEach(btn=>btn.classList.toggle('active',btn.dataset.folderArea===area));
+  renderCategoryFolders();
+  applyFilters();
+}
+libraryFolders?.querySelectorAll('[data-folder-area]').forEach(btn=>btn.addEventListener('click',()=>setLibraryArea(btn.dataset.folderArea)));
+function renderCategoryFolders(){
+  if(!categoryFolders||!categories.length)return;
+  const source=currentLibraryArea==='all'?categories:categoriesForArea(currentLibraryArea);
+  if(!source.length){categoryFolders.innerHTML='';return;}
+  categoryFolders.innerHTML=source.map(c=>{
+    const count=allMedia.filter(m=>m.category===c.slug).length;
+    const cover=allMedia.find(m=>m.category===c.slug&&m.is_cover&&!isVideoType(m.mime_type))||allMedia.find(m=>m.category===c.slug&&!isVideoType(m.mime_type));
+    const thumb=cover?`<img src="${esc(cover.public_url)}" alt="" loading="lazy">`:`<span class="category-folder-placeholder">${esc(c.label.charAt(0))}</span>`;
+    return `<button type="button" class="category-folder ${filterCategory.value===c.slug?'active':''}" data-category-folder="${esc(c.slug)}">${thumb}<span><strong>${esc(c.label.replace(/^Portfólio\s*[—-]\s*/i,''))}</strong><small>${count} mídia${count===1?'':'s'}</small></span></button>`;
+  }).join('');
+  categoryFolders.querySelectorAll('[data-category-folder]').forEach(btn=>btn.addEventListener('click',()=>{
+    filterCategory.value=btn.dataset.categoryFolder;
+    renderCategoryFolders();
+    applyFilters();
+    imageGrid.scrollIntoView({behavior:'smooth',block:'start'});
+  }));
 }
 function applyFilters(){
   const term=filterSearch.value.trim().toLowerCase();
   let items=allMedia.filter(m=>{
+    if(currentLibraryArea!=='all'&&categoryArea(m.category)!==currentLibraryArea)return false;
     if(filterCategory.value&&m.category!==filterCategory.value)return false;
     const video=isVideoType(m.mime_type);
     if(filterType.value==='image'&&video)return false;
