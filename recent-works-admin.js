@@ -13,6 +13,7 @@ let initialized = false;
 let categories = [];
 let editingId = null;
 let mediaWorkId = null;
+let mediaWorkCategory = null;
 let recentWorkCount = 0;
 
 function injectStyles() {
@@ -42,11 +43,12 @@ function injectStyles() {
     .recent-status{min-height:20px;margin:10px 0;color:#a89d86;font-size:.82rem}
     .recent-status.ok{color:#8fcf92}.recent-status.err{color:#ef9a9a}
     .recent-step-label{grid-column:1/-1;display:flex;align-items:center;gap:11px;margin:2px 0 14px;color:#f3ecdc}.recent-step-label>span{display:grid;place-items:center;width:29px;height:29px;flex:0 0 29px;border:1px solid rgba(201,162,75,.35);border-radius:50%;color:#e6c878;font-size:.74rem;font-weight:600;background:rgba(201,162,75,.05)}.recent-step-label div{display:grid;gap:1px}.recent-step-label strong{font-size:.85rem;font-weight:500}.recent-step-label small{color:#a89d86;font-size:.72rem}.recent-step-media{margin:0 0 16px}
-    .recent-media-manager{margin:22px 0 26px;padding:22px;border:1px solid rgba(201,162,75,.18);border-radius:16px;background:#0d0c0a}
-    .recent-media-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px}.recent-step-media{margin:0}.recent-media-close{flex:0 0 auto;padding:8px 12px;font-size:.76rem}
+    .recent-media-manager{position:relative;margin:22px 0 26px;padding:22px;border:1px solid rgba(201,162,75,.18);border-radius:16px;background:#0d0c0a}
+    .recent-media-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px;padding-right:34px}.recent-step-media{margin:0}.recent-media-close{position:absolute;top:14px;right:14px;width:32px;height:32px;display:grid;place-items:center;border:1px solid rgba(201,162,75,.18);border-radius:50%;background:transparent;color:#a89d86;font-size:1.35rem;line-height:1;cursor:pointer;transition:.2s}.recent-media-close:hover{color:#f3ecdc;border-color:rgba(230,200,120,.45);background:rgba(201,162,75,.06)}
     .recent-media-context{display:grid;gap:5px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(201,162,75,.11);border-radius:12px;background:rgba(201,162,75,.025)}.recent-media-context-label{color:#817765;font-size:.65rem;text-transform:uppercase;letter-spacing:.12em}.recent-media-context strong{font-size:1rem;font-weight:500;color:#f3ecdc}
     .recent-media-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.recent-media-upload input{display:none}.recent-media-add{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;min-width:210px}.recent-media-add-icon{font-size:1rem;line-height:1}.recent-media-upload-help{color:#756d5d;font-size:.72rem}.recent-media-status{display:block;margin:6px 0 14px;min-height:18px}
     .recent-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.recent-media-grid:empty{min-height:118px;border:1px dashed rgba(201,162,75,.15);border-radius:12px;display:grid;place-items:center}.recent-media-grid:empty:before{content:'Nenhuma mídia adicionada ainda.';color:#817765;font-size:.82rem}.recent-media-card{border:1px solid rgba(201,162,75,.14);border-radius:12px;overflow:hidden;background:#12100d}.recent-media-card figure{margin:0;aspect-ratio:4/3;background:#070706}.recent-media-card img,.recent-media-card video{width:100%;height:100%;object-fit:cover}.recent-media-card-body{padding:9px;display:grid;gap:8px}.recent-media-card-body input{width:100%;background:#0e0d0b;border:1px solid rgba(201,162,75,.18);color:#f3ecdc;border-radius:8px;padding:8px}.recent-media-actions{display:flex;gap:6px;flex-wrap:wrap}.recent-media-actions .btn{padding:7px 9px;font-size:.72rem}.recent-cover-on{color:#e6c878;border-color:rgba(230,200,120,.5)!important}
+    .recent-card-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,162,75,.12)}.recent-footer-save{min-width:150px}.recent-footer-save:disabled{cursor:not-allowed}
     @media(max-width:980px){.recent-media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.recent-form{grid-template-columns:1fr}.recent-span-2{grid-column:auto}.recent-row{grid-template-columns:1fr}.recent-row-actions{justify-content:flex-start}.recent-admin{padding:20px}.recent-media-manager{padding:16px}.recent-media-topbar{align-items:stretch}.recent-media-add{width:100%}.recent-media-upload-help{width:100%}}
   `;
@@ -67,7 +69,6 @@ function buildSection(panel) {
         <h2>Trabalhos recentes</h2>
         <p class="recent-admin-note">Crie o trabalho primeiro e, em seguida, adicione suas fotos e vídeos. É possível cadastrar no máximo 3 trabalhos, que são exibidos na Home de acordo com a ordem.</p>
       </div>
-      <button type="button" class="btn btn-ghost" id="recentRefresh">Atualizar</button>
     </div>
 
     <div class="recent-step-label"><span>1</span><div><strong>Informações do trabalho</strong><small>Título, categoria, data e publicação</small></div></div>
@@ -92,14 +93,13 @@ function buildSection(panel) {
       </label>
       <label class="recent-check"><input id="recentActive" type="checkbox" checked> Exibir na home</label>
       <div class="recent-form-actions">
-        <button type="submit" class="btn btn-primary" id="recentSave">Adicionar trabalho</button>
         <button type="button" class="btn btn-ghost" id="recentCancel" hidden>Cancelar edição</button>
       </div>
     </form>
     <section id="recentMediaManager" class="recent-media-manager" hidden>
       <div class="recent-media-topbar">
         <div class="recent-step-label recent-step-media"><span>2</span><div><strong>Fotos e vídeos</strong><small>Adicione as mídias, escolha a capa e organize a ordem</small></div></div>
-        <button type="button" class="btn btn-ghost recent-media-close" id="recentMediaClose">Fechar</button>
+        <button type="button" class="recent-media-close" id="recentMediaClose" aria-label="Fechar" title="Fechar">×</button>
       </div>
       <div class="recent-media-context">
         <span class="recent-media-context-label">Trabalho selecionado</span>
@@ -115,6 +115,9 @@ function buildSection(panel) {
     </section>
     <p id="recentStatus" class="recent-status" aria-live="polite"></p>
     <div id="recentList" class="recent-list"></div>
+    <div class="recent-card-footer">
+      <button type="submit" form="recentForm" class="btn btn-primary recent-footer-save" id="recentSave">Salvar</button>
+    </div>
   `;
   mount.appendChild(section);
 }
@@ -186,7 +189,7 @@ function updateRecentLimitState(){
   if(!save)return;
   const atLimit=recentWorkCount>=3 && !editingId;
   save.disabled=atLimit;
-  save.textContent=atLimit?'Limite de 3 trabalhos atingido':(editingId?'Salvar alterações':'Adicionar trabalho');
+  save.textContent=atLimit?'Limite de 3 trabalhos atingido':'Salvar';
   const form=document.getElementById('recentForm');
   if(form)form.classList.toggle('recent-limit-reached',atLimit);
   if(atLimit)setStatus('Você já cadastrou o máximo de 3 trabalhos recentes. Exclua um trabalho para adicionar outro.','');
@@ -198,7 +201,7 @@ function resetForm() {
   document.getElementById('recentForm')?.reset();
   const loc = document.getElementById('recentLocation'); if (loc) loc.value = 'Morrinhos, CE';
   const active = document.getElementById('recentActive'); if (active) active.checked = true;
-  const save = document.getElementById('recentSave'); if (save) save.textContent = 'Adicionar trabalho';
+  const save = document.getElementById('recentSave'); if (save) save.textContent = 'Salvar';
   updateRecentLimitState();
   const cancel = document.getElementById('recentCancel'); if (cancel) cancel.hidden = true;
 }
@@ -213,7 +216,7 @@ function editItem(item) {
   document.getElementById('recentLocation').value = item.location || '';
   document.getElementById('recentActive').checked = !!item.is_active;
   document.getElementById('recentSave').disabled = false;
-  document.getElementById('recentSave').textContent = 'Salvar alterações';
+  document.getElementById('recentSave').textContent = 'Salvar';
   document.getElementById('recentCancel').hidden = false;
   openMediaManager(item);
   document.getElementById('recentForm').scrollIntoView({behavior:'smooth',block:'center'});
@@ -238,7 +241,7 @@ async function saveItem(e) {
     updated_at: new Date().toISOString()
   };
   save.disabled = true;
-  save.textContent = editingId ? 'Salvando…' : 'Adicionando…';
+  save.textContent = 'Salvando…';
   setStatus('');
   try {
     const wasEditing = !!editingId;
@@ -263,7 +266,7 @@ async function saveItem(e) {
     setStatus('Não foi possível salvar este trabalho.', 'err');
   } finally {
     save.disabled = false;
-    if (!editingId) save.textContent = 'Adicionar trabalho';
+    if (!editingId) save.textContent = 'Salvar';
     updateRecentLimitState();
   }
 }
@@ -315,13 +318,15 @@ async function loadWorkMedia(){
   grid.innerHTML=links.map(link=>{const m=map.get(link.media_id);if(!m)return'';const video=String(m.mime_type||'').startsWith('video/');const preview=video?`<video src="${esc(m.public_url)}" controls preload="metadata"></video>`:`<img src="${esc(m.public_url)}" alt="${esc(m.alt_text||'')}" loading="lazy">`;return `<article class="recent-media-card" data-media-id="${esc(m.id)}" data-key="${esc(m.storage_key)}"><figure>${preview}</figure><div class="recent-media-card-body"><label>Ordem<input class="recent-media-order" type="number" value="${Number(link.sort_order||0)}"></label><div class="recent-media-actions"><button type="button" class="btn btn-ghost recent-set-cover ${link.is_cover?'recent-cover-on':''}" ${video?'disabled title="Vídeo não pode ser capa"':''}>${link.is_cover?'Capa atual':'Definir capa'}</button><button type="button" class="btn btn-danger recent-remove-media">Excluir</button></div></div></article>`}).join('');
   grid.querySelectorAll('.recent-media-card').forEach(card=>{card.querySelector('.recent-media-order')?.addEventListener('change',()=>updateMediaOrder(card));card.querySelector('.recent-set-cover')?.addEventListener('click',()=>setWorkCover(card));card.querySelector('.recent-remove-media')?.addEventListener('click',()=>deleteWorkMedia(card));});
 }
-async function openMediaManager(item){mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();box.scrollIntoView({behavior:'smooth',block:'start'});}
-function closeMediaManager(){mediaWorkId=null;const box=document.getElementById('recentMediaManager');if(box)box.hidden=true;const input=document.getElementById('recentMediaInput');if(input)input.value='';}
+async function openMediaManager(item){
+  mediaWorkCategory = item?.gallery_category || null;mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();box.scrollIntoView({behavior:'smooth',block:'start'});}
+function closeMediaManager(){
+  mediaWorkCategory = null;mediaWorkId=null;const box=document.getElementById('recentMediaManager');if(box)box.hidden=true;const input=document.getElementById('recentMediaInput');if(input)input.value='';}
 async function uploadWorkMedia(files){
   if(!mediaWorkId||!files.length)return; const valid=files.filter(f=>!fileIssue(f)); const invalid=files.length-valid.length;if(!valid.length){setMediaStatus('Nenhum arquivo válido selecionado.','err');return;}
   setMediaStatus(`Enviando 0 de ${valid.length}…`); let done=0;
   try{const {data:existing}=await neon.from('recent_work_media').select('sort_order').eq('recent_work_id',mediaWorkId).order('sort_order',{ascending:false}).limit(1);let order=existing?.length?Number(existing[0].sort_order||0)+1:1;
-    for(const original of valid){const file=await optimizeImage(original);const signed=await storageCall({action:'presign',category:RECENT_MEDIA_CATEGORY,fileName:file.name,contentType:file.type});const put=await fetch(signed.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type},body:file});if(!put.ok)throw new Error(`Não foi possível enviar ${original.name}.`);const {data:inserted,error}=await neon.from('site_images').insert({storage_key:signed.storageKey,public_url:signed.publicUrl,category:RECENT_MEDIA_CATEGORY,alt_text:'',sort_order:order,is_visible:true,is_cover:false,mime_type:file.type,bytes:file.size}).select('id').single();if(error){await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});throw error;}const {error:linkError}=await neon.from('recent_work_media').insert({recent_work_id:mediaWorkId,media_id:inserted.id,sort_order:order,is_cover:false});if(linkError){await neon.from('site_images').delete().eq('id',inserted.id);await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});throw linkError;}done++;order++;setMediaStatus(`Enviando ${done} de ${valid.length}…`);}
+    for(const original of valid){const file=await optimizeImage(original);const signed=await storageCall({action:'presign',category:(mediaWorkCategory || categories[0]?.slug || 'portfolio-casamentos'),fileName:file.name,contentType:file.type});const put=await fetch(signed.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type},body:file});if(!put.ok)throw new Error(`Não foi possível enviar ${original.name}.`);const {data:inserted,error}=await neon.from('site_images').insert({storage_key:signed.storageKey,public_url:signed.publicUrl,category:RECENT_MEDIA_CATEGORY,alt_text:'',sort_order:order,is_visible:true,is_cover:false,mime_type:file.type,bytes:file.size}).select('id').single();if(error){await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});throw error;}const {error:linkError}=await neon.from('recent_work_media').insert({recent_work_id:mediaWorkId,media_id:inserted.id,sort_order:order,is_cover:false});if(linkError){await neon.from('site_images').delete().eq('id',inserted.id);await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});throw linkError;}done++;order++;setMediaStatus(`Enviando ${done} de ${valid.length}…`);}
     setMediaStatus(`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'}${invalid?` · ${invalid} ignorado${invalid===1?'':'s'}`:''}.`,'ok');await loadWorkMedia();
   }catch(err){console.error(err);setMediaStatus(err?.message||'Não foi possível enviar as mídias.','err');}
 }
@@ -341,7 +346,6 @@ async function init() {
     await loadRecentWorks();
     document.getElementById('recentForm').addEventListener('submit', saveItem);
     document.getElementById('recentCancel').addEventListener('click', resetForm);
-    document.getElementById('recentRefresh').addEventListener('click', loadRecentWorks);
     document.getElementById('recentMediaInput').addEventListener('change',e=>uploadWorkMedia([...e.target.files]).finally(()=>{e.target.value='';}));
     document.getElementById('recentMediaClose').addEventListener('click',closeMediaManager);
   } catch (err) {
