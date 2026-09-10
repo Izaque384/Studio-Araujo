@@ -1,0 +1,29 @@
+name: Refine recent media manager
+on:
+  push:
+    paths:
+      - '.refine-recent-media-manager-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/refine-recent-media-manager.py
+      - name: Validate
+        run: |
+          node --check recent-works-admin.js
+          grep -q 'recent-media-context-label' recent-works-admin.js
+          grep -q 'recent-media-add-icon' recent-works-admin.js
+          grep -q "Nenhuma mídia adicionada ainda." recent-works-admin.js
+      - name: Commit changes
+        run: |
+          rm -f .refine-recent-media-manager-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add recent-works-admin.js .refine-recent-media-manager-run
+          git commit -m 'Refine recent work media manager UI'
+          git push origin main
