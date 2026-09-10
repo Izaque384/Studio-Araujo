@@ -1,0 +1,33 @@
+name: Restructure admin focus
+on:
+  push:
+    paths:
+      - '.restructure-admin-focus-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/restructure-admin-focus.py
+      - name: Validate admin structure
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+          if grep -q '<nav class="admin-nav"' admin.html; then exit 1; fi
+          grep -q 'class="media-summary media-summary-compact"' admin.html
+          grep -q 'id="recentAdminMount"' admin.html
+          grep -q 'id="openLibraryBtn"' admin.html
+          grep -q 'mount.appendChild(section)' recent-works-admin.js
+          if grep -q "data-hub-area" admin.html; then exit 1; fi
+      - name: Commit restructure
+        run: |
+          rm -f .restructure-admin-focus-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html admin.js admin.css recent-works-admin.js .restructure-admin-focus-run
+          git commit -m 'Centralize admin editing in update site card'
+          git push origin main
