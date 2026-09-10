@@ -25,22 +25,15 @@
     if (!trabalhos.length) { if (existente) existente.hidden = true; return; }
     const labels = new Map((categorias || []).map(c => [c.slug, c.label]));
     const ids = trabalhos.map(t => t.id);
-    let links = [], linkedMedia = new Map();
+    let medias = [];
     if (ids.length) {
-      const { data: rels, error: relsError } = await neon.from('recent_work_media').select('recent_work_id,media_id,sort_order,is_cover').in('recent_work_id', ids).order('sort_order', { ascending: true });
-      if (relsError) { if (existente) existente.hidden = true; throw relsError; }
-      links = Array.isArray(rels) ? rels : [];
-      const mediaIds = [...new Set(links.map(r => r.media_id))];
-      if (mediaIds.length) {
-        const { data: medias, error: mediasError } = await neon.from('site_images').select('id,public_url,alt_text,mime_type').in('id', mediaIds).eq('is_visible', true);
-        if (mediasError) { if (existente) existente.hidden = true; throw mediasError; }
-        linkedMedia = new Map((medias || []).map(m => [m.id, m]));
-      }
+      const { data: rows, error: mediasError } = await neon.from('site_images').select('id,public_url,alt_text,mime_type,recent_work_id,sort_order,is_cover').in('recent_work_id', ids).eq('is_visible', true).order('sort_order', { ascending: true });
+      if (mediasError) { if (existente) existente.hidden = true; throw mediasError; }
+      medias = Array.isArray(rows) ? rows : [];
     }
 
     const preparados = await Promise.all(trabalhos.map(async (t) => {
-      const proprias = links.filter(r => r.recent_work_id === t.id).map(r => { const m = linkedMedia.get(r.media_id); return m ? normalizeMedia({ ...m, is_cover:r.is_cover }) : null; }).filter(Boolean);
-      const itens = proprias;
+      const itens = medias.filter(m => m.recent_work_id === t.id).map(m => normalizeMedia(m));
       // Trabalhos recentes usam apenas suas próprias mídias. A categoria serve para classificação,
       // nunca como fonte automática de fotos do Portfólio.
       if (!itens.length) return null;

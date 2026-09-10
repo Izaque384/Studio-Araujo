@@ -316,7 +316,7 @@ async function storageCall(payload){
   return data;
 }
 // Shared authenticated uploader used by the main panel and by Trabalhos recentes.
-window.studioUploadMedia = async function({file: original, storageCategory, databaseCategory, altText = '', sortOrder = 1}){
+window.studioUploadMedia = async function({file: original, storageCategory, databaseCategory, altText = '', sortOrder = 1, recentWorkId = null}){
   if(!original) throw new Error('Arquivo não informado.');
   if(!storageCategory) throw new Error('Categoria de armazenamento não informada.');
   const file = await optimizeImage(original);
@@ -333,7 +333,8 @@ window.studioUploadMedia = async function({file: original, storageCategory, data
     is_cover:false,
     mime_type:file.type,
     bytes:file.size,
-    created_by:currentUser?.id||null
+    created_by:currentUser?.id||null,
+    recent_work_id:recentWorkId
   }).select('*').single();
   if(error){
     await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});
