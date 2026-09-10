@@ -19,8 +19,8 @@ function injectStyles() {
   const style = document.createElement('style');
   style.id = 'recentAdminStyles';
   style.textContent = `
-    .recent-admin{margin-top:36px;padding:28px;border:1px solid rgba(201,162,75,.18);border-radius:20px;background:rgba(201,162,75,.035)}
-    .recent-admin-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:22px}
+    .recent-admin{margin-top:0;padding:20px 0 4px;border:0;border-radius:0;background:transparent}
+    .recent-admin-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;margin-bottom:18px;padding-top:4px}
     .recent-admin-head h2{margin:2px 0 6px;font-size:1.65rem}
     .recent-admin-note{color:#a89d86;font-size:.85rem;max-width:620px}
     .recent-form{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;margin-bottom:24px}
@@ -52,6 +52,8 @@ function injectStyles() {
 
 function buildSection(panel) {
   if (document.getElementById('recentAdmin')) return;
+  const mount = document.getElementById('recentAdminMount');
+  if (!mount) return;
   const section = document.createElement('section');
   section.id = 'recentAdmin';
   section.className = 'recent-admin';
@@ -100,9 +102,7 @@ function buildSection(panel) {
     <p id="recentStatus" class="recent-status" aria-live="polite"></p>
     <div id="recentList" class="recent-list"></div>
   `;
-  const library = panel.querySelector('.library');
-  if (library) panel.insertBefore(section, library);
-  else panel.appendChild(section);
+  mount.appendChild(section);
 }
 
 function setStatus(text='', type='') {

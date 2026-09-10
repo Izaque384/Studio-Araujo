@@ -16,7 +16,7 @@ const fileInput=$('fileInput'), uploadBtn=$('uploadBtn'), uploadQueue=$('uploadQ
 const imageGrid=$('imageGrid'), dropzone=$('dropzone'), refreshBtn=$('refreshBtn');
 const filterSearch=$('filterSearch'), filterType=$('filterType'), filterVisibility=$('filterVisibility'), filterSort=$('filterSort');
 const uploadAreaTabs=[...document.querySelectorAll('[data-upload-area]')], standardUploadFields=$('standardUploadFields'), recentUploadNotice=$('recentUploadNotice'), uploadContextHelp=$('uploadContextHelp');
-const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders'), librarySection=$('librarySection'), closeLibraryBtn=$('closeLibraryBtn');
+const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders'), librarySection=$('librarySection'), closeLibraryBtn=$('closeLibraryBtn'), openLibraryBtn=$('openLibraryBtn');
 let categories=[], queueEntries=[], currentUser=null, allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all';
 
 function setMsg(el,text='',type=''){if(!el)return;el.textContent=text;el.className='msg'+(type?' '+type:'');}
@@ -225,8 +225,6 @@ function setUploadArea(area){
   if(!recent)syncUploadCategories();
 }
 uploadAreaTabs.forEach(btn=>btn.addEventListener('click',()=>setUploadArea(btn.dataset.uploadArea)));
-$('goRecentAdmin')?.addEventListener('click',()=>document.getElementById('recentAdmin')?.scrollIntoView({behavior:'smooth',block:'start'}));
-document.querySelectorAll('[data-jump-area]').forEach(link=>link.addEventListener('click',()=>setUploadArea(link.dataset.jumpArea)));
 function openLibrary(){
   if(!librarySection)return;
   librarySection.hidden=false;
@@ -238,12 +236,7 @@ function closeLibrary(){
   document.querySelector('.admin-hub')?.scrollIntoView({behavior:'smooth',block:'start'});
 }
 closeLibraryBtn?.addEventListener('click',closeLibrary);
-document.querySelectorAll('[data-hub-area]').forEach(btn=>btn.addEventListener('click',()=>{
-  const area=btn.dataset.hubArea;
-  if(area==='recent')return document.getElementById('recentAdmin')?.scrollIntoView({behavior:'smooth',block:'start'});
-  if(area==='library')return openLibrary();
-  setUploadArea(area);document.getElementById('uploadSection')?.scrollIntoView({behavior:'smooth',block:'start'});
-}));
+openLibraryBtn?.addEventListener('click',openLibrary);
 
 fileInput.addEventListener('change',()=>setFiles([...fileInput.files]));
 ['dragenter','dragover'].forEach(t=>dropzone.addEventListener(t,e=>{e.preventDefault();dropzone.classList.add('drag');}));

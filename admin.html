@@ -46,6 +46,12 @@
     </section>
 
     <section id="panelView" class="panel" hidden>
+      <section id="panelHome" class="media-summary media-summary-compact" aria-label="Resumo da biblioteca">
+        <article><small>Total</small><span id="statTotal">—</span></article>
+        <article><small>Publicadas</small><span id="statVisible">—</span></article>
+        <article><small>Ocultas</small><span id="statHidden">—</span></article>
+        <article><small>Capas</small><span id="statCovers">—</span></article>
+      </section>
       <header class="panel-header">
         <div>
           <p class="eyebrow">Studio Araújo</p>
@@ -58,45 +64,32 @@
         </div>
       </header>
 
-      <nav class="admin-nav" aria-label="Atalhos do painel">
-        <a href="#panelHome">Início</a>
-        <a href="#uploadSection" data-jump-area="portfolio">Portfólio</a>
-        <a href="#recentAdmin">Trabalhos recentes</a>
-        <a href="#uploadSection" data-jump-area="servico">Galerias de serviços</a>
-      </nav>
-
-      <section id="panelHome" class="media-summary" aria-label="Resumo da biblioteca">
-        <article><span id="statTotal">—</span><small>Total</small></article>
-        <article><span id="statVisible">—</span><small>Publicadas</small></article>
-        <article><span id="statHidden">—</span><small>Ocultas</small></article>
-        <article><span id="statCovers">—</span><small>Capas</small></article>
-      </section>
 
       <section class="admin-hub" aria-label="Áreas de gerenciamento">
-        <button type="button" class="hub-card" data-hub-area="portfolio">
+        <article class="hub-card hub-card-static">
           <span class="hub-icon" aria-hidden="true">01</span>
           <strong>Portfólio</strong>
           <small>Fotos e vídeos que compõem o portfólio principal.</small>
-          <span class="hub-link">Gerenciar →</span>
-        </button>
-        <button type="button" class="hub-card" data-hub-area="recent">
+          <span class="hub-link hub-status">Visão geral</span>
+        </article>
+        <article class="hub-card hub-card-static">
           <span class="hub-icon" aria-hidden="true">02</span>
           <strong>Trabalhos recentes</strong>
           <small>Cadastre e organize os trabalhos exibidos na Home.</small>
-          <span class="hub-link">Gerenciar →</span>
-        </button>
-        <button type="button" class="hub-card" data-hub-area="servico">
+          <span class="hub-link hub-status">Visão geral</span>
+        </article>
+        <article class="hub-card hub-card-static">
           <span class="hub-icon" aria-hidden="true">03</span>
           <strong>Galerias de serviços</strong>
           <small>Mídias e capas abertas pelos cards de serviços.</small>
-          <span class="hub-link">Gerenciar →</span>
-        </button>
-        <button type="button" class="hub-card" data-hub-area="library">
+          <span class="hub-link hub-status">Visão geral</span>
+        </article>
+        <article class="hub-card hub-card-static">
           <span class="hub-icon" aria-hidden="true">04</span>
           <strong>Biblioteca</strong>
           <small>Encontre arquivos por área e por pasta.</small>
-          <span class="hub-link">Abrir biblioteca →</span>
-        </button>
+          <span class="hub-link hub-status">Visão geral</span>
+        </article>
       </section>
 
       <section id="uploadSection" class="upload-card admin-section">
@@ -106,7 +99,10 @@
             <h2>Enviar fotos ou vídeos</h2>
             <p id="uploadContextHelp" class="section-copy">Escolha uma área abaixo. O painel mostra apenas as pastas compatíveis com esse destino.</p>
           </div>
-          <span class="upload-note">Fotos até 25 MB · Vídeos até 100 MB</span>
+          <div class="upload-head-actions">
+            <span class="upload-note">Fotos até 25 MB · Vídeos até 100 MB</span>
+            <button type="button" id="openLibraryBtn" class="btn btn-ghost btn-small">Abrir biblioteca</button>
+          </div>
         </div>
 
         <div class="upload-area-tabs" role="tablist" aria-label="Destino da nova mídia">
@@ -114,12 +110,8 @@
           <button type="button" class="upload-area-tab" data-upload-area="recent" role="tab" aria-selected="false">Trabalhos recentes</button>
           <button type="button" class="upload-area-tab" data-upload-area="servico" role="tab" aria-selected="false">Galeria de serviços</button>
         </div>
-        <div id="recentUploadNotice" class="recent-upload-notice" hidden>
-          <div>
-            <strong>Trabalhos recentes são gerenciados como trabalhos completos.</strong>
-            <span>Abra a seção de trabalhos recentes para escolher a galeria, título, data, descrição e publicação.</span>
-          </div>
-          <button type="button" class="btn btn-primary" id="goRecentAdmin">Gerenciar trabalhos recentes</button>
+        <div id="recentUploadNotice" class="recent-upload-notice recent-work-mount" hidden>
+          <div id="recentAdminMount"></div>
         </div>
 
         <div id="standardUploadFields">
