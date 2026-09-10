@@ -1,0 +1,49 @@
+name: Cache bust recent upload
+on:
+  push:
+    paths:
+      - '.cache-bust-recent-upload-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bust admin module cache
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          admin = Path('admin.js')
+          text = admin.read_text(encoding='utf-8')
+          old = "import('./recent-works-admin.js').catch(err=>console.error('Falha ao carregar trabalhos recentes no painel.',err));"
+          new = "import('./recent-works-admin.js?v=20260910-recent-upload-fix').catch(err=>console.error('Falha ao carregar trabalhos recentes no painel.',err));"
+          if text.count(old) != 1:
+              raise SystemExit(f'admin import: expected 1 match, found {text.count(old)}')
+          admin.write_text(text.replace(old,new,1), encoding='utf-8')
+
+          html = Path('admin.html')
+          text = html.read_text(encoding='utf-8')
+          old = '<script type="module" src="admin.js"></script>'
+          new = '<script type="module" src="admin.js?v=20260910-recent-upload-fix"></script>'
+          if text.count(old) != 1:
+              raise SystemExit(f'admin script: expected 1 match, found {text.count(old)}')
+          html.write_text(text.replace(old,new,1), encoding='utf-8')
+          PY
+      - name: Validate
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+          grep -q "recent-works-admin.js?v=20260910-recent-upload-fix" admin.js
+          grep -q "admin.js?v=20260910-recent-upload-fix" admin.html
+      - name: Commit cache bust
+        run: |
+          rm -f .cache-bust-recent-upload-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.js admin.html .cache-bust-recent-upload-run
+          git commit -m 'Force fresh admin upload modules'
+          git push origin main
