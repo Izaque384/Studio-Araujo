@@ -1,0 +1,31 @@
+name: Refine admin overview and recent works
+on:
+  push:
+    paths:
+      - '.refine-admin-overview-and-recent-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/refine-admin-overview-and-recent.py
+      - name: Validate
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+          grep -q 'data-overview-area="portfolio"' admin.html
+          grep -q 'id="mediaOverview"' admin.html
+          grep -q '<label>Categoria' recent-works-admin.js
+          grep -q 'recentWorkCount>=3' recent-works-admin.js
+      - name: Commit changes
+        run: |
+          rm -f .refine-admin-overview-and-recent-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.html admin.js admin.css recent-works-admin.js .refine-admin-overview-and-recent-run
+          git commit -m 'Add media overview cards and recent work limit'
+          git push origin main
