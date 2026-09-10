@@ -1,6 +1,6 @@
 // =====================================================================
 // TRABALHOS RECENTES — home conectada ao Neon
-// Mantém o bloco estático atual como fallback caso o banco não responda.
+// O painel é a fonte de verdade. O conteúdo estático só permanece quando o banco inteiro não responde.
 // =====================================================================
 (async function carregarTrabalhosRecentes() {
   const existente = document.getElementById('trabalhosRecentes');
@@ -21,16 +21,19 @@
       neon.from('recent_works').select('id,gallery_category,title,description,work_date,location,sort_order').eq('is_active', true).order('sort_order', { ascending: true }).order('work_date', { ascending: false }).limit(3),
       neon.from('site_categories').select('slug,label')
     ]);
-    if (error || !Array.isArray(trabalhos) || !trabalhos.length) return;
+    if (error || !Array.isArray(trabalhos)) return;
+    if (!trabalhos.length) { if (existente) existente.hidden = true; return; }
     const labels = new Map((categorias || []).map(c => [c.slug, c.label]));
     const ids = trabalhos.map(t => t.id);
     let links = [], linkedMedia = new Map();
     if (ids.length) {
-      const { data: rels } = await neon.from('recent_work_media').select('recent_work_id,media_id,sort_order,is_cover').in('recent_work_id', ids).order('sort_order', { ascending: true });
+      const { data: rels, error: relsError } = await neon.from('recent_work_media').select('recent_work_id,media_id,sort_order,is_cover').in('recent_work_id', ids).order('sort_order', { ascending: true });
+      if (relsError) { if (existente) existente.hidden = true; throw relsError; }
       links = Array.isArray(rels) ? rels : [];
       const mediaIds = [...new Set(links.map(r => r.media_id))];
       if (mediaIds.length) {
-        const { data: medias } = await neon.from('site_images').select('id,public_url,alt_text,mime_type').in('id', mediaIds).eq('is_visible', true);
+        const { data: medias, error: mediasError } = await neon.from('site_images').select('id,public_url,alt_text,mime_type').in('id', mediaIds).eq('is_visible', true);
+        if (mediasError) { if (existente) existente.hidden = true; throw mediasError; }
         linkedMedia = new Map((medias || []).map(m => [m.id, m]));
       }
     }
@@ -47,7 +50,7 @@
     }));
 
     const validos = preparados.filter(Boolean);
-    if (!validos.length) return;
+    if (!validos.length) { if (existente) existente.hidden = true; return; }
     let section = existente;
     if (!section) {
       section = document.createElement('section');
@@ -56,6 +59,8 @@
       const stats = document.querySelector('.stats-band');
       if (stats?.parentNode) stats.parentNode.insertBefore(section, stats); else portfolio.insertAdjacentElement('afterend', section);
     }
+
+    section.hidden = false;
 
     const cards = validos.map((t, i) => {
       const data = formatarData(t.work_date);
@@ -77,7 +82,7 @@
       document.head.appendChild(style);
     }
   } catch (err) {
-    console.warn('Trabalhos recentes: usando fallback estático.', err);
+    console.warn('Trabalhos recentes: falha ao sincronizar com o painel.', err);
   }
 })();
 
