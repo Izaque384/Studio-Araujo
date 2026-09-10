@@ -48,16 +48,15 @@ new = "for(const original of valid){const uploader=window.studioUploadMedia;if(t
 if old not in s:
     raise SystemExit('recent upload loop not found')
 s = s.replace(old, new, 1)
-# Make deletion use the shared storage client too when possible.
 s = s.replace("if(key&&!key.startsWith('legacy:'))await storageCall({action:'delete',storageKey:key}).catch(()=>{});", "if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}", 1)
 p.write_text(s, encoding='utf-8')
 
 # 3) Home: recent work media is authoritative. Never borrow media from Portfolio.
 p = Path('script.js')
 s = p.read_text(encoding='utf-8')
-old = '''      let itens = proprias;\n      if (!itens.length) {\n        const remoto = await midiasDoPainel(t.gallery_category);\n        if (!remoto.ok || !remoto.items.length) return null;\n        itens = remoto.items;\n      }'''
-new = '''      const itens = proprias;\n      // Trabalhos recentes usam apenas suas próprias mídias. A categoria serve para classificação,\n      // nunca como fonte automática de fotos do Portfólio.\n      if (!itens.length) return null;'''
-if old not in s:
+pattern = re.compile(r"\s*let itens = proprias;\s*if \(!itens\.length\) \{\s*const remoto = await midiasDoPainel\(t\.gallery_category\);\s*if \(!remoto\.ok \|\| !remoto\.items\.length\) return null;\s*itens = remoto\.items;\s*\}")
+replacement = "\n      const itens = proprias;\n      // Trabalhos recentes usam apenas suas próprias mídias. A categoria serve para classificação,\n      // nunca como fonte automática de fotos do Portfólio.\n      if (!itens.length) return null;"
+s2, count = pattern.subn(replacement, s, count=1)
+if count != 1:
     raise SystemExit('script.js portfolio fallback block not found')
-s = s.replace(old, new, 1)
-p.write_text(s, encoding='utf-8')
+p.write_text(s2, encoding='utf-8')
