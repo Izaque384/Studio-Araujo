@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle';
+import { createClient, BetterAuthVanillaAdapter } from 'https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle';
 
 const AUTH_URL = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
 const DATA_API_URL = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
@@ -6,7 +6,7 @@ const STORAGE_FN = 'https://br-gentle-water-axxtumld-siteimages.compute.c-4.us-e
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
-const neon = createClient({ auth: { url: AUTH_URL }, dataApi: { url: DATA_API_URL } });
+const neon = createClient({ auth: { adapter: BetterAuthVanillaAdapter(), url: AUTH_URL }, dataApi: { url: DATA_API_URL } });
 const $ = id => document.getElementById(id);
 const authView=$('authView'), panelView=$('panelView'), authMsg=$('authMsg'), libraryMsg=$('libraryMsg');
 const loginForm=$('loginForm'), googleBtn=$('googleBtn'), logoutBtn=$('logoutBtn');
