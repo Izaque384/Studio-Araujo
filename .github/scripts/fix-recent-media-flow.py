@@ -52,11 +52,19 @@ s = s.replace("if(key&&!key.startsWith('legacy:'))await storageCall({action:'del
 p.write_text(s, encoding='utf-8')
 
 # 3) Home: recent work media is authoritative. Never borrow media from Portfolio.
-p = Path('script.js')
+p = Path('recent-works.js')
 s = p.read_text(encoding='utf-8')
-pattern = re.compile(r"\s*let itens = proprias;\s*if \(!itens\.length\) \{\s*const remoto = await midiasDoPainel\(t\.gallery_category\);\s*if \(!remoto\.ok \|\| !remoto\.items\.length\) return null;\s*itens = remoto\.items;\s*\}")
-replacement = "\n      const itens = proprias;\n      // Trabalhos recentes usam apenas suas próprias mídias. A categoria serve para classificação,\n      // nunca como fonte automática de fotos do Portfólio.\n      if (!itens.length) return null;"
-s2, count = pattern.subn(replacement, s, count=1)
-if count != 1:
-    raise SystemExit('script.js portfolio fallback block not found')
-p.write_text(s2, encoding='utf-8')
+old = '''      let itens = proprias;
+      if (!itens.length) {
+        const remoto = await midiasDoPainel(t.gallery_category);
+        if (!remoto.ok || !remoto.items.length) return null;
+        itens = remoto.items;
+      }'''
+new = '''      const itens = proprias;
+      // Trabalhos recentes usam apenas suas próprias mídias. A categoria serve para classificação,
+      // nunca como fonte automática de fotos do Portfólio.
+      if (!itens.length) return null;'''
+if old not in s:
+    raise SystemExit('recent-works.js portfolio fallback block not found')
+s = s.replace(old, new, 1)
+p.write_text(s, encoding='utf-8')
