@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@neondatabase/neon-js@latest?bundle';
+import { createClient } from 'https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle';
 
 const AUTH_URL = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
 const DATA_API_URL = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
@@ -18,7 +18,7 @@ const filterSearch=$('filterSearch'), filterType=$('filterType'), filterVisibili
 const uploadAreaTabs=[...document.querySelectorAll('[data-upload-area]')], standardUploadFields=$('standardUploadFields'), recentUploadNotice=$('recentUploadNotice'), uploadContextHelp=$('uploadContextHelp');
 const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders'), librarySection=$('librarySection'), closeLibraryBtn=$('closeLibraryBtn'), openLibraryBtn=$('openLibraryBtn');
 const mediaOverview=$('mediaOverview'), mediaOverviewTitle=$('mediaOverviewTitle'), mediaOverviewCopy=$('mediaOverviewCopy'), mediaOverviewCount=$('mediaOverviewCount'), mediaOverviewGrid=$('mediaOverviewGrid');
-let categories=[], queueEntries=[], currentUser=null, allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all', currentOverviewArea='portfolio';
+let categories=[], queueEntries=[], currentUser=null, cachedAuthToken='', allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all', currentOverviewArea='portfolio';
 
 function setMsg(el,text='',type=''){if(!el)return;el.textContent=text;el.className='msg'+(type?' '+type:'');}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -51,14 +51,44 @@ async function waitForSession(attempts=12,delay=450){
   if(lastError)console.warn('Sessão não recuperada após as tentativas.',lastError);
   return null;
 }
+function tokenFromSession(sessionLike){
+  return sessionLike?.session?.token||sessionLike?.data?.session?.token||sessionLike?.token||sessionLike?.access_token||'';
+}
+function tokenExpiresSoon(token){
+  try{
+    const part=String(token).split('.')[1];
+    if(!part)return false;
+    const normalized=part.replace(/-/g,'+').replace(/_/g,'/').padEnd(Math.ceil(part.length/4)*4,'=');
+    const payload=JSON.parse(atob(normalized));
+    return Number(payload?.exp||0)>0 && Number(payload.exp)<=Math.floor(Date.now()/1000)+45;
+  }catch(_){return false;}
+}
+async function getUploadAuthToken(){
+  if(cachedAuthToken&&!tokenExpiresSoon(cachedAuthToken))return cachedAuthToken;
+  try{
+    const session=await getSession();
+    const token=tokenFromSession(session);
+    if(token&&!tokenExpiresSoon(token)){cachedAuthToken=token;return token;}
+  }catch(err){console.warn('Não foi possível reaproveitar o token da sessão.',err);}
+  try{
+    const token=await neon.auth.getJWTToken?.();
+    if(token){cachedAuthToken=token;return token;}
+  }catch(err){
+    console.error('Falha ao renovar JWT para upload.',err);
+    throw new Error('Não foi possível renovar a autenticação do upload. Recarregue o painel e entre novamente.');
+  }
+  throw new Error('Sessão de upload indisponível. Recarregue o painel e entre novamente.');
+}
 async function checkAdmin(){
   const {data,error}=await neon.from('site_admins').select('user_id,email').limit(1);
   if(error){console.error('Falha ao verificar administrador.',error);return false;}
   return Array.isArray(data)&&data.length>0;
 }
-async function authorizeAndOpen(user){
+async function authorizeAndOpen(user,sessionData=null){
   if(!user)return false;
   currentUser=user;
+  const sessionToken=tokenFromSession(sessionData);
+  if(sessionToken)cachedAuthToken=sessionToken;
   if(!(await checkAdmin())){
     await neon.auth.signOut().catch(()=>{});
     currentUser=null;
@@ -95,7 +125,7 @@ async function boot(){
     }
     sessionStorage.removeItem('studio-admin-oauth-pending');
     if(params.has('auth')||params.has('authError'))history.replaceState({},'', '/painel');
-    await authorizeAndOpen(s.user);
+    await authorizeAndOpen(s.user,s);
   }catch(e){
     console.error(e);
     showAuth();
@@ -146,7 +176,7 @@ loginForm.addEventListener('submit',async e=>{
     if(r?.error)throw new Error(r.error.message||'Credenciais inválidas.');
     const user=r?.data?.user||(await waitForSession(6,300))?.user;
     if(!user)throw new Error('A autenticação foi aceita, mas a sessão não pôde ser recuperada.');
-    await authorizeAndOpen(user);
+    await authorizeAndOpen(user,r?.data||null);
   }catch(err){
     setMsg(authMsg,err?.message||'Não foi possível entrar.','error');
   }finally{submit.disabled=false;}
@@ -182,7 +212,7 @@ otpForm.addEventListener('submit',async e=>{
     const user=r?.data?.user||(await waitForSession(6,300))?.user;
     if(!user)throw new Error('O código foi aceito, mas a sessão não pôde ser recuperada.');
     otpForm.hidden=true;
-    await authorizeAndOpen(user);
+    await authorizeAndOpen(user,r?.data||null);
   }catch(err){
     console.error(err);
     setMsg(authMsg,err?.message||'Não foi possível validar o código.','error');
@@ -192,6 +222,7 @@ otpForm.addEventListener('submit',async e=>{
 logoutBtn.addEventListener('click',async()=>{
   await neon.auth.signOut();
   currentUser=null;
+  cachedAuthToken='';
   showAuth();
 });
 
@@ -308,25 +339,51 @@ async function optimizeImage(file){
   }catch(err){console.warn('Otimização não disponível para este arquivo; enviando original.',err);return file;}
 }
 async function storageCall(payload){
-  const token=await neon.auth.getJWTToken?.();
-  if(!token)throw new Error('Sessão expirada. Entre novamente.');
-  const res=await fetch(STORAGE_FN,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payload)});
-  const data=await res.json().catch(()=>({}));
-  if(!res.ok)throw new Error(data.error||'Falha no armazenamento.');
+  const token=await getUploadAuthToken();
+  let res;
+  try{
+    res=await fetch(STORAGE_FN,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payload)});
+  }catch(err){
+    console.error('Falha de rede ao chamar o armazenamento.',err);
+    throw new Error('Não foi possível acessar o serviço de armazenamento. Verifique a conexão e tente novamente.');
+  }
+  const raw=await res.text().catch(()=>'');
+  let data={};
+  try{data=raw?JSON.parse(raw):{};}catch(_){data={};}
+  if(res.status===401)cachedAuthToken='';
+  if(!res.ok){
+    const detail=data?.error||raw||res.statusText||'falha sem detalhe';
+    throw new Error(`Armazenamento HTTP ${res.status}: ${String(detail).slice(0,220)}`);
+  }
   return data;
 }
 // Shared authenticated uploader used by the main panel and by Trabalhos recentes.
 window.studioUploadMedia = async function({file: original, storageCategory, databaseCategory, altText = '', sortOrder = 1, recentWorkId = null}){
-  if(!original) throw new Error('Arquivo não informado.');
-  if(!storageCategory) throw new Error('Categoria de armazenamento não informada.');
-  const file = await optimizeImage(original);
-  const signed = await storageCall({action:'presign',category:storageCategory,fileName:file.name,contentType:file.type});
-  const put = await fetch(signed.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type},body:file});
-  if(!put.ok) throw new Error(`Não foi possível enviar ${original.name}.`);
-  const {data,error} = await neon.from('site_images').insert({
+  if(!original)throw new Error('Arquivo não informado.');
+  if(!storageCategory)throw new Error('Categoria de armazenamento não informada.');
+  const file=await optimizeImage(original);
+  let signed;
+  try{
+    signed=await storageCall({action:'presign',category:storageCategory,fileName:file.name,contentType:file.type});
+  }catch(err){
+    throw new Error(`Falha ao preparar o upload: ${err?.message||'erro desconhecido'}`);
+  }
+  if(!signed?.uploadUrl||!signed?.storageKey||!signed?.publicUrl)throw new Error('O serviço de armazenamento retornou uma resposta incompleta.');
+  let put;
+  try{
+    put=await fetch(signed.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type},body:file});
+  }catch(err){
+    console.error('Falha de rede no PUT do Storage.',err);
+    throw new Error(`Falha de conexão ao enviar ${original.name} para o Storage.`);
+  }
+  if(!put.ok){
+    const detail=await put.text().catch(()=>'');
+    throw new Error(`Storage recusou ${original.name} (HTTP ${put.status})${detail?`: ${detail.slice(0,180)}`:''}`);
+  }
+  const row={
     storage_key:signed.storageKey,
     public_url:signed.publicUrl,
-    category:databaseCategory || storageCategory,
+    category:databaseCategory||storageCategory,
     alt_text:altText,
     sort_order:sortOrder,
     is_visible:true,
@@ -335,12 +392,14 @@ window.studioUploadMedia = async function({file: original, storageCategory, data
     bytes:file.size,
     created_by:currentUser?.id||null,
     recent_work_id:recentWorkId
-  }).select('*').single();
+  };
+  const {error}=await neon.from('site_images').insert(row);
   if(error){
     await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});
-    throw error;
+    const detail=error?.message||error?.details||error?.hint||'erro desconhecido';
+    throw new Error(`Falha ao registrar a mídia no banco: ${detail}`);
   }
-  return data;
+  return row;
 };
 window.studioStorageCall = storageCall;
 

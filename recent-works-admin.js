@@ -1,4 +1,4 @@
-import { createClient } from 'https://esm.sh/@neondatabase/neon-js@latest?bundle';
+import { createClient } from 'https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle';
 
 const AUTH_URL = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
 const DATA_API_URL = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
@@ -327,9 +327,11 @@ async function uploadWorkMedia(files){
   if(!valid.length){setMediaStatus('Nenhum arquivo válido selecionado.','err');return;}
   setMediaStatus(`Enviando 0 de ${valid.length}…`);let done=0;
   try{
-    const {data:existing,error:orderError}=await neon.from('site_images').select('sort_order').eq('recent_work_id',mediaWorkId).order('sort_order',{ascending:false}).limit(1);
-    if(orderError)throw orderError;
-    let order=existing?.length?Number(existing[0].sort_order||0)+1:1;
+    // A grade já contém as mídias atuais do trabalho. Usar seus valores elimina
+    // a antiga consulta extra ao Data API que falhava com HTTP 404 antes do upload.
+    const visibleOrders=[...document.querySelectorAll('#recentMediaGrid .recent-media-order')]
+      .map(input=>Number(input.value||0)).filter(Number.isFinite);
+    let order=visibleOrders.length?Math.max(...visibleOrders)+1:1;
     for(const original of valid){
       const uploader=window.studioUploadMedia;
       if(typeof uploader!=='function')throw new Error('O uploader principal do painel não está disponível. Recarregue a página.');
@@ -338,7 +340,10 @@ async function uploadWorkMedia(files){
     }
     setMediaStatus(`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'}${invalid?` · ${invalid} ignorado${invalid===1?'':'s'}`:''}.`,'ok');
     await loadWorkMedia();
-  }catch(err){console.error('Upload de trabalho recente falhou',err);setMediaStatus(err?.message||'Não foi possível enviar as mídias.','err');}
+  }catch(err){
+    console.error('Upload de trabalho recente falhou',err);
+    setMediaStatus(`Falha no upload: ${err?.message||'erro desconhecido'}`,'err');
+  }
 }
 async function updateMediaOrder(card){
   const mediaId=card.dataset.mediaId,order=Number(card.querySelector('.recent-media-order').value||0);
