@@ -66,30 +66,42 @@
 
 
       <section class="admin-hub" aria-label="Áreas de gerenciamento">
-        <article class="hub-card hub-card-static">
+        <button type="button" class="hub-card" data-overview-area="portfolio">
           <span class="hub-icon" aria-hidden="true">01</span>
           <strong>Portfólio</strong>
           <small>Fotos e vídeos que compõem o portfólio principal.</small>
-          <span class="hub-link hub-status">Visão geral</span>
-        </article>
-        <article class="hub-card hub-card-static">
+          <span class="hub-link">Ver visão geral →</span>
+        </button>
+        <button type="button" class="hub-card" data-overview-area="recent">
           <span class="hub-icon" aria-hidden="true">02</span>
           <strong>Trabalhos recentes</strong>
           <small>Cadastre e organize os trabalhos exibidos na Home.</small>
-          <span class="hub-link hub-status">Visão geral</span>
-        </article>
-        <article class="hub-card hub-card-static">
+          <span class="hub-link">Ver visão geral →</span>
+        </button>
+        <button type="button" class="hub-card" data-overview-area="servico">
           <span class="hub-icon" aria-hidden="true">03</span>
           <strong>Galerias de serviços</strong>
           <small>Mídias e capas abertas pelos cards de serviços.</small>
-          <span class="hub-link hub-status">Visão geral</span>
-        </article>
-        <article class="hub-card hub-card-static">
+          <span class="hub-link">Ver visão geral →</span>
+        </button>
+        <button type="button" class="hub-card" data-overview-area="all">
           <span class="hub-icon" aria-hidden="true">04</span>
           <strong>Biblioteca</strong>
           <small>Encontre arquivos por área e por pasta.</small>
-          <span class="hub-link hub-status">Visão geral</span>
-        </article>
+          <span class="hub-link">Ver visão geral →</span>
+        </button>
+      </section>
+
+      <section id="mediaOverview" class="media-overview" aria-live="polite">
+        <div class="media-overview-head">
+          <div>
+            <p class="eyebrow">Visão geral</p>
+            <h2 id="mediaOverviewTitle">Portfólio</h2>
+            <p id="mediaOverviewCopy" class="section-copy">Uma visão rápida das mídias publicadas nesta área.</p>
+          </div>
+          <span id="mediaOverviewCount" class="overview-count">—</span>
+        </div>
+        <div id="mediaOverviewGrid" class="overview-grid"></div>
       </section>
 
       <section id="uploadSection" class="upload-card admin-section">

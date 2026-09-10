@@ -13,6 +13,7 @@ let initialized = false;
 let categories = [];
 let editingId = null;
 let mediaWorkId = null;
+let recentWorkCount = 0;
 
 function injectStyles() {
   if (document.getElementById('recentAdminStyles')) return;
@@ -62,14 +63,14 @@ function buildSection(panel) {
       <div>
         <p class="eyebrow">Home</p>
         <h2>Trabalhos recentes</h2>
-        <p class="recent-admin-note">Crie o trabalho primeiro e, em seguida, adicione suas fotos e vídeos. A Home mostra os 3 primeiros itens ativos, de acordo com a ordem.</p>
+        <p class="recent-admin-note">Crie o trabalho primeiro e, em seguida, adicione suas fotos e vídeos. É possível cadastrar no máximo 3 trabalhos, que são exibidos na Home de acordo com a ordem.</p>
       </div>
       <button type="button" class="btn btn-ghost" id="recentRefresh">Atualizar</button>
     </div>
 
     <div class="recent-step-label"><span>1</span><div><strong>Informações do trabalho</strong><small>Título, categoria, data e publicação</small></div></div>
     <form id="recentForm" class="recent-form">
-      <label>Galeria
+      <label>Categoria
         <select id="recentGallery" required></select>
       </label>
       <label>Ordem
@@ -135,6 +136,8 @@ async function loadRecentWorks() {
     return;
   }
   const items = data || [];
+  recentWorkCount = items.length;
+  updateRecentLimitState();
   if (!items.length) {
     list.innerHTML = '<div class="recent-empty">Nenhum trabalho cadastrado ainda.</div>';
     return;
@@ -165,6 +168,17 @@ async function loadRecentWorks() {
   });
 }
 
+function updateRecentLimitState(){
+  const save=document.getElementById('recentSave');
+  if(!save)return;
+  const atLimit=recentWorkCount>=3 && !editingId;
+  save.disabled=atLimit;
+  save.textContent=atLimit?'Limite de 3 trabalhos atingido':(editingId?'Salvar alterações':'Adicionar trabalho');
+  const form=document.getElementById('recentForm');
+  if(form)form.classList.toggle('recent-limit-reached',atLimit);
+  if(atLimit)setStatus('Você já cadastrou o máximo de 3 trabalhos recentes. Exclua um trabalho para adicionar outro.','');
+}
+
 function resetForm() {
   editingId = null;
   closeMediaManager();
@@ -172,6 +186,7 @@ function resetForm() {
   const loc = document.getElementById('recentLocation'); if (loc) loc.value = 'Morrinhos, CE';
   const active = document.getElementById('recentActive'); if (active) active.checked = true;
   const save = document.getElementById('recentSave'); if (save) save.textContent = 'Adicionar trabalho';
+  updateRecentLimitState();
   const cancel = document.getElementById('recentCancel'); if (cancel) cancel.hidden = true;
 }
 
@@ -184,6 +199,7 @@ function editItem(item) {
   document.getElementById('recentDescription').value = item.description || '';
   document.getElementById('recentLocation').value = item.location || '';
   document.getElementById('recentActive').checked = !!item.is_active;
+  document.getElementById('recentSave').disabled = false;
   document.getElementById('recentSave').textContent = 'Salvar alterações';
   document.getElementById('recentCancel').hidden = false;
   openMediaManager(item);
@@ -193,6 +209,11 @@ function editItem(item) {
 async function saveItem(e) {
   e.preventDefault();
   const save = document.getElementById('recentSave');
+  if(!editingId && recentWorkCount>=3){
+    setStatus('Limite de 3 trabalhos recentes atingido. Exclua um trabalho antes de cadastrar outro.','err');
+    updateRecentLimitState();
+    return;
+  }
   const payload = {
     gallery_category: document.getElementById('recentGallery').value,
     title: document.getElementById('recentTitle').value.trim(),
@@ -230,6 +251,7 @@ async function saveItem(e) {
   } finally {
     save.disabled = false;
     if (!editingId) save.textContent = 'Adicionar trabalho';
+    updateRecentLimitState();
   }
 }
 

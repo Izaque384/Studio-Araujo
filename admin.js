@@ -17,7 +17,8 @@ const imageGrid=$('imageGrid'), dropzone=$('dropzone'), refreshBtn=$('refreshBtn
 const filterSearch=$('filterSearch'), filterType=$('filterType'), filterVisibility=$('filterVisibility'), filterSort=$('filterSort');
 const uploadAreaTabs=[...document.querySelectorAll('[data-upload-area]')], standardUploadFields=$('standardUploadFields'), recentUploadNotice=$('recentUploadNotice'), uploadContextHelp=$('uploadContextHelp');
 const libraryFolders=$('libraryFolders'), categoryFolders=$('categoryFolders'), librarySection=$('librarySection'), closeLibraryBtn=$('closeLibraryBtn'), openLibraryBtn=$('openLibraryBtn');
-let categories=[], queueEntries=[], currentUser=null, allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all';
+const mediaOverview=$('mediaOverview'), mediaOverviewTitle=$('mediaOverviewTitle'), mediaOverviewCopy=$('mediaOverviewCopy'), mediaOverviewCount=$('mediaOverviewCount'), mediaOverviewGrid=$('mediaOverviewGrid');
+let categories=[], queueEntries=[], currentUser=null, allMedia=[], currentUploadArea='portfolio', currentLibraryArea='all', currentOverviewArea='portfolio';
 
 function setMsg(el,text='',type=''){if(!el)return;el.textContent=text;el.className='msg'+(type?' '+type:'');}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -238,6 +239,35 @@ function closeLibrary(){
 closeLibraryBtn?.addEventListener('click',closeLibrary);
 openLibraryBtn?.addEventListener('click',openLibrary);
 
+function overviewMeta(area){
+  if(area==='recent')return {title:'Trabalhos recentes',copy:'Fotos e vídeos vinculados aos trabalhos recentes da Home.'};
+  if(area==='servico')return {title:'Galerias de serviços',copy:'Mídias usadas nas galerias abertas pelos cards de serviços.'};
+  if(area==='all')return {title:'Biblioteca',copy:'Visão geral de todas as mídias cadastradas no site.'};
+  return {title:'Portfólio',copy:'Fotos e vídeos que compõem o portfólio principal.'};
+}
+function renderOverview(){
+  if(!mediaOverviewGrid)return;
+  const area=currentOverviewArea;
+  const items=area==='all'?allMedia:allMedia.filter(m=>categoryArea(m.category)===area);
+  const meta=overviewMeta(area);
+  mediaOverviewTitle.textContent=meta.title;
+  mediaOverviewCopy.textContent=meta.copy;
+  mediaOverviewCount.textContent=`${items.length} mídia${items.length===1?'':'s'}`;
+  document.querySelectorAll('[data-overview-area]').forEach(btn=>btn.classList.toggle('active',btn.dataset.overviewArea===area));
+  if(!items.length){mediaOverviewGrid.innerHTML='<div class="overview-empty">Nenhuma mídia cadastrada nesta área.</div>';return;}
+  const sorted=[...items].sort((a,b)=>categoryRank(a.category)-categoryRank(b.category)||Number(a.sort_order||0)-Number(b.sort_order||0));
+  mediaOverviewGrid.innerHTML=sorted.slice(0,12).map(m=>{
+    const video=isVideoType(m.mime_type);
+    const preview=video?`<video src="${esc(m.public_url)}" muted preload="metadata"></video>`:`<img src="${esc(m.public_url)}" alt="" loading="lazy">`;
+    return `<article class="overview-media"><figure>${preview}<span>${video?'Vídeo':m.is_cover?'Capa':'Foto'}</span></figure><small>${esc(categoryLabel(m.category).replace(/^Portfólio\s*[—-]\s*/i,''))}</small></article>`;
+  }).join('')+(items.length>12?`<div class="overview-more">+${items.length-12} mídias na Biblioteca</div>`:'');
+}
+document.querySelectorAll('[data-overview-area]').forEach(btn=>btn.addEventListener('click',()=>{
+  currentOverviewArea=btn.dataset.overviewArea;
+  renderOverview();
+  mediaOverview?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}));
+
 fileInput.addEventListener('change',()=>setFiles([...fileInput.files]));
 ['dragenter','dragover'].forEach(t=>dropzone.addEventListener(t,e=>{e.preventDefault();dropzone.classList.add('drag');}));
 ['dragleave','drop'].forEach(t=>dropzone.addEventListener(t,e=>{e.preventDefault();dropzone.classList.remove('drag');}));
@@ -335,6 +365,7 @@ async function loadMedia(){
   }
   allMedia=data||[];
   updateSummary();
+  renderOverview();
   applyFilters();
 }
 function updateSummary(){
