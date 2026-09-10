@@ -37,12 +37,10 @@
 
     const preparados = await Promise.all(trabalhos.map(async (t) => {
       const proprias = links.filter(r => r.recent_work_id === t.id).map(r => { const m = linkedMedia.get(r.media_id); return m ? normalizeMedia({ ...m, is_cover:r.is_cover }) : null; }).filter(Boolean);
-      let itens = proprias;
-      if (!itens.length) {
-        const remoto = await midiasDoPainel(t.gallery_category);
-        if (!remoto.ok || !remoto.items.length) return null;
-        itens = remoto.items;
-      }
+      const itens = proprias;
+      // Trabalhos recentes usam apenas suas próprias mídias. A categoria serve para classificação,
+      // nunca como fonte automática de fotos do Portfólio.
+      if (!itens.length) return null;
       const capa = itens.find(i => !isVideo(i) && i.is_cover) || itens.find(i => !isVideo(i));
       if (!capa) return null;
       return { ...t, itens, capa, label: labels.get(t.gallery_category) || t.gallery_category };

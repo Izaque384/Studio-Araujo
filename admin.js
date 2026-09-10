@@ -315,6 +315,34 @@ async function storageCall(payload){
   if(!res.ok)throw new Error(data.error||'Falha no armazenamento.');
   return data;
 }
+// Shared authenticated uploader used by the main panel and by Trabalhos recentes.
+window.studioUploadMedia = async function({file: original, storageCategory, databaseCategory, altText = '', sortOrder = 1}){
+  if(!original) throw new Error('Arquivo não informado.');
+  if(!storageCategory) throw new Error('Categoria de armazenamento não informada.');
+  const file = await optimizeImage(original);
+  const signed = await storageCall({action:'presign',category:storageCategory,fileName:file.name,contentType:file.type});
+  const put = await fetch(signed.uploadUrl,{method:'PUT',headers:{'Content-Type':file.type},body:file});
+  if(!put.ok) throw new Error(`Não foi possível enviar ${original.name}.`);
+  const {data,error} = await neon.from('site_images').insert({
+    storage_key:signed.storageKey,
+    public_url:signed.publicUrl,
+    category:databaseCategory || storageCategory,
+    alt_text:altText,
+    sort_order:sortOrder,
+    is_visible:true,
+    is_cover:false,
+    mime_type:file.type,
+    bytes:file.size,
+    created_by:currentUser?.id||null
+  }).select('*').single();
+  if(error){
+    await storageCall({action:'delete',storageKey:signed.storageKey}).catch(()=>{});
+    throw error;
+  }
+  return data;
+};
+window.studioStorageCall = storageCall;
+
 function nextSortOrder(category){
   const values=allMedia.filter(m=>m.category===category).map(m=>Number(m.sort_order||0)).filter(Number.isFinite);
   return values.length?Math.max(...values)+1:1;
