@@ -1,0 +1,35 @@
+name: Fix recent work upload
+on:
+  push:
+    paths:
+      - '.fix-recent-upload-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply repair
+        run: python .github/scripts/fix-recent-upload.py
+      - name: Validate JavaScript
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+          grep -q "@neondatabase/neon-js@0.7.0-beta?bundle" admin.js
+          grep -q "@neondatabase/neon-js@0.7.0-beta?bundle" recent-works-admin.js
+          grep -q "getUploadAuthToken" admin.js
+          grep -q "Falha ao preparar o upload" admin.js
+          grep -q "visibleOrders" recent-works-admin.js
+          if grep -q "select('sort_order').eq('recent_work_id',mediaWorkId)" recent-works-admin.js; then exit 1; fi
+          if grep -q "recent_work_id:recentWorkId.*select" admin.js; then exit 1; fi
+      - name: Commit repair
+        run: |
+          rm -f .fix-recent-upload-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.js recent-works-admin.js .fix-recent-upload-run
+          git commit -m 'Fix recent work media upload flow'
+          git push origin main
