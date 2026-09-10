@@ -1,0 +1,34 @@
+name: Direct recent media
+on:
+  push:
+    paths:
+      - '.direct-recent-media-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python .github/scripts/direct-recent-media.py
+      - name: Validate
+        run: |
+          node --check admin.js
+          node --check recent-works-admin.js
+          node --check recent-works.js
+          grep -q 'recentWorkId = null' admin.js
+          grep -q 'recent_work_id:recentWorkId' admin.js
+          grep -q "eq('recent_work_id',mediaWorkId)" recent-works-admin.js
+          grep -q "recent_work_id,sort_order,is_cover" recent-works.js
+          if grep -q "from('recent_work_media')" recent-works-admin.js; then exit 1; fi
+          if grep -q "from('recent_work_media')" recent-works.js; then exit 1; fi
+      - name: Commit changes
+        run: |
+          rm -f .direct-recent-media-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add admin.js recent-works-admin.js recent-works.js .direct-recent-media-run
+          git commit -m 'Use direct media ownership for recent works'
+          git push origin main
