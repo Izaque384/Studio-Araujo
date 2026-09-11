@@ -1,0 +1,57 @@
+name: Remove Ensaio de Casal service card and gallery
+on:
+  push:
+    paths:
+      - '.remove-ensaio-casal-run'
+permissions:
+  contents: write
+jobs:
+  remove:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove service card and gallery files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('servicos.html')
+          text = p.read_text(encoding='utf-8')
+          needle = '<h3>Ensaio de Casal</h3>'
+          if needle not in text:
+              raise SystemExit('Card Ensaio de Casal não encontrado em servicos.html')
+          pos = text.index(needle)
+          start = text.rfind('        <div class="servico-card">', 0, pos)
+          end = text.find('        <div class="servico-card">', pos + len(needle))
+          if start < 0 or end < 0:
+              raise SystemExit('Não foi possível delimitar o card Ensaio de Casal')
+          text = text[:start] + text[end:]
+          text = text.replace('Casamentos, ensaios de casal, gestantes, formaturas, chá revelação, moda e álbuns fotográficos', 'Casamentos, gestantes, formaturas, chá revelação, moda e álbuns fotográficos')
+          p.write_text(text, encoding='utf-8')
+
+          s = Path('script.js')
+          code = s.read_text(encoding='utf-8')
+          code = code.replace(", 'ensaio-casal': 7", "")
+          code = code.replace(",'ensaio-casal-9'", "")
+          code = code.replace(", 'ensaio-casal-9'", "")
+          s.write_text(code, encoding='utf-8')
+          PY
+          git rm -f assets/galeria/ensaio-casal-*.jpg
+      - name: Validate removal
+        run: |
+          node --check script.js
+          ! grep -q 'data-service="ensaio-casal"' servicos.html
+          ! grep -q 'data-gallery="ensaio-casal"' servicos.html
+          ! grep -q '<h3>Ensaio de Casal</h3>' servicos.html
+          test -z "$(find assets/galeria -maxdepth 1 -type f -name 'ensaio-casal-*' -print)"
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add servicos.html script.js assets/galeria
+          git commit -m 'Remove Ensaio de Casal service card and gallery'
+          git push origin main
