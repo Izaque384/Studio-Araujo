@@ -1,0 +1,66 @@
+name: Remove Ensaio de Casal completely
+on:
+  push:
+    paths:
+      - '.remove-ensaio-casal-complete-run'
+permissions:
+  contents: write
+jobs:
+  remove:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Remove service from packages and booking catalog
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # dados-servicos.js: remove o pacote e o rótulo interno.
+          p = Path('dados-servicos.js')
+          text = p.read_text(encoding='utf-8')
+          start_marker = '  "ensaio-casal": {'
+          next_marker = '  "pre-wedding": {'
+          if start_marker in text:
+              start = text.index(start_marker)
+              end = text.index(next_marker, start)
+              text = text[:start] + text[end:]
+          text = text.replace('  "ensaio-casal": "Ensaio de Casal",\n', '')
+          p.write_text(text, encoding='utf-8')
+
+          # agenda.js: remove o serviço disponível para agendamento.
+          a = Path('agenda.js')
+          code = a.read_text(encoding='utf-8')
+          line = '  { chave: "ensaio-casal", nome: "Ensaio de Casal", grupo: "estudio", duracao: 60 },\n'
+          code = code.replace(line, '')
+
+          # Evita que um agendamento antigo salvo em localStorage deixe o usuário
+          # preso em uma etapa inválida depois da remoção do serviço.
+          anchor = '  st.pacote=pacoteCanonico(m.st.pacote);\n'
+          guard = ('  st.pacote=pacoteCanonico(m.st.pacote);\n'
+                   '  if(st.servico && !servicoAtual()){st.servico=null;st.pacote=null;st.data=null;st.hora=null;m.etapa=2;}\n')
+          if guard not in code:
+              if anchor not in code:
+                  raise SystemExit('Ponto de restauração do agendamento não encontrado')
+              code = code.replace(anchor, guard, 1)
+          a.write_text(code, encoding='utf-8')
+          PY
+      - name: Validate complete removal
+        run: |
+          node --check agenda.js
+          node --check dados-servicos.js
+          ! grep -q 'ensaio-casal' agenda.js
+          ! grep -q 'ensaio-casal' dados-servicos.js
+          ! grep -q 'Ensaio de Casal' agenda.js
+          ! grep -q 'Ensaio de Casal' dados-servicos.js
+          ! grep -Rni --exclude-dir=.git --exclude-dir=.github --exclude='.remove-ensaio-casal-complete-run' -E 'ensaio-casal|Ensaio de Casal' .
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dados-servicos.js agenda.js
+          git diff --cached --quiet && exit 0
+          git commit -m 'Remove Ensaio de Casal from booking and pricing'
+          git push origin main
