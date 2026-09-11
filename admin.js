@@ -606,5 +606,5 @@ async function deleteCard(card){
 }
 
 renderQueue();
-import('./recent-works-admin.js?v=20260910-recent-upload-fix').catch(err=>console.error('Falha ao carregar trabalhos recentes no painel.',err));
+import('./recent-works-admin.js?v=20260911-editor-v2').catch(err=>console.error('Falha ao carregar trabalhos recentes no painel.',err));
 boot();

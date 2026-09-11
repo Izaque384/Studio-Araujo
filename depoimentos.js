@@ -389,39 +389,154 @@ async function carregarDepoimentos() {
 
 carregarDepoimentos();
 
-// Fallback visual imediato dos trabalhos recentes; recent-works.js substitui quando o Neon responde.
-(function montarTrabalhosRecentes(){
-  const portfolio=document.getElementById("portfolio");
-  if(!portfolio||document.getElementById("trabalhosRecentes"))return;
-  const destaques=[
-    {label:"Ensaios de Gestante",titulo:"Ensaio de gestante",tipo:"Gestante",texto:"Um registro delicado para guardar a beleza e a emoção de uma fase única."},
-    {label:"Casamentos",titulo:"Casamento",tipo:"Casamento",texto:"Afeto, detalhes e momentos espontâneos registrados do começo ao fim."},
-    {label:"Aniversários",titulo:"Aniversário",tipo:"Aniversário",texto:"Sorrisos, encontros e memórias de um dia feito para celebrar."}
-  ];
-  const mosaicos=Array.from(portfolio.querySelectorAll(".mosaic-item"));
-  const cards=destaques.map(d=>{
-    const origem=mosaicos.find(item=>item.querySelector(".mosaic-label")?.textContent.trim()===d.label),foto=origem?.querySelector("img");
-    if(!foto)return"";
-    const src=foto.getAttribute("src"),alt=foto.getAttribute("alt")||d.titulo;
-    return '<article class="recent-work-card"><button type="button" class="recent-work-photo" data-recent-target="'+escapeHTML(d.label)+'" aria-label="Ver trabalho: '+escapeHTML(d.titulo)+'"><img src="'+escapeHTML(src)+'" alt="'+escapeHTML(alt)+'" loading="lazy" decoding="async"><span class="recent-work-tag">'+escapeHTML(d.tipo)+'</span></button><div class="recent-work-body"><h3>'+escapeHTML(d.titulo)+'</h3><p>'+escapeHTML(d.texto)+'</p><button type="button" class="recent-work-link" data-recent-target="'+escapeHTML(d.label)+'">Ver trabalho <span aria-hidden="true">→</span></button></div></article>';
-  }).filter(Boolean).join("");
-  if(!cards)return;
-  const section=document.createElement("section");
-  section.id="trabalhosRecentes";
-  section.className="recent-works-section";
-  section.innerHTML='<div class="wrap"><div class="recent-works-head"><div class="recent-works-eyebrow"><span></span>Trabalhos recentes<span></span></div><h2>Histórias reais, registradas <em>recentemente</em></h2><p>Uma seleção de trabalhos para mostrar de perto a sensibilidade, o cuidado e o estilo do Studio Araújo.</p></div><div class="recent-works-grid">'+cards+'</div><div class="recent-works-cta"><a class="btn btn-outline" href="#portfolio">Ver portfólio completo</a></div></div>';
-  const stats=document.querySelector(".stats-band");
-  if(stats?.parentNode)stats.parentNode.insertBefore(section,stats);else portfolio.insertAdjacentElement("afterend",section);
-  const style=document.createElement("style");
-  style.textContent=`.recent-works-section{padding:96px 0;background:linear-gradient(180deg,#11100e 0%,#0e0d0b 100%);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}.recent-works-head{text-align:center;max-width:820px;margin:0 auto 46px}.recent-works-eyebrow{display:flex;align-items:center;justify-content:center;gap:18px;color:var(--gold);font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;margin-bottom:20px}.recent-works-eyebrow span{width:62px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}.recent-works-eyebrow span:last-child{background:linear-gradient(90deg,var(--gold),transparent)}.recent-works-head h2{font-size:clamp(2rem,4vw,3.2rem);line-height:1.12;margin-bottom:14px;color:var(--cream)}.recent-works-head h2 em{font-style:italic;color:var(--gold-light)}.recent-works-head p{color:var(--muted);max-width:680px;margin:0 auto}.recent-works-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}.recent-work-card{background:linear-gradient(180deg,#181510,#12110e);border:1px solid rgba(201,162,75,.18);border-radius:16px;overflow:hidden}.recent-work-photo{display:block;position:relative;width:100%;aspect-ratio:4/4.6;border:0;padding:0;background:#0e0d0b;cursor:pointer;overflow:hidden}.recent-work-photo img{width:100%;height:100%;object-fit:cover}.recent-work-tag{position:absolute;z-index:2;top:16px;left:16px;padding:7px 12px;border-radius:999px;background:rgba(14,13,11,.68);border:1px solid rgba(243,236,220,.22);color:var(--cream);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase}.recent-work-body{padding:24px}.recent-work-body h3{font-size:1.65rem;color:var(--cream);margin-bottom:8px}.recent-work-body p{color:var(--muted);font-size:.9rem;line-height:1.6}.recent-work-link{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:20px;padding:16px 0 0;border:0;border-top:1px solid rgba(201,162,75,.14);background:none;color:var(--gold-light);font:400 .78rem 'Jost',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.recent-works-cta{display:flex;justify-content:center;margin-top:40px}@media(max-width:860px){.recent-works-section{padding:74px 0}.recent-works-grid{grid-template-columns:1fr;max-width:560px;margin:0 auto}}`;
-  document.head.appendChild(style);
-  section.querySelectorAll("[data-recent-target]").forEach(btn=>btn.addEventListener("click",()=>{
-    const alvo=mosaicos.find(item=>item.querySelector(".mosaic-label")?.textContent.trim()===btn.dataset.recentTarget);
-    if(alvo)alvo.click();
-  }));
+// =====================================================================
+// DEPOIMENTOS — acabamento visual fiel à direção editorial escolhida.
+// =====================================================================
+(function lapidarDepoimentos() {
+  const track = document.getElementById('testiTrack');
+  if (!track) return;
+
+  if (!document.getElementById('testimonialsEditorialStyle')) {
+    const style = document.createElement('style');
+    style.id = 'testimonialsEditorialStyle';
+    style.textContent = `
+      .testimonials.alt,.testimonials{background:#0e0d0b!important;background-image:none!important}
+      .testimonials .section-head{display:flex!important;flex-direction:column!important;align-items:center!important;max-width:780px!important;margin:0 auto 34px!important;text-align:center!important}
+      .testimonials .section-head .eyebrow{width:100%!important;justify-content:center!important;text-align:center!important;margin-left:0!important;margin-right:0!important}
+      .testimonials .section-head h2,.testimonials .section-head .section-sub{width:100%!important;text-align:center!important;margin-left:auto!important;margin-right:auto!important}
+      .testimonials .section-sub{max-width:640px!important}
+
+      .testi-carousel{max-width:1080px!important;margin:0 auto 34px!important;background:transparent!important}
+      .testi-carousel::after{display:none!important}
+      .carousel-wrapper{max-width:1000px!important;min-height:300px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important}
+      .carousel-wrapper::before,.carousel-wrapper::after{display:none!important}
+      .carousel-track{gap:28px!important;padding:10px 0!important;align-items:center!important}
+      .carousel-slide{flex:0 0 86%!important;opacity:0!important;transform:scale(.99)!important;pointer-events:none!important;transition:opacity .42s ease,transform .42s ease!important}
+      .carousel-slide.active{opacity:1!important;transform:scale(1)!important;pointer-events:auto!important}
+      .carousel-slide.peek-left,.carousel-slide.peek-right{opacity:.04!important}
+
+      .carousel-slide.testi-card{position:relative!important;min-height:270px!important;margin:0!important;padding:34px 70px 34px 180px!important;display:grid!important;grid-template-columns:1fr!important;grid-template-rows:auto auto auto!important;align-content:center!important;text-align:left!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+      .carousel-slide.testi-card:hover{transform:none!important;box-shadow:none!important;border-color:transparent!important}
+      .carousel-slide.testi-card::before{display:none!important}
+      .carousel-slide.testi-card::after{content:'”'!important;position:absolute!important;right:52px!important;bottom:12px!important;top:auto!important;left:auto!important;width:auto!important;height:auto!important;background:none!important;color:rgba(201,162,75,.18)!important;font-family:'Cormorant Garamond',serif!important;font-size:5.6rem!important;line-height:1!important;opacity:1!important}
+
+      .carousel-slide.testi-card > .testi-avatar{position:absolute!important;left:76px!important;top:52px!important;width:78px!important;height:78px!important;border-radius:50%!important;overflow:hidden!important;border:1px solid rgba(201,162,75,.35)!important;background:#15130f!important;display:grid!important;place-items:center!important;color:var(--gold-light)!important;font-family:'Cormorant Garamond',serif!important;font-size:1.25rem!important;font-weight:600!important;letter-spacing:.04em!important;box-shadow:none!important}
+      .carousel-slide.testi-card > .testi-avatar img{width:100%!important;height:100%!important;object-fit:cover!important}
+      .carousel-slide.testi-card .testi-stars{grid-row:1!important;margin:0 0 14px!important;display:flex!important;justify-content:flex-start!important;gap:5px!important;color:var(--gold-light)!important}
+      .carousel-slide.testi-card .testi-stars .star{width:13px!important;height:13px!important;opacity:.9!important}
+      .carousel-slide.testi-card blockquote{grid-row:2!important;max-width:720px!important;margin:0 0 22px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;font-family:'Cormorant Garamond',serif!important;font-size:clamp(1.45rem,2.45vw,2rem)!important;font-style:italic!important;font-weight:400!important;line-height:1.42!important;color:var(--cream)!important}
+      .carousel-slide.testi-card figcaption{grid-row:3!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;min-height:0!important;margin:0!important;padding:0!important;text-align:left!important;border:0!important;background:transparent!important}
+      .carousel-slide.testi-card figcaption::before{display:none!important}
+      .carousel-slide.testi-card figcaption .testi-avatar{display:none!important}
+      .carousel-slide.testi-card .testi-name{font-size:.9rem!important;font-weight:500!important;letter-spacing:.04em!important;color:var(--cream)!important}
+      .carousel-slide.testi-card .testi-role{margin-top:2px!important;font-size:.72rem!important;letter-spacing:.05em!important;color:var(--muted)!important}
+
+      .carousel-nav{width:42px!important;height:42px!important;border:1px solid rgba(201,162,75,.35)!important;border-radius:50%!important;background:rgba(14,13,11,.82)!important;color:var(--gold-light)!important;backdrop-filter:blur(6px)!important;z-index:5!important}
+      .carousel-prev{left:10px!important}.carousel-next{right:10px!important}
+      .carousel-dots{margin-top:4px!important}.carousel-dots .c-dot{width:6px!important;height:6px!important;opacity:.38!important}.carousel-dots .c-dot.on{width:18px!important;border-radius:99px!important;opacity:1!important;background:var(--gold)!important}
+
+      @media(max-width:860px){
+        .carousel-slide{flex-basis:94%!important}
+        .carousel-slide.testi-card{padding:32px 54px 32px 145px!important}
+        .carousel-slide.testi-card > .testi-avatar{left:48px!important;top:52px!important;width:70px!important;height:70px!important}
+      }
+      @media(max-width:560px){
+        .testimonials .section-head{margin-bottom:26px!important}
+        .carousel-wrapper{min-height:350px!important}
+        .carousel-slide{flex-basis:100%!important}
+        .carousel-slide.testi-card{min-height:330px!important;padding:112px 34px 34px!important;text-align:center!important}
+        .carousel-slide.testi-card > .testi-avatar{left:50%!important;top:20px!important;transform:translateX(-50%)!important;width:72px!important;height:72px!important}
+        .carousel-slide.testi-card .testi-stars{justify-content:center!important}
+        .carousel-slide.testi-card blockquote{text-align:center!important;font-size:clamp(1.28rem,6vw,1.58rem)!important}
+        .carousel-slide.testi-card figcaption{align-items:center!important;text-align:center!important}
+        .carousel-slide.testi-card::after{right:18px!important;bottom:8px!important;font-size:4.3rem!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const organizarCards = () => {
+    track.querySelectorAll('.testi-card').forEach(card => {
+      const caption = card.querySelector('figcaption');
+      const avatar = caption?.querySelector('.testi-avatar');
+      if (avatar && avatar.parentElement === caption) card.insertBefore(avatar, card.firstChild);
+    });
+    requestAnimationFrame(() => {
+      try { if (typeof posicionarTrack === 'function') posicionarTrack(); } catch (_) {}
+    });
+  };
+
+  organizarCards();
+  new MutationObserver(organizarCards).observe(track, { childList:true, subtree:true });
 })();
 
-const recentWorksScript=document.createElement('script');
-recentWorksScript.src='recent-works.js';
-recentWorksScript.defer=true;
-document.body.appendChild(recentWorksScript);
+// =====================================================================
+// DEPOIMENTOS — dados legados, fotos do site antigo e pausa no hover.
+// =====================================================================
+(function integrarDepoimentosLegados() {
+  const avataresFixos = {
+    'Leane Santos': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_0184.jpg?t=1586453358',
+    'Gessilene': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_6294.jpg?t=1586455182',
+    'Josineide': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_7149.jpg?t=1586455991'
+  };
+
+  try {
+    DEPOIMENTOS_FIXOS.forEach(dep => {
+      const url = avataresFixos[dep.nome];
+      if (url) dep.avatar_url = url;
+    });
+  } catch (_) {}
+
+  let pausadoPorHover = false;
+  try {
+    const iniciarAutoplayBase = iniciarAutoplay;
+    iniciarAutoplay = function() {
+      if (pausadoPorHover) return;
+      return iniciarAutoplayBase();
+    };
+
+    if (carrosselContainer) {
+      carrosselContainer.addEventListener('mouseenter', () => {
+        pausadoPorHover = true;
+        clearInterval(autoplayTimer);
+      });
+      carrosselContainer.addEventListener('mouseleave', () => {
+        pausadoPorHover = false;
+        clearInterval(autoplayTimer);
+        if (carrosselTotal > 1) iniciarAutoplay();
+      });
+    }
+  } catch (_) {}
+
+  try {
+    carregarDepoimentos = async function() {
+      let planilha = [], neonDeps = [];
+      montarCarrossel(DEPOIMENTOS_FIXOS);
+      await Promise.all([
+        fetch(DEPOIMENTOS_API_URL)
+          .then(r => r.json())
+          .then(d => {
+            if (!Array.isArray(d.depoimentos)) return;
+            planilha = d.depoimentos.filter(dep => {
+              const nome = String(dep.nome || '').trim().toLowerCase();
+              const comentario = String(dep.comentario || '').trim().toLowerCase();
+              const instagram = String(dep.instagram || '').replace(/^@/, '').trim().toLowerCase();
+              const isIzaqueLegado = nome === 'izaque' && instagram === 'izakinho_' && comentario.includes('o trabalho de vocês é incrível');
+              return !isIzaqueLegado;
+            });
+          })
+          .catch(() => {}),
+        neonPublicClient()
+          .then(n => n.from('site_testimonials').select('id,name,instagram,comment,avatar_url,created_at').eq('is_visible', true).order('created_at', { ascending: false }))
+          .then(({ data, error }) => {
+            if (!error && Array.isArray(data)) {
+              neonDeps = data.map(x => ({ id:x.id, nome:x.name, instagram:x.instagram, comentario:x.comment, avatar_url:x.avatar_url, data:'' }));
+            }
+          })
+          .catch(() => {})
+      ]);
+      montarCarrossel([...DEPOIMENTOS_FIXOS, ...neonDeps, ...planilha]);
+    };
+    carregarDepoimentos();
+  } catch (_) {}
+})();

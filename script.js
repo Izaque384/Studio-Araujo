@@ -170,6 +170,7 @@ function lbRender() {
   [lbIndex + 1, lbIndex - 1].forEach((i) => { const j = (i + lbMedia.length) % lbMedia.length; const vizinho = normalizeMedia(lbMedia[j]); if (!isVideo(vizinho)) new Image().src = vizinho.url; });
 }
 function lbOpen(itens, indice, rotulo, origem) { if (!lightbox || !itens || !itens.length) return; lbMedia = itens.map(normalizeMedia); lbIndex = Math.max(0, Math.min(indice || 0, lbMedia.length - 1)); lbLabel = rotulo; lbOpener = origem || null; lightbox.hidden = false; document.body.style.overflow = 'hidden'; lbRender(); requestAnimationFrame(() => lightbox.classList.add('open')); lbClose.focus(); }
+window.studioLightboxOpen = lbOpen;
 function lbHide() { lightbox.classList.remove('open'); lightbox.style.display = ''; document.body.style.overflow = ''; if (lbVideo) { lbVideo.pause(); lbVideo.removeAttribute('src'); lbVideo.load(); } setTimeout(() => { lightbox.hidden = true; lbImg.removeAttribute('src'); }, 280); if (lbOpener) lbOpener.focus(); }
 function lbGo(passo) { if (lbMedia.length < 2) return; lbIndex = (lbIndex + passo + lbMedia.length) % lbMedia.length; lbRender(); }
 if (lightbox) {

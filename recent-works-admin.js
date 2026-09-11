@@ -48,7 +48,7 @@ function injectStyles() {
     .recent-media-context{display:grid;gap:5px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(201,162,75,.11);border-radius:12px;background:rgba(201,162,75,.025)}.recent-media-context-label{color:#817765;font-size:.65rem;text-transform:uppercase;letter-spacing:.12em}.recent-media-context strong{font-size:1rem;font-weight:500;color:#f3ecdc}
     .recent-media-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.recent-media-upload input{display:none}.recent-media-add{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;min-width:210px}.recent-media-add-icon{font-size:1rem;line-height:1}.recent-media-upload-help{color:#756d5d;font-size:.72rem}.recent-media-status{display:block;margin:6px 0 14px;min-height:18px}
     .recent-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.recent-media-grid:empty{min-height:118px;border:1px dashed rgba(201,162,75,.15);border-radius:12px;display:grid;place-items:center}.recent-media-grid:empty:before{content:'Nenhuma mídia adicionada ainda.';color:#817765;font-size:.82rem}.recent-media-card{border:1px solid rgba(201,162,75,.14);border-radius:12px;overflow:hidden;background:#12100d}.recent-media-card figure{margin:0;aspect-ratio:4/3;background:#070706}.recent-media-card img,.recent-media-card video{width:100%;height:100%;object-fit:cover}.recent-media-card-body{padding:9px;display:grid;gap:8px}.recent-media-card-body input{width:100%;background:#0e0d0b;border:1px solid rgba(201,162,75,.18);color:#f3ecdc;border-radius:8px;padding:8px}.recent-media-actions{display:flex;gap:6px;flex-wrap:wrap}.recent-media-actions .btn{padding:7px 9px;font-size:.72rem}.recent-cover-on{color:#e6c878;border-color:rgba(230,200,120,.5)!important}
-    .recent-card-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,162,75,.12)}.recent-footer-save{min-width:150px}.recent-footer-save:disabled{cursor:not-allowed}
+    .recent-card-footer{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,162,75,.12)}.recent-save-indicator{margin-right:auto;display:inline-flex;align-items:center;gap:7px;color:#8fcf92;font-size:.8rem;letter-spacing:.02em}.recent-save-indicator[hidden]{display:none}.recent-footer-save{min-width:170px}.recent-footer-save:disabled{cursor:not-allowed}
     @media(max-width:980px){.recent-media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.recent-form{grid-template-columns:1fr}.recent-span-2{grid-column:auto}.recent-row{grid-template-columns:1fr}.recent-row-actions{justify-content:flex-start}.recent-admin{padding:20px}.recent-media-manager{padding:16px}.recent-media-topbar{align-items:stretch}.recent-media-add{width:100%}.recent-media-upload-help{width:100%}}
   `;
@@ -67,7 +67,7 @@ function buildSection(panel) {
       <div>
         <p class="eyebrow">Home</p>
         <h2>Trabalhos recentes</h2>
-        <p class="recent-admin-note">Crie o trabalho primeiro e, em seguida, adicione suas fotos e vídeos. É possível cadastrar no máximo 3 trabalhos, que são exibidos na Home de acordo com a ordem.</p>
+        <p class="recent-admin-note">Cadastre até 3 trabalhos. Use “Editar” para alterar informações, fotos, vídeos, capa e ordem em um único fluxo; a Home segue exatamente esta configuração.</p>
       </div>
     </div>
 
@@ -99,7 +99,6 @@ function buildSection(panel) {
     <section id="recentMediaManager" class="recent-media-manager" hidden>
       <div class="recent-media-topbar">
         <div class="recent-step-label recent-step-media"><span>2</span><div><strong>Fotos e vídeos</strong><small>Adicione as mídias, escolha a capa e organize a ordem</small></div></div>
-        <button type="button" class="recent-media-close" id="recentMediaClose" aria-label="Fechar" title="Fechar">×</button>
       </div>
       <div class="recent-media-context">
         <span class="recent-media-context-label">Trabalho selecionado</span>
@@ -116,6 +115,7 @@ function buildSection(panel) {
     <p id="recentStatus" class="recent-status" aria-live="polite"></p>
     <div id="recentList" class="recent-list"></div>
     <div class="recent-card-footer">
+      <span id="recentSaveIndicator" class="recent-save-indicator" role="status" aria-live="polite" hidden>✓ Alterações salvas com sucesso</span>
       <button type="submit" form="recentForm" class="btn btn-primary recent-footer-save" id="recentSave">Salvar</button>
     </div>
   `;
@@ -127,6 +127,19 @@ function setStatus(text='', type='') {
   if (!el) return;
   el.textContent = text;
   el.className = 'recent-status' + (type ? ' ' + type : '');
+}
+
+let saveIndicatorTimer = null;
+function showSaveIndicator(text='Alterações salvas com sucesso') {
+  const el = document.getElementById('recentSaveIndicator');
+  if (!el) return;
+  el.textContent = '✓ ' + text;
+  el.hidden = false;
+  clearTimeout(saveIndicatorTimer);
+  saveIndicatorTimer = setTimeout(() => { el.hidden = true; }, 2800);
+}
+function notifyRecentWorksChanged() {
+  try { localStorage.setItem('studio-recent-works-updated', String(Date.now())); } catch (_) {}
 }
 
 async function loadCategories() {
@@ -171,14 +184,13 @@ async function loadRecentWorks() {
         ${item.work_date ? `<span class="recent-pill">${esc(item.work_date)}</span>` : ''}
       </div>
       <div class="recent-row-actions">
-        <button type="button" class="btn btn-ghost recent-media">Mídias</button><button type="button" class="btn btn-ghost recent-edit">Editar</button>
+        <button type="button" class="btn btn-ghost recent-edit">Editar</button>
         <button type="button" class="btn btn-danger recent-delete">Excluir</button>
       </div>
     </article>`).join('');
 
   list.querySelectorAll('.recent-row').forEach(row => {
     const item = items.find(i => i.id === row.dataset.id);
-    row.querySelector('.recent-media').addEventListener('click', () => openMediaManager(item));
     row.querySelector('.recent-edit').addEventListener('click', () => editItem(item));
     row.querySelector('.recent-delete').addEventListener('click', () => deleteItem(item));
   });
@@ -192,7 +204,6 @@ function updateRecentLimitState(){
   save.textContent=atLimit?'Limite de 3 trabalhos atingido':'Salvar';
   const form=document.getElementById('recentForm');
   if(form)form.classList.toggle('recent-limit-reached',atLimit);
-  if(atLimit)setStatus('Você já cadastrou o máximo de 3 trabalhos recentes. Exclua um trabalho para adicionar outro.','');
 }
 
 function resetForm() {
@@ -211,14 +222,14 @@ function editItem(item) {
   document.getElementById('recentGallery').value = item.gallery_category;
   document.getElementById('recentOrder').value = Number(item.sort_order || 0);
   document.getElementById('recentTitle').value = item.title || '';
-  document.getElementById('recentDate').value = item.work_date || '';
+  document.getElementById('recentDate').value = item.work_date ? String(item.work_date).slice(0,10) : '';
   document.getElementById('recentDescription').value = item.description || '';
   document.getElementById('recentLocation').value = item.location || '';
   document.getElementById('recentActive').checked = !!item.is_active;
   document.getElementById('recentSave').disabled = false;
-  document.getElementById('recentSave').textContent = 'Salvar';
+  document.getElementById('recentSave').textContent = 'Salvar alterações';
   document.getElementById('recentCancel').hidden = false;
-  openMediaManager(item);
+  openMediaManager(item, false);
   document.getElementById('recentForm').scrollIntoView({behavior:'smooth',block:'center'});
 }
 
@@ -245,28 +256,42 @@ async function saveItem(e) {
   setStatus('');
   try {
     const wasEditing = !!editingId;
+    const targetId = editingId;
     let savedItem = null;
     if (wasEditing) {
-      const { error } = await neon.from('recent_works').update(payload).eq('id', editingId);
+      const { error } = await neon.from('recent_works').update(payload).eq('id', targetId);
       if (error) throw error;
+      savedItem = { id: targetId, ...payload };
     } else {
       const { data, error } = await neon.from('recent_works').insert(payload).select('*').single();
       if (error) throw error;
       savedItem = data;
+      editingId = savedItem.id;
     }
-    setStatus(wasEditing ? 'Trabalho atualizado.' : 'Trabalho criado. Agora adicione as fotos ou vídeos.', 'ok');
-    resetForm();
+
+    notifyRecentWorksChanged();
     await loadRecentWorks();
-    if (savedItem) {
-      await openMediaManager(savedItem);
-      setMediaStatus('Trabalho criado com sucesso. Adicione as mídias abaixo para concluir.', 'ok');
+
+    if (wasEditing) {
+      setStatus('Alterações salvas com sucesso.', 'ok');
+      showSaveIndicator('Alterações salvas com sucesso');
+      await new Promise(resolve => setTimeout(resolve, 900));
+      resetForm();
+      setStatus('');
+      document.getElementById('recentList')?.scrollIntoView({behavior:'smooth', block:'nearest'});
+    } else {
+      setStatus('Trabalho criado. Adicione ou organize as mídias e clique em “Salvar alterações” para concluir.', 'ok');
+      showSaveIndicator('Trabalho criado com sucesso');
+      document.getElementById('recentSave').textContent = 'Salvar alterações';
+      document.getElementById('recentCancel').hidden = false;
+      await openMediaManager(savedItem, false);
     }
   } catch (err) {
     console.error(err);
-    setStatus('Não foi possível salvar este trabalho.', 'err');
+    setStatus(err?.message ? `Não foi possível salvar: ${err.message}` : 'Não foi possível salvar este trabalho.', 'err');
   } finally {
     save.disabled = false;
-    if (!editingId) save.textContent = 'Salvar';
+    save.textContent = editingId ? 'Salvar alterações' : 'Salvar';
     updateRecentLimitState();
   }
 }
@@ -281,6 +306,8 @@ async function deleteItem(item) {
     return;
   }
   setStatus('Trabalho excluído.', 'ok');
+  notifyRecentWorksChanged();
+  showSaveIndicator('Trabalho excluído');
   if (editingId === item.id) resetForm();
   await loadRecentWorks();
 }
@@ -315,8 +342,8 @@ async function loadWorkMedia(){
   grid.innerHTML=media.map(m=>{const video=String(m.mime_type||'').startsWith('video/');const preview=video?`<video src="${esc(m.public_url)}" controls preload="metadata"></video>`:`<img src="${esc(m.public_url)}" alt="${esc(m.alt_text||'')}" loading="lazy">`;return `<article class="recent-media-card" data-media-id="${esc(m.id)}" data-key="${esc(m.storage_key)}"><figure>${preview}</figure><div class="recent-media-card-body"><label>Ordem<input class="recent-media-order" type="number" value="${Number(m.sort_order||0)}"></label><div class="recent-media-actions"><button type="button" class="btn btn-ghost recent-set-cover ${m.is_cover?'recent-cover-on':''}" ${video?'disabled title="Vídeo não pode ser capa"':''}>${m.is_cover?'Capa atual':'Definir capa'}</button><button type="button" class="btn btn-danger recent-remove-media">Excluir</button></div></div></article>`}).join('');
   grid.querySelectorAll('.recent-media-card').forEach(card=>{card.querySelector('.recent-media-order')?.addEventListener('change',()=>updateMediaOrder(card));card.querySelector('.recent-set-cover')?.addEventListener('click',()=>setWorkCover(card));card.querySelector('.recent-remove-media')?.addEventListener('click',()=>deleteWorkMedia(card));});
 }
-async function openMediaManager(item){
-  mediaWorkCategory=item?.gallery_category||null;mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();box.scrollIntoView({behavior:'smooth',block:'start'});
+async function openMediaManager(item, shouldScroll=true){
+  mediaWorkCategory=item?.gallery_category||null;mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();if(shouldScroll)box.scrollIntoView({behavior:'smooth',block:'start'});
 }
 function closeMediaManager(){
   mediaWorkCategory=null;mediaWorkId=null;const box=document.getElementById('recentMediaManager');if(box)box.hidden=true;const input=document.getElementById('recentMediaInput');if(input)input.value='';
@@ -339,6 +366,7 @@ async function uploadWorkMedia(files){
       done++;order++;setMediaStatus(`Enviando ${done} de ${valid.length}…`);
     }
     setMediaStatus(`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'}${invalid?` · ${invalid} ignorado${invalid===1?'':'s'}`:''}.`,'ok');
+    notifyRecentWorksChanged();showSaveIndicator('Mídias salvas automaticamente');
     await loadWorkMedia();
   }catch(err){
     console.error('Upload de trabalho recente falhou',err);
@@ -348,17 +376,17 @@ async function uploadWorkMedia(files){
 async function updateMediaOrder(card){
   const mediaId=card.dataset.mediaId,order=Number(card.querySelector('.recent-media-order').value||0);
   const {error}=await neon.from('site_images').update({sort_order:order}).eq('id',mediaId).eq('recent_work_id',mediaWorkId);
-  setMediaStatus(error?'Não foi possível alterar a ordem.':'Ordem atualizada.',error?'err':'ok');if(!error)await loadWorkMedia();
+  setMediaStatus(error?'Não foi possível alterar a ordem.':'Ordem atualizada.',error?'err':'ok');if(!error){notifyRecentWorksChanged();showSaveIndicator('Ordem salva automaticamente');await loadWorkMedia();}
 }
 async function setWorkCover(card){
   const mediaId=card.dataset.mediaId;setMediaStatus('Atualizando capa…');
   const {error:e1}=await neon.from('site_images').update({is_cover:false}).eq('recent_work_id',mediaWorkId);if(e1){setMediaStatus('Não foi possível atualizar a capa.','err');return;}
-  const {error:e2}=await neon.from('site_images').update({is_cover:true}).eq('id',mediaId).eq('recent_work_id',mediaWorkId);setMediaStatus(e2?'Não foi possível definir a capa.':'Capa atualizada.',e2?'err':'ok');if(!e2)await loadWorkMedia();
+  const {error:e2}=await neon.from('site_images').update({is_cover:true}).eq('id',mediaId).eq('recent_work_id',mediaWorkId);setMediaStatus(e2?'Não foi possível definir a capa.':'Capa atualizada.',e2?'err':'ok');if(!e2){notifyRecentWorksChanged();showSaveIndicator('Capa salva automaticamente');await loadWorkMedia();}
 }
 async function deleteWorkMedia(card){
   if(!confirm('Excluir esta mídia deste trabalho?'))return;const mediaId=card.dataset.mediaId,key=card.dataset.key;setMediaStatus('Excluindo…');
   const {error}=await neon.from('site_images').delete().eq('id',mediaId).eq('recent_work_id',mediaWorkId);if(error){setMediaStatus('Não foi possível excluir esta mídia.','err');return;}
-  if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}setMediaStatus('Mídia excluída.','ok');await loadWorkMedia();
+  if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}setMediaStatus('Mídia excluída.','ok');notifyRecentWorksChanged();showSaveIndicator('Mídia removida');await loadWorkMedia();
 }
 
 async function init() {
@@ -374,7 +402,6 @@ async function init() {
     document.getElementById('recentForm').addEventListener('submit', saveItem);
     document.getElementById('recentCancel').addEventListener('click', resetForm);
     document.getElementById('recentMediaInput').addEventListener('change',e=>uploadWorkMedia([...e.target.files]).finally(()=>{e.target.value='';}));
-    document.getElementById('recentMediaClose').addEventListener('click',closeMediaManager);
   } catch (err) {
     console.error(err);
     setStatus('Não foi possível iniciar a gestão de trabalhos recentes.', 'err');
