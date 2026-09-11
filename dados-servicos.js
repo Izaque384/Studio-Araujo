@@ -112,17 +112,6 @@ const servicePackages = {
     note: "Será um prazer registrar esse momento tão especial da história de vocês!"
   },
 
-  "ensaio-casal": {
-    title: "Ensaio de Casal em Estúdio",
-    price: "R$ 200,00",
-    items: [
-      "Sessão fotográfica de casal realizada no Studio Araújo",
-      "20 fotos digitais editadas em alta qualidade",
-      "Todas as fotos da sessão são disponibilizadas para o casal escolher as 20 melhores",
-      "Entrega digital via Google Fotos"
-    ]
-  },
-
   "pre-wedding": {
     title: "Pré-Wedding — Ensaio Externo de Casal",
     price: "R$ 400,00",
@@ -317,7 +306,6 @@ const serviceLabels = {
   corporativa: "Sessão Corporativa",
   moda: "Moda",
   batizado: "Batizados",
-  "ensaio-casal": "Ensaio de Casal",
   "pre-wedding": "Pré-Wedding",
   albuns: "Álbuns Fotográficos",
   luva: "Luva / Estojo",

@@ -21,7 +21,6 @@ const GRUPOS = [
 // As durações abaixo foram preservadas de propósito. Ajustes de duração do
 // catálogo comercial ficam fora desta correção.
 const CATALOGO = [
-  { chave: "ensaio-casal", nome: "Ensaio de Casal", grupo: "estudio", duracao: 60 },
   { chave: "gestante", nome: "Gestante", grupo: "estudio", duracao: 60 },
   { chave: "abc", nome: "ABC", grupo: "estudio", duracao: 45 },
   { chave: "formatura", nome: "Formatura", grupo: "estudio", duracao: 45 },
@@ -320,6 +319,7 @@ montarTipos();
   st.grupo=m.st.grupo||null;st.servico=m.st.servico||null;st.pacote=pacoteCanonico.call(null,m.st.pacote);st.data=m.st.data||null;st.hora=m.st.hora||null;st.looks=Math.max(10,parseInt(m.st.looks,10)||10);
   // pacoteCanonico depende do serviço já restaurado.
   st.pacote=pacoteCanonico(m.st.pacote);
+  if(st.servico && !servicoAtual()){st.servico=null;st.pacote=null;st.data=null;st.hora=null;m.etapa=2;}
   el.nome.value=m.nome||"";el.fone.value=m.fone||"";el.local.value=m.local||"";el.nota.value=m.nota||"";
   if(st.data&&doISO(st.data)<primeiraDataValida()){st.data=null;st.hora=null;}
   montarTipos();montarServicos();
