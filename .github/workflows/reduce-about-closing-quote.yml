@@ -1,0 +1,44 @@
+name: Reduce About closing quote
+on:
+  push:
+    paths:
+      - '.about-quote-size-run'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reduce closing quote size
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('sobre.html')
+          text = p.read_text(encoding='utf-8')
+          old_desktop = "font-size:clamp(2.05rem,3.9vw,2.9rem)!important;"
+          new_desktop = "font-size:clamp(1.78rem,3.15vw,2.42rem)!important;"
+          old_mobile = "font-size:clamp(1.78rem,8vw,2.28rem)!important;"
+          new_mobile = "font-size:clamp(1.55rem,6.8vw,1.95rem)!important;"
+          if text.count(old_desktop) != 1:
+              raise SystemExit(f'desktop rule: expected 1 match, found {text.count(old_desktop)}')
+          if text.count(old_mobile) != 1:
+              raise SystemExit(f'mobile rule: expected 1 match, found {text.count(old_mobile)}')
+          text = text.replace(old_desktop, new_desktop, 1).replace(old_mobile, new_mobile, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Validate change
+        run: |
+          grep -q "font-size:clamp(1.78rem,3.15vw,2.42rem)!important;" sobre.html
+          grep -q "font-size:clamp(1.55rem,6.8vw,1.95rem)!important;" sobre.html
+      - name: Commit
+        run: |
+          rm -f .about-quote-size-run
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add sobre.html .about-quote-size-run
+          git commit -m 'Reduce About closing quote size'
+          git push origin main
