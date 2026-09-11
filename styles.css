@@ -3228,3 +3228,90 @@ a.testi-name:hover{ color:var(--gold-light); }
   .legal-doc{ font-size:0.95rem; }
   .legal-doc h2{ font-size:1.35rem; margin-top:34px; }
 }
+
+/* ---------- MOBILE HARDENING 2026-09 ---------- */
+/* Ajustes finais de ergonomia para telas de toque sem alterar o desktop. */
+body.nav-open{
+  overflow:hidden;
+}
+
+@media (max-width:820px){
+  .nav-links{
+    height:100vh;
+    height:100dvh;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    padding-top:max(40px, env(safe-area-inset-top));
+    padding-bottom:max(40px, env(safe-area-inset-bottom));
+  }
+  .nav-links a{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+  }
+  .burger{
+    width:44px;
+    height:44px;
+    padding:0;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+  }
+}
+
+@media (max-width:600px){
+  .wrap{
+    padding-left:20px;
+    padding-right:20px;
+  }
+  section{
+    padding-top:80px;
+    padding-bottom:80px;
+  }
+  section.tight{
+    padding-top:64px;
+    padding-bottom:88px;
+  }
+  .cta-band{
+    padding-top:48px;
+    padding-bottom:84px;
+  }
+  .hero{
+    min-height:100svh;
+  }
+  .hero-actions,
+  .cta-actions,
+  .portfolio-cta{
+    gap:12px;
+  }
+  .hero-actions .btn,
+  .cta-actions .btn,
+  .portfolio-cta .btn{
+    min-height:48px;
+    justify-content:center;
+  }
+  .social a{
+    width:44px;
+    height:44px;
+  }
+  .gallery-btn{
+    min-height:44px;
+  }
+  .carousel-nav{
+    width:44px !important;
+    height:44px !important;
+  }
+  .bk-cal{
+    padding:12px;
+  }
+  .bk-cal-nav{
+    width:44px;
+    height:44px;
+  }
+  .bk-dia{
+    height:44px;
+    min-height:44px;
+    font-size:.9rem;
+  }
+}
+
