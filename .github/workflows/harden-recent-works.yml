@@ -1,0 +1,510 @@
+name: Harden recent works sync and editor
+on:
+  push:
+    paths:
+      - '.harden-recent-works-run'
+permissions:
+  contents: write
+jobs:
+  harden:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Refactor recent works editor and home sync
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          # -----------------------------------------------------------------
+          # 1) Desacopla depoimentos dos Trabalhos recentes.
+          #    Move apenas os refinamentos de depoimentos que estavam no
+          #    arquivo recent-works.js e remove o fallback estático incorreto.
+          # -----------------------------------------------------------------
+          rw_path = Path('recent-works.js')
+          old_rw = rw_path.read_text(encoding='utf-8')
+          testimonial_marker = '// =====================================================================\n// DEPOIMENTOS — acabamento visual fiel à direção editorial escolhida.'
+          testimonial_tail = ''
+          if testimonial_marker in old_rw:
+              testimonial_tail = old_rw[old_rw.index(testimonial_marker):].strip()
+
+          dep_path = Path('depoimentos.js')
+          dep = dep_path.read_text(encoding='utf-8')
+          fallback_marker = '// Fallback visual imediato dos trabalhos recentes; recent-works.js substitui quando o Neon responde.'
+          if fallback_marker in dep:
+              dep = dep[:dep.index(fallback_marker)].rstrip()
+          if testimonial_tail and testimonial_marker not in dep:
+              dep = dep + '\n\n' + testimonial_tail + '\n'
+          else:
+              dep = dep.rstrip() + '\n'
+          dep_path.write_text(dep, encoding='utf-8')
+
+          # -----------------------------------------------------------------
+          # 2) recent-works.js passa a ser independente e ter uma função única.
+          # -----------------------------------------------------------------
+          new_rw = r'''// =====================================================================
+// TRABALHOS RECENTES — fonte única: painel administrativo / Neon
+// Este arquivo é carregado diretamente pela Home. Não depende de
+// depoimentos.js e não usa conteúdo estático como fallback.
+// =====================================================================
+(async function recentWorksModule(){
+  'use strict';
+
+  const AUTH_URL = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
+  const DATA_API_URL = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
+  const SYNC_KEY = 'studio-recent-works-updated';
+  const section = document.getElementById('trabalhosRecentes');
+  if (!section) return;
+
+  let clientPromise = null;
+  let syncPromise = null;
+  let lastSyncAt = 0;
+
+  const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  const isVideo = (item) => item?.type === 'video' || String(item?.mime_type || '').startsWith('video/');
+  const normalizeMedia = (item) => ({
+    url: item?.public_url || item?.url || '',
+    type: isVideo(item) ? 'video' : 'image',
+    alt: item?.alt_text || item?.alt || '',
+    is_cover: !!item?.is_cover
+  });
+  const formatDate = (value) => {
+    if (!value) return '';
+    const raw = String(value).slice(0, 10);
+    const [y,m,d] = raw.split('-').map(Number);
+    if (!y || !m || !d) return '';
+    return new Intl.DateTimeFormat('pt-BR', { month:'long', year:'numeric' }).format(new Date(y, m - 1, d));
+  };
+
+  async function client(){
+    if (!clientPromise) {
+      clientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle').then(({createClient, BetterAuthVanillaAdapter}) =>
+        createClient({
+          auth: { adapter: BetterAuthVanillaAdapter(), url: AUTH_URL, allowAnonymous: true },
+          dataApi: { url: DATA_API_URL }
+        })
+      );
+    }
+    return clientPromise;
+  }
+
+  async function fetchConfiguredWorks(){
+    const neon = await client();
+    const [worksResult, categoriesResult] = await Promise.all([
+      neon.from('recent_works')
+        .select('id,gallery_category,title,description,work_date,location,sort_order,is_active')
+        .eq('is_active', true)
+        .order('sort_order', { ascending:true })
+        .order('work_date', { ascending:false })
+        .limit(3),
+      neon.from('site_categories').select('slug,label')
+    ]);
+
+    if (worksResult.error) throw worksResult.error;
+    const works = Array.isArray(worksResult.data) ? worksResult.data : [];
+    if (!works.length) return [];
+
+    const ids = works.map(w => w.id);
+    const mediaResult = await neon.from('site_images')
+      .select('id,public_url,alt_text,mime_type,recent_work_id,sort_order,is_cover,is_visible')
+      .in('recent_work_id', ids)
+      .eq('is_visible', true)
+      .order('sort_order', { ascending:true });
+    if (mediaResult.error) throw mediaResult.error;
+
+    const labels = new Map((categoriesResult.error ? [] : (categoriesResult.data || [])).map(c => [c.slug, c.label]));
+    const allMedia = Array.isArray(mediaResult.data) ? mediaResult.data : [];
+
+    return works.map(work => {
+      const items = allMedia.filter(m => m.recent_work_id === work.id).map(normalizeMedia);
+      if (!items.length) return null;
+      const cover = items.find(i => !isVideo(i) && i.is_cover) || items.find(i => !isVideo(i));
+      if (!cover) return null;
+      return {
+        ...work,
+        items,
+        cover,
+        label: labels.get(work.gallery_category) || work.gallery_category
+      };
+    }).filter(Boolean);
+  }
+
+  function render(works){
+    if (!works.length) {
+      section.innerHTML = '';
+      section.hidden = true;
+      section.dataset.sync = 'empty';
+      return;
+    }
+
+    const cards = works.map((work, index) => {
+      const date = formatDate(work.work_date);
+      const meta = [date, work.location]
+        .filter(Boolean)
+        .map((text, i) => `<span class="recent-work-meta-item">${i === 0 ? '◷' : '⌖'} ${esc(text)}</span>`)
+        .join('');
+      const label = String(work.label || '').replace(/^Portfólio\s*[—-]\s*/i, '');
+      return `<article class="recent-work-card" data-recent-index="${index}">
+        <button type="button" class="recent-work-photo" aria-label="Ver trabalho: ${esc(work.title)}">
+          <img src="${esc(work.cover.url)}" alt="${esc(work.cover.alt || work.title)}" loading="lazy" decoding="async">
+          <span class="recent-work-tag">${esc(label)}</span>
+        </button>
+        <div class="recent-work-body">
+          <h3>${esc(work.title)}</h3>
+          <p>${esc(work.description || '')}</p>
+          ${meta ? `<div class="recent-work-meta">${meta}</div>` : ''}
+          <button type="button" class="recent-work-link">Ver trabalho <span aria-hidden="true">→</span></button>
+        </div>
+      </article>`;
+    }).join('');
+
+    section.innerHTML = `<div class="wrap">
+      <div class="recent-works-head">
+        <div class="recent-works-eyebrow"><span></span>Trabalhos recentes<span></span></div>
+        <h2>Histórias reais, registradas <em>recentemente</em></h2>
+        <p>Uma seleção de trabalhos para mostrar de perto a sensibilidade, o cuidado e o estilo do Studio Araújo.</p>
+      </div>
+      <div class="recent-works-grid">${cards}</div>
+      <div class="recent-works-cta"><a class="btn btn-outline" href="#portfolio">Ver portfólio completo</a></div>
+    </div>`;
+
+    section.querySelectorAll('.recent-work-card').forEach((card, index) => {
+      const work = works[index];
+      const open = () => {
+        if (typeof window.studioLightboxOpen === 'function') {
+          window.studioLightboxOpen(work.items, 0, work.title, card.querySelector('.recent-work-photo'));
+          return;
+        }
+        const first = work.cover?.url;
+        if (first) window.open(first, '_blank', 'noopener');
+      };
+      card.querySelector('.recent-work-photo')?.addEventListener('click', open);
+      card.querySelector('.recent-work-link')?.addEventListener('click', open);
+    });
+
+    section.hidden = false;
+    section.dataset.sync = 'ok';
+  }
+
+  async function synchronize({force=false}={}){
+    const now = Date.now();
+    if (!force && now - lastSyncAt < 1200) return;
+    if (syncPromise) return syncPromise;
+    syncPromise = (async () => {
+      let lastError = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const works = await fetchConfiguredWorks();
+          render(works);
+          lastSyncAt = Date.now();
+          return;
+        } catch (err) {
+          lastError = err;
+          if (attempt < 2) await sleep(attempt === 0 ? 500 : 1400);
+        }
+      }
+      section.innerHTML = '';
+      section.hidden = true;
+      section.dataset.sync = 'error';
+      console.warn('Trabalhos recentes: não foi possível sincronizar com o painel.', lastError);
+    })().finally(() => { syncPromise = null; });
+    return syncPromise;
+  }
+
+  window.refreshRecentWorks = () => synchronize({force:true});
+  window.addEventListener('storage', (event) => {
+    if (event.key === SYNC_KEY) synchronize({force:true});
+  });
+  window.addEventListener('pageshow', () => synchronize({force:true}));
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) synchronize({force:true});
+  });
+
+  await synchronize({force:true});
+})();
+'''
+          rw_path.write_text(new_rw, encoding='utf-8')
+
+          # -----------------------------------------------------------------
+          # 3) Ponto fixo na Home + carregamento direto e cache-bust.
+          # -----------------------------------------------------------------
+          index_path = Path('index.html')
+          index = index_path.read_text(encoding='utf-8')
+          if 'id="trabalhosRecentes"' not in index:
+              marker = '  <!-- 11 ANOS -->'
+              if marker not in index:
+                  raise SystemExit('Marcador da seção de 11 anos não encontrado em index.html')
+              placeholder = '  <!-- TRABALHOS RECENTES — conteúdo vem exclusivamente do painel -->\n  <section id="trabalhosRecentes" class="recent-works-section" hidden aria-live="polite"></section>\n\n'
+              index = index.replace(marker, placeholder + marker, 1)
+
+          old_scripts = '<script src="script.js"></script>\n<script src="depoimentos.js"></script>'
+          new_scripts = '<script src="script.js?v=20260911-recent-v2"></script>\n<script src="recent-works.js?v=20260911-recent-v2"></script>\n<script src="depoimentos.js?v=20260911-recent-v2"></script>'
+          if old_scripts in index:
+              index = index.replace(old_scripts, new_scripts, 1)
+          else:
+              # Atualiza versões anteriores, se já houver querystring.
+              import re
+              index = re.sub(r'<script src="script\.js(?:\?[^\"]*)?"></script>\s*<script src="(?:recent-works\.js(?:\?[^\"]*)?\"></script>\s*)?depoimentos\.js(?:\?[^\"]*)?"></script>', new_scripts, index, count=1)
+          if 'recent-works.js?v=20260911-recent-v2' not in index:
+              raise SystemExit('Falha ao adicionar carregamento direto de recent-works.js')
+          index_path.write_text(index, encoding='utf-8')
+
+          # -----------------------------------------------------------------
+          # 4) CSS definitivo no stylesheet, sem depender de JS de depoimentos.
+          # -----------------------------------------------------------------
+          styles_path = Path('styles.css')
+          styles = styles_path.read_text(encoding='utf-8')
+          css_marker = '/* ---------- TRABALHOS RECENTES · FONTE: PAINEL ---------- */'
+          if css_marker not in styles:
+              styles += r'''
+
+/* ---------- TRABALHOS RECENTES · FONTE: PAINEL ---------- */
+.recent-works-section{padding:96px 0;background:linear-gradient(180deg,#11100e 0%,#0e0d0b 100%);border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline)}
+.recent-works-section[hidden]{display:none!important}
+.recent-works-head{text-align:center;max-width:820px;margin:0 auto 46px}
+.recent-works-eyebrow{display:flex;align-items:center;justify-content:center;gap:18px;color:var(--gold);font-size:.76rem;letter-spacing:.24em;text-transform:uppercase;margin-bottom:20px}
+.recent-works-eyebrow span{width:62px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.recent-works-eyebrow span:last-child{background:linear-gradient(90deg,var(--gold),transparent)}
+.recent-works-head h2{font-size:clamp(2rem,4vw,3.2rem);line-height:1.12;margin-bottom:14px;color:var(--cream)}
+.recent-works-head h2 em{font-style:italic;color:var(--gold-light)}
+.recent-works-head p{color:var(--muted);max-width:680px;margin:0 auto}
+.recent-works-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+.recent-work-card{background:linear-gradient(180deg,#181510,#12110e);border:1px solid rgba(201,162,75,.18);border-radius:16px;overflow:hidden;box-shadow:0 22px 50px rgba(0,0,0,.18);transition:transform .35s ease,border-color .35s ease,box-shadow .35s ease}
+.recent-work-card:hover{transform:translateY(-5px);border-color:rgba(201,162,75,.38);box-shadow:0 28px 60px rgba(0,0,0,.28)}
+.recent-work-photo{display:block;position:relative;width:100%;aspect-ratio:4/4.6;border:0;padding:0;background:#0e0d0b;cursor:pointer;overflow:hidden}
+.recent-work-photo::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 56%,rgba(14,13,11,.82) 100%);pointer-events:none}
+.recent-work-photo img{width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.16,.84,.44,1)}
+.recent-work-card:hover .recent-work-photo img{transform:scale(1.035)}
+.recent-work-tag{position:absolute;z-index:2;top:16px;left:16px;padding:7px 12px;border-radius:999px;background:rgba(14,13,11,.68);border:1px solid rgba(243,236,220,.22);backdrop-filter:blur(8px);color:var(--cream);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase}
+.recent-work-body{padding:24px 24px 22px}
+.recent-work-body h3{font-size:1.65rem;color:var(--cream);margin-bottom:8px}
+.recent-work-body p{color:var(--muted);font-size:.9rem;line-height:1.6;min-height:58px;white-space:pre-line}
+.recent-work-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:15px;color:var(--muted);font-size:.75rem}
+.recent-work-meta-item{display:inline-flex;align-items:center;gap:5px}
+.recent-work-link{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:20px;padding:16px 0 0;border:0;border-top:1px solid rgba(201,162,75,.14);background:none;color:var(--gold-light);font:400 .78rem 'Jost',sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.recent-work-link span{font-size:1.2rem;transition:transform .25s ease}
+.recent-work-link:hover span{transform:translateX(4px)}
+.recent-works-cta{display:flex;justify-content:center;margin-top:40px}
+@media(max-width:860px){.recent-works-section{padding:74px 0}.recent-works-grid{grid-template-columns:1fr;max-width:560px;margin:0 auto}.recent-work-photo{aspect-ratio:4/3.7}.recent-work-body p{min-height:0}.recent-works-eyebrow span{width:38px}}
+@media(max-width:520px){.recent-works-head{margin-bottom:34px}.recent-work-body{padding:20px}.recent-work-photo{aspect-ratio:4/4.2}}
+@media(prefers-reduced-motion:reduce){.recent-work-card,.recent-work-photo img,.recent-work-link span{transition:none!important}}
+'''
+          styles_path.write_text(styles, encoding='utf-8')
+
+          # -----------------------------------------------------------------
+          # 5) Contrato estável para abrir a lightbox a partir do módulo.
+          # -----------------------------------------------------------------
+          script_path = Path('script.js')
+          script = script_path.read_text(encoding='utf-8')
+          export_line = 'window.studioLightboxOpen = lbOpen;'
+          if export_line not in script:
+              anchor = "function lbOpen(itens, indice, rotulo, origem) { if (!lightbox || !itens || !itens.length) return; lbMedia = itens.map(normalizeMedia); lbIndex = Math.max(0, Math.min(indice || 0, lbMedia.length - 1)); lbLabel = rotulo; lbOpener = origem || null; lightbox.hidden = false; document.body.style.overflow = 'hidden'; lbRender(); requestAnimationFrame(() => lightbox.classList.add('open')); lbClose.focus(); }"
+              if anchor not in script:
+                  raise SystemExit('Função lbOpen não encontrada em script.js')
+              script = script.replace(anchor, anchor + '\n' + export_line, 1)
+          script_path.write_text(script, encoding='utf-8')
+
+          # -----------------------------------------------------------------
+          # 6) Painel: Editar passa a controlar dados + mídias, feedback de
+          #    sucesso, reset ao concluir e sincronização com a Home.
+          # -----------------------------------------------------------------
+          admin_recent_path = Path('recent-works-admin.js')
+          ar = admin_recent_path.read_text(encoding='utf-8')
+
+          ar = ar.replace(
+              'Crie o trabalho primeiro e, em seguida, adicione suas fotos e vídeos. É possível cadastrar no máximo 3 trabalhos, que são exibidos na Home de acordo com a ordem.',
+              'Cadastre até 3 trabalhos. Use “Editar” para alterar informações, fotos, vídeos, capa e ordem em um único fluxo; a Home segue exatamente esta configuração.'
+          )
+
+          ar = ar.replace(
+              '.recent-card-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,162,75,.12)}.recent-footer-save{min-width:150px}.recent-footer-save:disabled{cursor:not-allowed}',
+              '.recent-card-footer{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,162,75,.12)}.recent-save-indicator{margin-right:auto;display:inline-flex;align-items:center;gap:7px;color:#8fcf92;font-size:.8rem;letter-spacing:.02em}.recent-save-indicator[hidden]{display:none}.recent-footer-save{min-width:170px}.recent-footer-save:disabled{cursor:not-allowed}'
+          )
+
+          ar = ar.replace(
+              '        <button type="button" class="recent-media-close" id="recentMediaClose" aria-label="Fechar" title="Fechar">×</button>\n',
+              ''
+          )
+          ar = ar.replace(
+              '    <div class="recent-card-footer">\n      <button type="submit" form="recentForm" class="btn btn-primary recent-footer-save" id="recentSave">Salvar</button>\n    </div>',
+              '    <div class="recent-card-footer">\n      <span id="recentSaveIndicator" class="recent-save-indicator" role="status" aria-live="polite" hidden>✓ Alterações salvas com sucesso</span>\n      <button type="submit" form="recentForm" class="btn btn-primary recent-footer-save" id="recentSave">Salvar</button>\n    </div>'
+          )
+
+          # Remove botão Mídias e seu listener; Editar já abre o gerenciador.
+          ar = ar.replace(
+              '        <button type="button" class="btn btn-ghost recent-media">Mídias</button><button type="button" class="btn btn-ghost recent-edit">Editar</button>\n',
+              '        <button type="button" class="btn btn-ghost recent-edit">Editar</button>\n'
+          )
+          ar = ar.replace("    row.querySelector('.recent-media').addEventListener('click', () => openMediaManager(item));\n", '')
+
+          # Indicador de salvamento + sinal entre abas.
+          status_anchor = "function setStatus(text='', type='') {\n  const el = document.getElementById('recentStatus');\n  if (!el) return;\n  el.textContent = text;\n  el.className = 'recent-status' + (type ? ' ' + type : '');\n}\n"
+          helper = status_anchor + r'''
+let saveIndicatorTimer = null;
+function showSaveIndicator(text='Alterações salvas com sucesso') {
+  const el = document.getElementById('recentSaveIndicator');
+  if (!el) return;
+  el.textContent = '✓ ' + text;
+  el.hidden = false;
+  clearTimeout(saveIndicatorTimer);
+  saveIndicatorTimer = setTimeout(() => { el.hidden = true; }, 2800);
+}
+function notifyRecentWorksChanged() {
+  try { localStorage.setItem('studio-recent-works-updated', String(Date.now())); } catch (_) {}
+}
+'''
+          if 'function showSaveIndicator' not in ar:
+              if status_anchor not in ar:
+                  raise SystemExit('setStatus não encontrado em recent-works-admin.js')
+              ar = ar.replace(status_anchor, helper, 1)
+
+          # O limite não pode sobrescrever mensagem de sucesso.
+          ar = ar.replace("  if(atLimit)setStatus('Você já cadastrou o máximo de 3 trabalhos recentes. Exclua um trabalho para adicionar outro.','');\n", '')
+
+          # Normaliza timestamp para input date e abre mídia sem roubar scroll.
+          ar = ar.replace("  document.getElementById('recentDate').value = item.work_date || '';", "  document.getElementById('recentDate').value = item.work_date ? String(item.work_date).slice(0,10) : '';")
+          ar = ar.replace("  document.getElementById('recentSave').textContent = 'Salvar';\n  document.getElementById('recentCancel').hidden = false;\n  openMediaManager(item);", "  document.getElementById('recentSave').textContent = 'Salvar alterações';\n  document.getElementById('recentCancel').hidden = false;\n  openMediaManager(item, false);")
+
+          # Substitui saveItem inteiro.
+          start = ar.index('async function saveItem(e) {')
+          end = ar.index('async function deleteItem(item) {', start)
+          new_save = r'''async function saveItem(e) {
+  e.preventDefault();
+  const save = document.getElementById('recentSave');
+  if(!editingId && recentWorkCount>=3){
+    setStatus('Limite de 3 trabalhos recentes atingido. Exclua um trabalho antes de cadastrar outro.','err');
+    updateRecentLimitState();
+    return;
+  }
+  const payload = {
+    gallery_category: document.getElementById('recentGallery').value,
+    title: document.getElementById('recentTitle').value.trim(),
+    description: document.getElementById('recentDescription').value.trim(),
+    work_date: document.getElementById('recentDate').value || null,
+    location: document.getElementById('recentLocation').value.trim() || 'Morrinhos, CE',
+    sort_order: Number(document.getElementById('recentOrder').value || 0),
+    is_active: document.getElementById('recentActive').checked,
+    updated_at: new Date().toISOString()
+  };
+  save.disabled = true;
+  save.textContent = 'Salvando…';
+  setStatus('');
+  try {
+    const wasEditing = !!editingId;
+    const targetId = editingId;
+    let savedItem = null;
+    if (wasEditing) {
+      const { error } = await neon.from('recent_works').update(payload).eq('id', targetId);
+      if (error) throw error;
+      savedItem = { id: targetId, ...payload };
+    } else {
+      const { data, error } = await neon.from('recent_works').insert(payload).select('*').single();
+      if (error) throw error;
+      savedItem = data;
+      editingId = savedItem.id;
+    }
+
+    notifyRecentWorksChanged();
+    await loadRecentWorks();
+
+    if (wasEditing) {
+      setStatus('Alterações salvas com sucesso.', 'ok');
+      showSaveIndicator('Alterações salvas com sucesso');
+      await new Promise(resolve => setTimeout(resolve, 900));
+      resetForm();
+      setStatus('');
+      document.getElementById('recentList')?.scrollIntoView({behavior:'smooth', block:'nearest'});
+    } else {
+      setStatus('Trabalho criado. Adicione ou organize as mídias e clique em “Salvar alterações” para concluir.', 'ok');
+      showSaveIndicator('Trabalho criado com sucesso');
+      document.getElementById('recentSave').textContent = 'Salvar alterações';
+      document.getElementById('recentCancel').hidden = false;
+      await openMediaManager(savedItem, false);
+    }
+  } catch (err) {
+    console.error(err);
+    setStatus(err?.message ? `Não foi possível salvar: ${err.message}` : 'Não foi possível salvar este trabalho.', 'err');
+  } finally {
+    save.disabled = false;
+    save.textContent = editingId ? 'Salvar alterações' : 'Salvar';
+    updateRecentLimitState();
+  }
+}
+
+'''
+          ar = ar[:start] + new_save + ar[end:]
+
+          # Exclusão também notifica a Home.
+          ar = ar.replace("  setStatus('Trabalho excluído.', 'ok');\n", "  setStatus('Trabalho excluído.', 'ok');\n  notifyRecentWorksChanged();\n  showSaveIndicator('Trabalho excluído');\n")
+
+          # openMediaManager com controle de scroll.
+          ar = ar.replace(
+              "async function openMediaManager(item){\n  mediaWorkCategory=item?.gallery_category||null;mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();box.scrollIntoView({behavior:'smooth',block:'start'});\n}",
+              "async function openMediaManager(item, shouldScroll=true){\n  mediaWorkCategory=item?.gallery_category||null;mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();if(shouldScroll)box.scrollIntoView({behavior:'smooth',block:'start'});\n}"
+          )
+
+          # Feedback de autosave nas mídias.
+          ar = ar.replace(
+              "    setMediaStatus(`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'}${invalid?` · ${invalid} ignorado${invalid===1?'':'s'}`:''}.`,'ok');\n    await loadWorkMedia();",
+              "    setMediaStatus(`${done} arquivo${done===1?'':'s'} enviado${done===1?'':'s'}${invalid?` · ${invalid} ignorado${invalid===1?'':'s'}`:''}.`,'ok');\n    notifyRecentWorksChanged();showSaveIndicator('Mídias salvas automaticamente');\n    await loadWorkMedia();"
+          )
+          ar = ar.replace(
+              "  setMediaStatus(error?'Não foi possível alterar a ordem.':'Ordem atualizada.',error?'err':'ok');if(!error)await loadWorkMedia();",
+              "  setMediaStatus(error?'Não foi possível alterar a ordem.':'Ordem atualizada.',error?'err':'ok');if(!error){notifyRecentWorksChanged();showSaveIndicator('Ordem salva automaticamente');await loadWorkMedia();}"
+          )
+          ar = ar.replace(
+              "  const {error:e2}=await neon.from('site_images').update({is_cover:true}).eq('id',mediaId).eq('recent_work_id',mediaWorkId);setMediaStatus(e2?'Não foi possível definir a capa.':'Capa atualizada.',e2?'err':'ok');if(!e2)await loadWorkMedia();",
+              "  const {error:e2}=await neon.from('site_images').update({is_cover:true}).eq('id',mediaId).eq('recent_work_id',mediaWorkId);setMediaStatus(e2?'Não foi possível definir a capa.':'Capa atualizada.',e2?'err':'ok');if(!e2){notifyRecentWorksChanged();showSaveIndicator('Capa salva automaticamente');await loadWorkMedia();}"
+          )
+          ar = ar.replace(
+              "  if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}setMediaStatus('Mídia excluída.','ok');await loadWorkMedia();",
+              "  if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}setMediaStatus('Mídia excluída.','ok');notifyRecentWorksChanged();showSaveIndicator('Mídia removida');await loadWorkMedia();"
+          )
+
+          # Não existe mais botão Fechar separado para a mídia; Cancelar encerra o editor.
+          ar = ar.replace("    document.getElementById('recentMediaClose').addEventListener('click',closeMediaManager);\n", '')
+          admin_recent_path.write_text(ar, encoding='utf-8')
+
+          # Cache bust do módulo administrativo.
+          admin_path = Path('admin.js')
+          admin = admin_path.read_text(encoding='utf-8')
+          import re
+          admin = re.sub(r"import\('\./recent-works-admin\.js\?v=[^']+'\)", "import('./recent-works-admin.js?v=20260911-editor-v2')", admin, count=1)
+          admin_path.write_text(admin, encoding='utf-8')
+
+          admin_html_path = Path('admin.html')
+          admin_html = admin_html_path.read_text(encoding='utf-8')
+          admin_html = re.sub(r'<script type="module" src="admin\.js\?v=[^\"]+"></script>', '<script type="module" src="admin.js?v=20260911-editor-v2"></script>', admin_html, count=1)
+          admin_html_path.write_text(admin_html, encoding='utf-8')
+          PY
+
+      - name: Validate JavaScript and invariants
+        run: |
+          node --check script.js
+          node --check depoimentos.js
+          node --check recent-works.js
+          node --check recent-works-admin.js
+          node --check admin.js
+          grep -q 'id="trabalhosRecentes"' index.html
+          grep -q 'recent-works.js?v=20260911-recent-v2' index.html
+          ! grep -q 'recentWorksScript' depoimentos.js
+          ! grep -q 'Fallback visual imediato dos trabalhos recentes' depoimentos.js
+          ! grep -q 'DEPOIMENTOS —' recent-works.js
+          ! grep -q 'recent-media">Mídias' recent-works-admin.js
+          grep -q 'recent-edit">Editar' recent-works-admin.js
+          grep -q 'recentSaveIndicator' recent-works-admin.js
+          grep -q 'window.studioLightboxOpen = lbOpen' script.js
+          grep -q 'studio-recent-works-updated' recent-works.js
+          grep -q 'studio-recent-works-updated' recent-works-admin.js
+
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html styles.css script.js depoimentos.js recent-works.js recent-works-admin.js admin.js admin.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'Unify recent works editor and harden Home sync'
+          git push origin main
