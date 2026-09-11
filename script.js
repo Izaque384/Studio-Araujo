@@ -185,8 +185,8 @@ let neonPublicClientPromise = null;
 async function neonPublicClient() { if (!neonPublicClientPromise) neonPublicClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle').then(({ createClient, BetterAuthVanillaAdapter }) => createClient({ auth: { adapter: BetterAuthVanillaAdapter(), url: NEON_AUTH_URL_PUBLIC, allowAnonymous: true }, dataApi: { url: NEON_DATA_API_URL_PUBLIC } })); return neonPublicClientPromise; }
 async function midiasDoPainel(categoria) { try { const neon = await neonPublicClient(); const { data, error } = await neon.from('site_images').select('public_url,alt_text,is_cover,sort_order,mime_type').eq('category', categoria).eq('is_visible', true).order('sort_order', { ascending: true }); if (error || !Array.isArray(data)) return { ok: false, items: [] }; return { ok: true, items: data.map(normalizeMedia) }; } catch (_) { return { ok: false, items: [] }; } }
 function testarFoto(src) { return new Promise((resolve) => { const img = new Image(); img.onload = () => resolve(src); img.onerror = () => resolve(null); img.src = src; }); }
-const CAPAS_DOS_SERVICOS = { casamento: 3, 'ensaio-casal': 7, formatura: 4, gestante: 4, moda: 9 };
-const FOTOS_IGNORADAS = new Set(['gestante-5','casamento-6','casamento-7','ensaio-casal-9']);
+const CAPAS_DOS_SERVICOS = { casamento: 3, formatura: 4, gestante: 4, moda: 9 };
+const FOTOS_IGNORADAS = new Set(['gestante-5','casamento-6','casamento-7']);
 function fotoIgnorada(prefixo, n) { return FOTOS_IGNORADAS.has(prefixo + '-' + n); }
 function capaDoServico(chave) { const n = CAPAS_DOS_SERVICOS[chave] || 1; return fotoIgnorada(chave, n) ? 1 : n; }
 async function procurarFotos(base, prefixo, maximo) { const achadas = []; let seguidasSemAchar = 0; for (let n = 1; n <= maximo; n++) { if (fotoIgnorada(prefixo, n)) continue; const src = await testarFoto(base + n + '.jpg'); if (src) { achadas.push(src); seguidasSemAchar = 0; } else if (++seguidasSemAchar >= 2) break; } return achadas; }
