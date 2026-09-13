@@ -108,7 +108,7 @@
         <div id="testimonialAdminGrid" class="testimonial-admin-grid"></div>
       </section>
 
-      <section id="mediaOverview" class="media-overview" aria-live="polite">
+      <section id="mediaOverview" class="media-overview" aria-live="polite" hidden>
         <div class="media-overview-head">
           <div>
             <p class="eyebrow">Visão geral</p>
@@ -242,6 +242,18 @@
       </section>
     </section>
   </main>
+  <script>
+    document.querySelectorAll('[data-overview-area]').forEach(button => {
+      button.addEventListener('click', () => {
+        const overview = document.getElementById('mediaOverview');
+        if (overview) overview.hidden = false;
+      });
+    });
+    document.getElementById('openTestimonialsBtn')?.addEventListener('click', () => {
+      const overview = document.getElementById('mediaOverview');
+      if (overview) overview.hidden = true;
+    });
+  </script>
   <script type="module" src="admin.js?v=20260911-editor-v2"></script>
 </body>
 </html>
