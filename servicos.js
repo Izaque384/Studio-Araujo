@@ -256,9 +256,43 @@ function injectProposalStyles() {
       border-radius:12px;
       background:rgba(255,255,255,.012);
     }
-    #serviceModal .proposal-detail.is-note{
+    #serviceModal .proposal-impact{
+      position:relative;
       grid-column:1/-1;
-      background:rgba(201,162,75,.035);
+      margin-top:8px;
+      padding:24px 28px 24px 58px;
+      overflow:hidden;
+      border-top:1px solid rgba(201,162,75,.18);
+      border-bottom:1px solid rgba(201,162,75,.12);
+      background:linear-gradient(90deg,rgba(201,162,75,.065),rgba(201,162,75,.018) 62%,transparent);
+    }
+    #serviceModal .proposal-impact::before{
+      content:'“';
+      position:absolute;
+      left:20px;
+      top:8px;
+      color:rgba(230,200,120,.48);
+      font-family:'Cormorant Garamond',serif;
+      font-size:3.8rem;
+      line-height:1;
+    }
+    #serviceModal .proposal-impact::after{
+      content:'';
+      position:absolute;
+      left:0;
+      top:18px;
+      bottom:18px;
+      width:2px;
+      background:linear-gradient(180deg,transparent,var(--gold),transparent);
+    }
+    #serviceModal .proposal-impact p{
+      margin:0;
+      color:var(--cream);
+      font-family:'Cormorant Garamond',serif;
+      font-size:1.18rem;
+      font-style:italic;
+      line-height:1.55;
+      letter-spacing:.01em;
     }
     #serviceModal .proposal-detail-label{
       display:block;
@@ -335,7 +369,9 @@ function injectProposalStyles() {
       #serviceModal .package-option .p-price{font-size:1.6rem}
       #serviceModal .proposal-includes{padding:18px}
       #serviceModal .modal-meta{grid-template-columns:1fr}
-      #serviceModal .proposal-detail.is-note{grid-column:auto}
+      #serviceModal .proposal-impact{grid-column:auto;padding:21px 20px 21px 50px}
+      #serviceModal .proposal-impact::before{left:16px;top:7px;font-size:3.2rem}
+      #serviceModal .proposal-impact p{font-size:1.08rem}
       #serviceModal .proposal-footer{grid-template-columns:1fr;margin:26px -20px 0;padding:17px 20px 20px}
       #serviceModal .proposal-footer-copy{display:none}
       #serviceModal .proposal-footer .btn{width:100%;min-width:0;min-height:50px}
@@ -440,9 +476,9 @@ function buildModalHTML(key) {
     detailCard('Prazo de entrega', data.delivery),
     detailCard('Adicionais', data.extra),
     detailCard('Deslocamento', data.displacement),
-    detailCard('Pagamento', data.payment),
-    detailCard('Observação', data.note, true)
+    detailCard('Pagamento', data.payment)
   ].join('');
+  const impactHTML = data.note ? `<div class="proposal-impact"><p>${data.note}</p></div>` : '';
 
   return `
     <div class="proposal-header">
@@ -453,7 +489,7 @@ function buildModalHTML(key) {
     ${optionsHTML}
     ${singlePackageHTML}
     ${sectionsHTML}
-    ${metaHTML ? `<div class="modal-meta">${metaHTML}</div>` : ''}
+    ${(metaHTML || impactHTML) ? `<div class="modal-meta">${metaHTML}${impactHTML}</div>` : ''}
     <div class="proposal-footer">
       <div class="proposal-footer-copy">
         <strong>Pronto para reservar?</strong>
