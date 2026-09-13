@@ -1,3 +1,4 @@
+# Temporary consolidation runner; removed after successful publication.
 name: Retry consolidation code only
 
 on:
