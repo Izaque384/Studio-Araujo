@@ -1,0 +1,42 @@
+name: Refine booking review
+on:
+  push:
+    paths:
+      - '.refine-booking-review-run'
+permissions:
+  contents: write
+jobs:
+  refine:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare patch script
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/refine_booking_review.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace('pattern.subn(new_fn, s, count=1)', 'pattern.subn(lambda _: new_fn, s, count=1)')
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Apply review refinement
+        run: python scripts/refine_booking_review.py
+      - name: Validate
+        shell: bash
+        run: |
+          node --check agenda.js
+          grep -q 'rev-premium' agenda.js
+          grep -q 'O que está incluído' agenda.js
+          grep -q 'Confirmar no WhatsApp' agenda.js
+          grep -q 'AGENDAMENTO · REVISÃO PREMIUM 2026-09' styles.css
+          grep -q 'rev-confirm-note' styles.css
+          grep -q 'rev-section-head' styles.css
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add agenda.js styles.css
+          git commit -m 'Refine premium booking review'
+          git push origin main
