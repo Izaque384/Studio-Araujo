@@ -23,6 +23,9 @@ const campoComentario = document.getElementById("depComentario");
 const formWrap = document.querySelector(".dep-form-wrap");
 const MAX_CHARS = 500;
 const DELETE_TOKENS_KEY = "studioaraujo:testimonial-delete-tokens";
+const TESTIMONIAL_COOLDOWN_KEY = "studioaraujo:testimonial-last-submit";
+const TESTIMONIAL_MIN_INTERVAL = 2 * 60 * 1000;
+const testimonialFormOpenedAt = Date.now();
 let carrosselIndex = 0, carrosselTotal = 0, autoplayTimer = null, avatarData = "";
 
 function escapeHTML(str) {
@@ -108,6 +111,15 @@ function prepararFormularioRecolhivel() {
   formWrap.classList.add("dep-collapsible");
   formWrap.insertBefore(convite, formWrap.firstChild);
   formDepoimento.hidden = true;
+  const spamTrap = document.createElement("input");
+  spamTrap.type = "text";
+  spamTrap.id = "depWebsiteTrap";
+  spamTrap.name = "website";
+  spamTrap.tabIndex = -1;
+  spamTrap.autocomplete = "off";
+  spamTrap.setAttribute("aria-hidden", "true");
+  spamTrap.style.cssText = "position:absolute;left:-10000px;width:1px;height:1px;opacity:0;pointer-events:none";
+  formDepoimento.appendChild(spamTrap);
 
   const toggle = document.getElementById("depToggle");
   const toggleTxt = toggle.querySelector("span");
@@ -321,6 +333,11 @@ if (formDepoimento) {
     const nome = document.getElementById("depNome").value.trim();
     const instagram = document.getElementById("depInstagram").value.trim().replace(/^@/, "");
     const comentario = campoComentario.value.trim();
+    const spamTrap = document.getElementById("depWebsiteTrap");
+    if (spamTrap?.value) return;
+    if (Date.now() - testimonialFormOpenedAt < 2500) return mostrarMsg("Aguarde um instante antes de enviar.", "erro");
+    const ultimoEnvio = Number(localStorage.getItem(TESTIMONIAL_COOLDOWN_KEY) || 0);
+    if (ultimoEnvio && Date.now() - ultimoEnvio < TESTIMONIAL_MIN_INTERVAL) return mostrarMsg("Seu depoimento anterior já foi recebido. Aguarde alguns minutos para enviar outro.", "erro");
     if (!nome || !comentario) return mostrarMsg("Preencha seu nome e comentário.", "erro");
     if (comentario.length < 10) return mostrarMsg("Escreva pelo menos 10 caracteres no comentário.", "erro");
     if (comentario.length > MAX_CHARS) return mostrarMsg("O comentário ultrapassou o limite de 500 caracteres.", "erro");
@@ -330,18 +347,18 @@ if (formDepoimento) {
     try {
       const neon = await neonPublicClient();
       const deleteToken = novoTokenExclusao();
-      const { data, error } = await neon.from("site_testimonials").insert({
-        name: nome,
-        instagram,
-        comment: comentario,
-        avatar_url: avatarData,
-        is_visible: true,
-        delete_token: deleteToken
-      }).select("id").single();
+      const row = { name:nome, instagram, comment:comentario, avatar_url:avatarData, is_visible:false, delete_token:deleteToken };
+      let result = await neon.from("site_testimonials").insert(row).select("id").single();
+      // Compatibilidade temporária até a política de moderação ser aplicada no Neon.
+      if (result?.error && /policy|row-level security/i.test(String(result.error.message || result.error))) {
+        result = await neon.from("site_testimonials").insert({...row,is_visible:true}).select("id").single();
+      }
+      const { data, error } = result || {};
       if (error || !data?.id) throw error || new Error("ID não retornado");
 
       salvarTokenExclusao(data.id, deleteToken);
-      mostrarMsg("Obrigado pelo carinho! Seu depoimento já está no ar. ✨", "sucesso");
+      localStorage.setItem(TESTIMONIAL_COOLDOWN_KEY, String(Date.now()));
+      mostrarMsg("Recebemos seu depoimento. Obrigado pelo carinho! Ele pode passar por uma rápida revisão antes de aparecer no site.", "sucesso");
       formDepoimento.reset();
       avatarData = "";
       const preview = document.getElementById("depFotoPreview");

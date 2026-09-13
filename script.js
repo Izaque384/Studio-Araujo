@@ -158,6 +158,17 @@ const lbPrev = document.getElementById('lbPrev');
 const lbNext = document.getElementById('lbNext');
 const lbClose = document.getElementById('lbClose');
 let lbMedia = [], lbIndex = 0, lbLabel = '', lbOpener = null, lbVideo = null;
+function prenderFoco(root,e){
+  if(e.key!=='Tab'||!root)return false;
+  const itens=[...root.querySelectorAll('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),video[controls],[tabindex]:not([tabindex="-1"])')]
+    .filter(el=>!el.hidden&&el.getClientRects().length);
+  if(!itens.length){e.preventDefault();root.focus?.();return true;}
+  const primeiro=itens[0],ultimo=itens[itens.length-1];
+  if(e.shiftKey&&document.activeElement===primeiro){e.preventDefault();ultimo.focus();return true;}
+  if(!e.shiftKey&&document.activeElement===ultimo){e.preventDefault();primeiro.focus();return true;}
+  if(!root.contains(document.activeElement)){e.preventDefault();(e.shiftKey?ultimo:primeiro).focus();return true;}
+  return false;
+}
 function mediaItem(url, type = 'image', alt = '', isCover = false) { return { url, type, alt, is_cover: isCover }; }
 function isVideo(item) { return item?.type === 'video' || String(item?.mime_type || '').startsWith('video/'); }
 function normalizeMedia(item) { if (typeof item === 'string') return mediaItem(item, 'image'); return mediaItem(item.public_url || item.url, isVideo(item) ? 'video' : 'image', item.alt_text || item.alt || '', !!item.is_cover); }
@@ -169,13 +180,13 @@ function lbRender() {
   lbCat.textContent = lbLabel; lbCount.textContent = `${lbIndex + 1} / ${lbMedia.length}`; const sozinha = lbMedia.length < 2; lbPrev.hidden = sozinha; lbNext.hidden = sozinha;
   [lbIndex + 1, lbIndex - 1].forEach((i) => { const j = (i + lbMedia.length) % lbMedia.length; const vizinho = normalizeMedia(lbMedia[j]); if (!isVideo(vizinho)) new Image().src = vizinho.url; });
 }
-function lbOpen(itens, indice, rotulo, origem) { if (!lightbox || !itens || !itens.length) return; lbMedia = itens.map(normalizeMedia); lbIndex = Math.max(0, Math.min(indice || 0, lbMedia.length - 1)); lbLabel = rotulo; lbOpener = origem || null; lightbox.hidden = false; document.body.style.overflow = 'hidden'; lbRender(); requestAnimationFrame(() => lightbox.classList.add('open')); lbClose.focus(); }
+function lbOpen(itens, indice, rotulo, origem) { if (!lightbox || !itens || !itens.length) return; lbMedia = itens.map(normalizeMedia); lbIndex = Math.max(0, Math.min(indice || 0, lbMedia.length - 1)); lbLabel = rotulo; lbOpener = origem || null; lightbox.hidden = false; lightbox.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; lbRender(); requestAnimationFrame(() => lightbox.classList.add('open')); lbClose.focus(); }
 window.studioLightboxOpen = lbOpen;
-function lbHide() { lightbox.classList.remove('open'); lightbox.style.display = ''; document.body.style.overflow = ''; if (lbVideo) { lbVideo.pause(); lbVideo.removeAttribute('src'); lbVideo.load(); } setTimeout(() => { lightbox.hidden = true; lbImg.removeAttribute('src'); }, 280); if (lbOpener) lbOpener.focus(); }
+function lbHide() { lightbox.classList.remove('open'); lightbox.setAttribute('aria-hidden','true'); lightbox.style.display = ''; document.body.style.overflow = ''; if (lbVideo) { lbVideo.pause(); lbVideo.removeAttribute('src'); lbVideo.load(); } setTimeout(() => { lightbox.hidden = true; lbImg.removeAttribute('src'); }, 280); if (lbOpener) lbOpener.focus(); }
 function lbGo(passo) { if (lbMedia.length < 2) return; lbIndex = (lbIndex + passo + lbMedia.length) % lbMedia.length; lbRender(); }
 if (lightbox) {
   lbImg.addEventListener('load', () => lbImg.classList.add('loaded')); lbNext.addEventListener('click', (e) => { e.stopPropagation(); lbGo(1); }); lbPrev.addEventListener('click', (e) => { e.stopPropagation(); lbGo(-1); }); lbClose.addEventListener('click', lbHide); lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lbHide(); });
-  document.addEventListener('keydown', (e) => { if (lightbox.hidden) return; if (e.key === 'Escape') lbHide(); else if (e.key === 'ArrowRight') lbGo(1); else if (e.key === 'ArrowLeft') lbGo(-1); });
+  document.addEventListener('keydown', (e) => { if (lightbox.hidden) return; if (e.key === 'Tab') prenderFoco(lightbox,e); else if (e.key === 'Escape') lbHide(); else if (e.key === 'ArrowRight') lbGo(1); else if (e.key === 'ArrowLeft') lbGo(-1); });
   let tX = 0, tY = 0; lightbox.addEventListener('touchstart', (e) => { tX = e.changedTouches[0].clientX; tY = e.changedTouches[0].clientY; }, { passive: true }); lightbox.addEventListener('touchend', (e) => { const dx = e.changedTouches[0].clientX - tX, dy = e.changedTouches[0].clientY - tY; if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) lbGo(dx < 0 ? 1 : -1); }, { passive: true });
 }
 
@@ -184,7 +195,37 @@ const NEON_AUTH_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-eas
 const NEON_DATA_API_URL_PUBLIC = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
 let neonPublicClientPromise = null;
 async function neonPublicClient() { if (!neonPublicClientPromise) neonPublicClientPromise = import('https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle').then(({ createClient, BetterAuthVanillaAdapter }) => createClient({ auth: { adapter: BetterAuthVanillaAdapter(), url: NEON_AUTH_URL_PUBLIC, allowAnonymous: true }, dataApi: { url: NEON_DATA_API_URL_PUBLIC } })); return neonPublicClientPromise; }
-async function midiasDoPainel(categoria) { try { const neon = await neonPublicClient(); const { data, error } = await neon.from('site_images').select('public_url,alt_text,is_cover,sort_order,mime_type').eq('category', categoria).eq('is_visible', true).order('sort_order', { ascending: true }); if (error || !Array.isArray(data)) return { ok: false, items: [] }; return { ok: true, items: data.map(normalizeMedia) }; } catch (_) { return { ok: false, items: [] }; } }
+let midiasPublicasPromise = null;
+async function carregarMidiasPublicas(){
+  if(!midiasPublicasPromise){
+    midiasPublicasPromise = (async()=>{
+      const neon = await neonPublicClient();
+      const {data,error} = await neon.from('site_images')
+        .select('category,public_url,alt_text,is_cover,sort_order,mime_type')
+        .eq('is_visible',true)
+        .order('category',{ascending:true})
+        .order('sort_order',{ascending:true});
+      if(error || !Array.isArray(data)) throw error || new Error('Mídias públicas indisponíveis');
+      const grouped = new Map();
+      data.forEach(item=>{
+        const list = grouped.get(item.category) || [];
+        list.push(normalizeMedia(item));
+        grouped.set(item.category,list);
+      });
+      return grouped;
+    })().catch(err=>{midiasPublicasPromise=null;throw err;});
+  }
+  return midiasPublicasPromise;
+}
+async function midiasDoPainel(categoria){
+  try{
+    const grouped = await carregarMidiasPublicas();
+    return {ok:true,items:[...(grouped.get(categoria)||[])]};
+  }catch(_){return {ok:false,items:[]};}
+}
+function invalidarCacheMidiasPublicas(){midiasPublicasPromise=null;}
+window.midiasDoPainel = midiasDoPainel;
+window.invalidarCacheMidiasPublicas = invalidarCacheMidiasPublicas;
 function testarFoto(src) { return new Promise((resolve) => { const img = new Image(); img.onload = () => resolve(src); img.onerror = () => resolve(null); img.src = src; }); }
 const CAPAS_DOS_SERVICOS = { casamento: 3, formatura: 4, gestante: 4, moda: 9 };
 const FOTOS_IGNORADAS = new Set(['gestante-5','casamento-6','casamento-7']);

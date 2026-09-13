@@ -229,3 +229,20 @@ h2{font-size:clamp(1.65rem,3vw,2.35rem)}
 .recent-limit-reached{opacity:.88}
 @media(max-width:980px){.overview-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:640px){.overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.media-overview-head{align-items:flex-start;flex-direction:column}}
+
+
+/* TESTIMONIAL MODERATION */
+.testimonials-admin{margin-top:28px;padding:28px;border:1px solid rgba(201,162,75,.16);border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.018),rgba(201,162,75,.018))}
+.testimonial-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+.testimonial-admin-card{padding:18px;border:1px solid rgba(201,162,75,.14);border-radius:14px;background:rgba(255,255,255,.015)}
+.testimonial-admin-card.is-pending{border-color:rgba(230,200,120,.34);background:rgba(201,162,75,.035)}
+.testimonial-admin-head{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:12px;align-items:center}
+.testimonial-admin-avatar{width:42px;height:42px;display:grid;place-items:center;overflow:hidden;border-radius:50%;border:1px solid rgba(201,162,75,.25);color:var(--gold-light);font-family:'Cormorant Garamond',serif;font-size:1.1rem}
+.testimonial-admin-avatar img{width:100%;height:100%;object-fit:cover}
+.testimonial-admin-head strong{display:block;color:var(--cream);font-weight:500}.testimonial-admin-head small{display:block;color:var(--muted);font-size:.72rem}
+.testimonial-admin-status{padding:5px 8px;border:1px solid rgba(201,162,75,.2);border-radius:999px;color:var(--gold-light);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}
+.testimonial-admin-card>p{margin:16px 0;color:#bdb19c;font-size:.86rem;line-height:1.6}
+.testimonial-admin-actions{display:flex;gap:8px;flex-wrap:wrap}.testimonial-admin-actions .btn{min-height:38px}
+#openTestimonialsBtn.has-pending{border-color:rgba(230,200,120,.42)}
+#openTestimonialsBtn.has-pending::after{content:attr(data-pending);position:absolute;top:12px;right:12px;min-width:22px;height:22px;padding:0 6px;display:grid;place-items:center;border-radius:999px;background:var(--gold);color:#111;font-size:.68rem;font-weight:600}
+@media(max-width:760px){.testimonial-admin-grid{grid-template-columns:1fr}.testimonials-admin{padding:20px}.testimonial-admin-head{grid-template-columns:38px minmax(0,1fr);}.testimonial-admin-status{grid-column:2;width:max-content}.testimonial-admin-avatar{width:38px;height:38px}}

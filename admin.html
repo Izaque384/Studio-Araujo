@@ -90,6 +90,28 @@
           <small>Encontre arquivos por área e por pasta.</small>
           <span class="hub-link">Ver visão geral →</span>
         </button>
+        <button type="button" class="hub-card" id="openTestimonialsBtn">
+          <span class="hub-icon" aria-hidden="true">05</span>
+          <strong>Depoimentos</strong>
+          <small>Revise, publique ou oculte depoimentos enviados pelo site.</small>
+          <span class="hub-link">Gerenciar depoimentos →</span>
+        </button>
+      </section>
+
+      <section id="testimonialsAdmin" class="testimonials-admin admin-section" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Moderação</p>
+            <h2>Depoimentos</h2>
+            <p class="section-copy">Novos depoimentos ficam pendentes até serem aprovados.</p>
+          </div>
+          <div class="library-head-actions">
+            <button type="button" id="refreshTestimonialsBtn" class="btn btn-ghost">Atualizar</button>
+            <button type="button" id="closeTestimonialsBtn" class="btn btn-ghost">Fechar</button>
+          </div>
+        </div>
+        <p id="testimonialAdminMsg" class="msg" role="status" aria-live="polite"></p>
+        <div id="testimonialAdminGrid" class="testimonial-admin-grid"></div>
       </section>
 
       <section id="mediaOverview" class="media-overview" aria-live="polite">
