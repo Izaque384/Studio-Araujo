@@ -323,7 +323,7 @@ function montarRevisao(){
     html+='<details class="rev-inclui"><summary><span><b>O que está incluído</b><small>'+itens.length+' '+(itens.length===1?"item":"itens")+' no pacote</small></span><i aria-hidden="true"></i></summary><ul>'+itens.map(i=>'<li>'+esc(i)+'</li>').join("")+'</ul></details>';
   }
 
-  html+='<div class="rev-confirm-note"><span class="rev-confirm-icon" aria-hidden="true">✓</span><div><strong>Tudo certo?</strong><p>Ao confirmar, abriremos o WhatsApp com estes dados já organizados. Você revisa a mensagem e envia quando estiver pronto.</p></div></div></div>';
+  html+='<div class="rev-confirm-note"><span class="rev-confirm-icon" aria-hidden="true">✓</span><div><strong>Tudo certo?</strong><p>Ao confirmar, abriremos o WhatsApp com seu pedido pronto para revisar e enviar; a data será reservada assim que confirmarmos por lá.</p></div></div></div>';
   el.revisao.innerHTML=html;
 
   const txt=itens.join(" ");

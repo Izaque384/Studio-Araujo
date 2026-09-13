@@ -4076,3 +4076,36 @@ body.nav-open{
   .rev-confirm-note{grid-template-columns:30px minmax(0,1fr);}
   #bkPanel:has(.bk-etapa[data-etapa="6"]:not([hidden])) #bkEnviar{min-width:0;}
 }
+
+
+/* ---------- AGENDAMENTO · REVISÃO: CHEVRON ÚNICO ---------- */
+/* Remove o antigo "+" textual herdado e usa apenas um chevron dentro do
+   controle circular, mantendo a leitura limpa do expansor. */
+.rev-inclui summary::after{
+  content:none !important;
+  display:none !important;
+}
+.rev-inclui summary i{
+  transition:transform .25s ease, border-color .25s ease, background .25s ease;
+}
+.rev-inclui summary i::before{
+  content:'›';
+  width:auto;
+  height:auto;
+  background:none;
+  color:var(--gold-light);
+  font-family:'Jost',sans-serif;
+  font-size:1.12rem;
+  font-weight:300;
+  line-height:1;
+  transform:translate(-50%,-54%);
+}
+.rev-inclui summary i::after{
+  content:none;
+  display:none;
+}
+.rev-inclui[open] summary i{
+  transform:rotate(90deg);
+  border-color:rgba(201,162,75,.38);
+  background:rgba(201,162,75,.05);
+}
