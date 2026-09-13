@@ -62,6 +62,10 @@ function injectProposalStyles() {
       color:var(--gold-light);
     }
     #serviceModal .proposal-header{
+      position:static;
+      inset:auto;
+      z-index:auto;
+      width:auto;
       padding:4px 56px 30px 0;
       border-bottom:1px solid rgba(201,162,75,.13);
       margin-bottom:26px;
@@ -385,11 +389,11 @@ function buildModalHTML(key) {
   if (!data) {
     const msg = encodeURIComponent(`Olá! Gostaria de saber mais sobre o serviço de ${label}.`);
     return `
-      <header class="proposal-header">
+      <div class="proposal-header">
         <span class="proposal-kicker">${label}</span>
         <h3 class="proposal-title">Pacotes em breve</h3>
         <p class="proposal-subtitle">Estamos finalizando os detalhes desta experiência. Fale diretamente com o Studio para receber as informações atualizadas.</p>
-      </header>
+      </div>
       <p class="modal-empty">Ainda estamos organizando os detalhes e valores desse pacote.</p>
       <div class="proposal-footer">
         <div class="proposal-footer-copy"><strong>Quer saber mais?</strong><span>Respondemos pelo WhatsApp com os detalhes deste serviço.</span></div>
@@ -441,11 +445,11 @@ function buildModalHTML(key) {
   ].join('');
 
   return `
-    <header class="proposal-header">
+    <div class="proposal-header">
       <span class="proposal-kicker">${label}</span>
       <h3 class="proposal-title">${data.title}</h3>
       <p class="proposal-subtitle">Confira com calma o investimento e tudo o que faz parte desta experiência fotográfica.</p>
-    </header>
+    </div>
     ${optionsHTML}
     ${singlePackageHTML}
     ${sectionsHTML}
