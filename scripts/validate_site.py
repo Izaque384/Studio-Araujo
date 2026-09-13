@@ -39,6 +39,7 @@ for page,css in required_css.items():
 index=(ROOT/'index.html').read_text(encoding='utf-8')
 if 'recent-works.js' not in index: errors.append('Home: recent-works.js não está carregado diretamente')
 if 'ensaios de casal' in index.lower(): errors.append('Home: referência SEO legada a ensaio de casal')
+if 'neon.rpc("submit_testimonial"' not in (ROOT/'depoimentos.js').read_text(encoding='utf-8'): errors.append('Depoimentos: submissão moderada via RPC ausente')
 
 services=(ROOT/'servicos.html').read_text(encoding='utf-8')
 data=(ROOT/'dados-servicos.js').read_text(encoding='utf-8')
