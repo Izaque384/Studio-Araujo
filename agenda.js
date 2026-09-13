@@ -137,20 +137,74 @@ function montarTipos() {
   });
 }
 
+const DESCRICOES_SERVICOS = {
+  gestante: "Estúdio ou ensaio externo",
+  abc: "Sessão no estúdio",
+  formatura: "Sessão no estúdio",
+  "cha-revelacao": "Estúdio ou ensaio externo",
+  "acompanhamento-mensal": "Sessão no estúdio",
+  corporativa: "Sessão no estúdio",
+  moda: "Produção fotográfica por look",
+  "pre-wedding": "Ensaio externo",
+  casamento: "Cobertura de evento",
+  aniversario: "Evento ou sessão em estúdio",
+  batizado: "Cobertura de evento"
+};
 function metaDoServico(s) {
   if (s.produto) return "Produto personalizado";
-  if (s.horaLivre) return "Horário a combinar";
-  return resumoPreco(s.chave);
+  return DESCRICOES_SERVICOS[s.chave] || (s.horaLivre ? "Horário a combinar" : "Atendimento personalizado");
+}
+
+const capaServicoCache = new Map();
+async function capaVisualDoServico(chave) {
+  if (capaServicoCache.has(chave)) return capaServicoCache.get(chave);
+  let src = "";
+  try {
+    if (typeof window.midiasDoPainel === "function") {
+      const remoto = await window.midiasDoPainel(chave);
+      const itens = remoto && remoto.ok && Array.isArray(remoto.items) ? remoto.items : [];
+      const capa = itens.find(item => item && item.type !== "video" && item.is_cover) || itens.find(item => item && item.type !== "video");
+      if (capa && capa.url) src = capa.url;
+    }
+  } catch (_) {}
+  if (!src) {
+    const numero = typeof window.capaDoServico === "function" ? window.capaDoServico(chave) : 1;
+    const fallback = "assets/galeria/" + chave + "-" + numero + ".jpg";
+    try {
+      src = typeof window.testarFoto === "function" ? (await window.testarFoto(fallback) || "") : fallback;
+    } catch (_) {}
+  }
+  capaServicoCache.set(chave, src || "");
+  return src || "";
+}
+function carregarFotoServico(botao, chave) {
+  capaVisualDoServico(chave).then(src => {
+    if (!botao.isConnected || botao.dataset.chave !== chave) return;
+    const moldura = botao.querySelector(".bk-servico-media");
+    const img = botao.querySelector(".bk-servico-foto");
+    if (!moldura || !img) return;
+    if (!src) {
+      moldura.hidden = true;
+      botao.classList.remove("com-foto");
+      return;
+    }
+    img.src = src;
+    img.hidden = false;
+    botao.classList.add("com-foto");
+  });
 }
 function montarServicos() {
   el.servicos.innerHTML="";
   CATALOGO.filter(s=>s.grupo===st.grupo).forEach(s=>{
     const b=document.createElement("button");
-    b.type="button"; b.className="bk-servico"; b.dataset.chave=s.chave; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.servico===s.chave ? "true" : "false");
-    b.innerHTML='<span class="bk-servico-txt"><strong>'+esc(s.nome)+'</strong><em>'+esc(metaDoServico(s))+'</em></span><span class="bk-servico-preco">'+esc(resumoPreco(s.chave))+'</span>';
+    const esperaFoto=s.grupo!=="produtos";
+    b.type="button"; b.className="bk-servico"+(esperaFoto?" com-foto":""); b.dataset.chave=s.chave; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.servico===s.chave ? "true" : "false");
+    const media=esperaFoto?'<span class="bk-servico-media" aria-hidden="true"><img class="bk-servico-foto" alt="" loading="lazy" decoding="async" hidden></span>':"";
+    b.innerHTML=media+'<span class="bk-servico-texto"><span class="bk-servico-linha"><span class="bk-servico-nome">'+esc(s.nome)+'</span><span class="bk-servico-preco">'+esc(resumoPreco(s.chave))+'</span></span><span class="bk-servico-meta">'+esc(metaDoServico(s))+'</span></span>';
     if(st.servico===s.chave) b.classList.add("selecionado");
     b.addEventListener("click",()=>{ st.servico=s.chave; st.pacote=null; st.data=null; st.hora=null; st.looks=10; montarServicos(); montarPacotes(); atualizar(); seguir(); });
     el.servicos.appendChild(b);
+    if(esperaFoto) carregarFotoServico(b,s.chave);
   });
 }
 
