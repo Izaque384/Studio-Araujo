@@ -3744,3 +3744,11 @@ body.nav-open{
   .bk-servico:hover .bk-servico-foto,
   .bk-servico.selecionado .bk-servico-foto{ transform:none; }
 }
+
+
+/* ---------- AGENDAMENTO · ETAPAS SEM PADDING GLOBAL ---------- */
+/* As etapas internas são <section>; sem este reset elas herdam os 130px
+   verticais da regra global de seções e criam grandes vazios no formulário. */
+.booking-panel .bk-etapa{
+  padding:0 !important;
+}
