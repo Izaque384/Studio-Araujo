@@ -312,3 +312,37 @@ const serviceLabels = {
   maleta: "Maleta / Estojo",
   caixa: "Caixa para Fotos"
 };
+
+
+// ---------- CATÁLOGO OPERACIONAL DO AGENDAMENTO ----------
+// A existência do serviço vem de servicePackages. Se um serviço for removido
+// do catálogo comercial, ele deixa automaticamente de aparecer no agendamento.
+// As durações abaixo são bloqueios operacionais da agenda e são intencionais.
+const bookingGroups = [
+  { id: "estudio", titulo: "Sessão no estúdio", desc: "Cenário montado, luz e direção de poses" },
+  { id: "externa", titulo: "Ensaio externo", desc: "Ao ar livre, em locação combinada" },
+  { id: "evento", titulo: "Evento", desc: "Cobertura de casamento, festa ou celebração" },
+  { id: "produtos", titulo: "Álbuns e produtos", desc: "Álbum, luva, maleta e caixa para fotos" }
+];
+
+const serviceBookingMeta = {
+  gestante: { nome: "Gestante", grupo: "estudio", duracao: 60 },
+  abc: { nome: "ABC", grupo: "estudio", duracao: 45 },
+  formatura: { nome: "Formatura", grupo: "estudio", duracao: 45 },
+  "cha-revelacao": { nome: "Chá Revelação", grupo: "estudio", duracao: 60 },
+  "acompanhamento-mensal": { nome: "Acompanhamento Mensal", grupo: "estudio", duracao: 30 },
+  corporativa: { nome: "Sessão Corporativa", grupo: "estudio", duracao: 60 },
+  moda: { nome: "Moda", grupo: "estudio", duracao: 120 },
+  "pre-wedding": { nome: "Pré-Wedding", grupo: "externa", duracao: 120, local: true },
+  casamento: { nome: "Casamento", grupo: "evento", horaLivre: true, local: true },
+  aniversario: { nome: "Aniversário", grupo: "evento", horaLivre: true, local: true },
+  batizado: { nome: "Batizado", grupo: "evento", horaLivre: true, local: true },
+  albuns: { nome: "Álbum Fotográfico", grupo: "produtos", produto: true },
+  luva: { nome: "Luva / Estojo", grupo: "produtos", produto: true },
+  maleta: { nome: "Maleta / Estojo", grupo: "produtos", produto: true },
+  caixa: { nome: "Caixa para Fotos", grupo: "produtos", produto: true }
+};
+
+const bookingCatalog = Object.entries(serviceBookingMeta)
+  .filter(([chave]) => Object.prototype.hasOwnProperty.call(servicePackages, chave))
+  .map(([chave, meta]) => ({ chave, ...meta }));

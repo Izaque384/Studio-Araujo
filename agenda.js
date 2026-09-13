@@ -11,32 +11,11 @@ const MIN_DIAS = 1;
 const MEM_CHAVE = "sa-agendamento";
 const MEM_VALIDADE = 12 * 60 * 60 * 1000;
 
-const GRUPOS = [
-  { id: "estudio", titulo: "Sessão no estúdio", desc: "Cenário montado, luz e direção de poses" },
-  { id: "externa", titulo: "Ensaio externo", desc: "Ao ar livre, em locação combinada" },
-  { id: "evento", titulo: "Evento", desc: "Cobertura de casamento, festa ou celebração" },
-  { id: "produtos", titulo: "Álbuns e produtos", desc: "Álbum, luva, maleta e caixa para fotos" }
-];
-
-// As durações abaixo foram preservadas de propósito. Ajustes de duração do
-// catálogo comercial ficam fora desta correção.
-const CATALOGO = [
-  { chave: "gestante", nome: "Gestante", grupo: "estudio", duracao: 60 },
-  { chave: "abc", nome: "ABC", grupo: "estudio", duracao: 45 },
-  { chave: "formatura", nome: "Formatura", grupo: "estudio", duracao: 45 },
-  { chave: "cha-revelacao", nome: "Chá Revelação", grupo: "estudio", duracao: 60 },
-  { chave: "acompanhamento-mensal", nome: "Acompanhamento Mensal", grupo: "estudio", duracao: 30 },
-  { chave: "corporativa", nome: "Sessão Corporativa", grupo: "estudio", duracao: 60 },
-  { chave: "moda", nome: "Moda", grupo: "estudio", duracao: 120 },
-  { chave: "pre-wedding", nome: "Pré-Wedding", grupo: "externa", duracao: 120, local: true },
-  { chave: "casamento", nome: "Casamento", grupo: "evento", horaLivre: true, local: true },
-  { chave: "aniversario", nome: "Aniversário", grupo: "evento", horaLivre: true, local: true },
-  { chave: "batizado", nome: "Batizado", grupo: "evento", horaLivre: true, local: true },
-  { chave: "albuns", nome: "Álbum Fotográfico", grupo: "produtos", produto: true },
-  { chave: "luva", nome: "Luva / Estojo", grupo: "produtos", produto: true },
-  { chave: "maleta", nome: "Maleta / Estojo", grupo: "produtos", produto: true },
-  { chave: "caixa", nome: "Caixa para Fotos", grupo: "produtos", produto: true }
-];
+const GRUPOS = typeof bookingGroups !== "undefined" ? bookingGroups : [];
+const CATALOGO = typeof bookingCatalog !== "undefined" ? bookingCatalog : [];
+if (!GRUPOS.length || !CATALOGO.length) {
+  console.error("Catálogo de agendamento indisponível. Verifique dados-servicos.js.");
+}
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -50,7 +29,12 @@ const el = {
 };
 
 const NOMES = ["Tipo de atendimento", "Serviço", "Pacote", "Data e horário", "Seus dados", "Revisão"];
-const TOTAL = 6;
+function fluxoAtual() { return ehProduto() ? [1, 2, 3, 5, 6] : [1, 2, 3, 4, 5, 6]; }
+function progressoDaEtapa(n) {
+  const fluxo = fluxoAtual();
+  const indice = Math.max(0, fluxo.indexOf(n));
+  return { atual: indice + 1, total: fluxo.length };
+}
 const busyDays = new Set();
 const busyIntervals = [];
 let agendaCarregada = false;
@@ -102,6 +86,7 @@ function usaHorario() {
   if (aniversarioEstudio()) return true;
   return !s.horaLivre;
 }
+function precisaHorarioSelecionado() { return usaHorario() && !agendaFalhou; }
 function precisaLocal() {
   const s = servicoAtual();
   if (!s || ehProduto()) return false;
@@ -141,13 +126,13 @@ function montarTipos() {
   el.tipos.innerHTML = "";
   GRUPOS.forEach(g => {
     const b = document.createElement("button");
-    b.type="button"; b.className="bk-tipo"; b.dataset.grupo=g.id; b.setAttribute("role","radio");
+    b.type="button"; b.className="bk-tipo"; b.dataset.grupo=g.id; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.grupo===g.id ? "true" : "false");
     b.innerHTML = icone(g.id)+'<span class="bk-tipo-txt"><strong>'+esc(g.titulo)+'</strong><em>'+esc(g.desc)+'</em></span>';
     b.addEventListener("click", () => {
       st.grupo=g.id; st.servico=null; st.pacote=null; st.data=null; st.hora=null; st.looks=10;
       montarTipos(); montarServicos(); atualizar(); seguir();
     });
-    if (st.grupo===g.id) { b.classList.add("selecionado"); b.setAttribute("aria-checked","true"); }
+    if (st.grupo===g.id) b.classList.add("selecionado");
     el.tipos.appendChild(b);
   });
 }
@@ -161,7 +146,7 @@ function montarServicos() {
   el.servicos.innerHTML="";
   CATALOGO.filter(s=>s.grupo===st.grupo).forEach(s=>{
     const b=document.createElement("button");
-    b.type="button"; b.className="bk-servico"; b.dataset.chave=s.chave; b.setAttribute("role","radio");
+    b.type="button"; b.className="bk-servico"; b.dataset.chave=s.chave; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.servico===s.chave ? "true" : "false");
     b.innerHTML='<span class="bk-servico-txt"><strong>'+esc(s.nome)+'</strong><em>'+esc(metaDoServico(s))+'</em></span><span class="bk-servico-preco">'+esc(resumoPreco(s.chave))+'</span>';
     if(st.servico===s.chave) b.classList.add("selecionado");
     b.addEventListener("click",()=>{ st.servico=s.chave; st.pacote=null; st.data=null; st.hora=null; st.looks=10; montarServicos(); montarPacotes(); atualizar(); seguir(); });
@@ -176,10 +161,10 @@ function montarPacotes() {
   const opts=opcoesDe(st.servico) || [{name:"Valor a combinar",price:"Sob consulta",items:[],unico:true}];
   el.pacotesLabel.textContent=opts.length>1?"Escolha o pacote":"Confira o que está incluso";
   opts.forEach(o=>{
-    const b=document.createElement("button"); b.type="button"; b.className="bk-pacote";
+    const b=document.createElement("button"); b.type="button"; b.className="bk-pacote"; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.pacote && st.pacote.name===o.name ? "true" : "false");
     b.innerHTML='<div class="bk-pacote-topo"><span>'+esc(o.name)+'</span><b>'+esc(o.price)+'</b></div>'+(o.items.length?'<ul>'+o.items.map(i=>'<li>'+esc(i)+'</li>').join("")+'</ul>':"")+'<span class="bk-pacote-cta">Escolher</span>';
     if(st.pacote && st.pacote.name===o.name) b.classList.add("selecionado");
-    b.addEventListener("click",()=>{ st.pacote=o; st.data=null; st.hora=null; montarPacotes(); atualizar(); if(ehProduto()) mostrarEtapa(5); else seguir(); });
+    b.addEventListener("click",()=>{ st.pacote=o; st.data=null; st.hora=null; montarPacotes(); atualizar(); if(ehProduto()) mostrarEtapa(5, true); else seguir(); });
     el.pacotes.appendChild(b);
   });
 }
@@ -196,14 +181,17 @@ function primeiraDataValida(){const d=new Date();d.setHours(0,0,0,0);d.setDate(d
 function diaDisponivel(d){
   if(d<primeiraDataValida()||d.getDay()===0||busyDays.has(iso(d)))return false;
   if(usaHorario() && !agendaCarregada && !agendaFalhou)return false;
+  if(agendaFalhou && usaHorario()) return true;
   return !usaHorario() || horariosDoServico().some(h=>!ocupado(iso(d),h));
 }
 function validarEscolhaAgenda(){
   if(ehProduto()) return true;
   if(!st.data || doISO(st.data)<primeiraDataValida() || doISO(st.data).getDay()===0 || busyDays.has(st.data)){st.data=null;st.hora=null;return false;}
-  if(usaHorario()){
+  if(precisaHorarioSelecionado()){
     if(!agendaCarregada && !agendaFalhou) return false;
     if(!st.hora || !horariosDoServico().includes(st.hora) || ocupado(st.data,st.hora)){st.hora=null;return false;}
+  } else if (agendaFalhou && usaHorario()) {
+    st.hora=null;
   }
   return true;
 }
@@ -214,7 +202,7 @@ function montarCalendario(){
   const primeiro=new Date(ano,mes,1); for(let i=0;i<primeiro.getDay();i++){const v=document.createElement("span");v.className="bk-dia vazio";el.dias.appendChild(v);}
   const total=new Date(ano,mes+1,0).getDate();
   for(let n=1;n<=total;n++){
-    const d=new Date(ano,mes,n), b=document.createElement("button"), ok=diaDisponivel(d); b.type="button";b.className="bk-dia";b.textContent=n;b.disabled=!ok;
+    const d=new Date(ano,mes,n), b=document.createElement("button"), ok=diaDisponivel(d); b.type="button";b.className="bk-dia";b.textContent=n;b.disabled=!ok;b.setAttribute("role","gridcell");b.setAttribute("aria-disabled",ok?"false":"true");b.setAttribute("aria-selected",st.data===iso(d)?"true":"false");
     if(!ok)b.classList.add("indisponivel");if(st.data===iso(d))b.classList.add("selecionado");
     b.addEventListener("click",()=>{st.data=iso(d);st.hora=null;montarCalendario();montarSlots();atualizar();if(!usaHorario())seguir();}); el.dias.appendChild(b);
   }
@@ -222,13 +210,20 @@ function montarCalendario(){
 }
 function montarSlots(){
   el.slots.innerHTML=""; el.slotHint.classList.toggle("aviso",agendaFalhou);
+  el.slots.hidden=false;
   if(!usaHorario())return;
   if(!agendaCarregada&&!agendaFalhou){el.slotHint.textContent="Verificando a agenda… Os horários serão liberados assim que a consulta terminar.";return;}
+  if(agendaFalhou){
+    st.hora=null;
+    el.slots.hidden=true;
+    el.slotHint.textContent="Não conseguimos consultar os horários agora. Escolha a data e combinaremos o melhor horário com você pelo WhatsApp.";
+    return;
+  }
   if(!st.data){el.slotHint.textContent="Escolha primeiro o dia.";return;}
   const livres=horariosDoServico().filter(h=>!ocupado(st.data,h));
   if(!livres.length){el.slotHint.textContent="Não há horário livre neste dia.";return;}
-  el.slotHint.textContent=agendaFalhou?"Não conseguimos consultar a agenda agora — estes horários precisam ser confirmados pelo WhatsApp.":"Agenda sincronizada: horários ocupados não aparecem.";
-  livres.forEach(h=>{const b=document.createElement("button");b.type="button";b.className="slot";b.textContent=h;if(st.hora===h)b.classList.add("selected");b.addEventListener("click",()=>{st.hora=h;montarSlots();atualizar();seguir();});el.slots.appendChild(b);});
+  el.slotHint.textContent="Agenda sincronizada: horários ocupados não aparecem.";
+  livres.forEach(h=>{const b=document.createElement("button");b.type="button";b.className="slot";b.textContent=h;b.setAttribute("aria-pressed",st.hora===h?"true":"false");if(st.hora===h)b.classList.add("selected");b.addEventListener("click",()=>{st.hora=h;montarSlots();atualizar();seguir();});el.slots.appendChild(b);});
 }
 
 function garantirCampoLooks(){
@@ -245,7 +240,7 @@ function garantirCampoLooks(){
 function foneValido(){return el.fone.value.replace(/\D/g,"").length>=10;}
 function etapaCompleta(n){
   if(n===1)return !!st.grupo;if(n===2)return !!st.servico;if(n===3)return !!st.pacote;
-  if(n===4)return ehProduto() || (!!st.data && (!usaHorario() || !!st.hora) && validarEscolhaAgenda());
+  if(n===4)return ehProduto() || (!!st.data && (!precisaHorarioSelecionado() || !!st.hora) && validarEscolhaAgenda());
   if(n===5)return el.nome.value.trim().length>=2&&foneValido()&&(!precisaLocal()||el.local.value.trim().length>=3)&&(st.servico!=="moda"||st.looks>=10);
   return true;
 }
@@ -255,7 +250,7 @@ function valorAtual(){if(st.servico==="moda")return fmtPreco(Math.max(10,st.look
 function montarRevisao(){
   const s=servicoAtual(); if(!s)return;
   let html='<div class="rev-topo"><div class="rev-topo-txt"><span class="rev-k">'+(ehProduto()?"Seu produto":"Sua sessão")+'</span><strong class="rev-servico">'+esc(s.nome)+'</strong>'+(st.pacote&&!st.pacote.unico?'<span class="rev-pacote">'+esc(st.pacote.name)+'</span>':"")+'</div><div class="rev-valor"><span class="rev-k">Investimento</span><strong>'+esc(valorAtual())+'</strong></div></div>';
-  if(!ehProduto()) html+='<div class="rev-bloco rev-quando"><div class="rev-item"><div><span class="rev-k">Data</span><span class="rev-v">'+esc(dataPorExtenso())+'</span></div></div><div class="rev-item"><div><span class="rev-k">Horário</span><span class="rev-v">'+esc(usaHorario()?st.hora:"a combinar")+'</span></div></div></div>';
+  if(!ehProduto()) html+='<div class="rev-bloco rev-quando"><div class="rev-item"><div><span class="rev-k">Data</span><span class="rev-v">'+esc(dataPorExtenso())+'</span></div></div><div class="rev-item"><div><span class="rev-k">Horário</span><span class="rev-v">'+esc(precisaHorarioSelecionado()?st.hora:"a combinar")+'</span></div></div></div>';
   html+='<div class="rev-bloco"><div class="rev-item"><div><span class="rev-k">Nome</span><span class="rev-v">'+esc(el.nome.value.trim())+'</span></div></div><div class="rev-item"><div><span class="rev-k">WhatsApp</span><span class="rev-v">'+esc(el.fone.value.trim())+'</span></div></div>';
   if(st.servico==="moda")html+='<div class="rev-item"><div><span class="rev-k">Looks</span><span class="rev-v">'+esc(st.looks)+'</span></div></div>';
   if(precisaLocal()&&el.local.value.trim())html+='<div class="rev-item largo"><div><span class="rev-k">Local</span><span class="rev-v">'+esc(el.local.value.trim())+'</span></div></div>';
@@ -266,26 +261,35 @@ function montarRevisao(){
 }
 
 function atualizar(){el.enviar.disabled=!etapaCompleta(etapa);memGravar();}
-function mostrarEtapa(n){
+function mostrarEtapa(n, moverFoco=false){
   // Produtos não passam pelo calendário.
   if(ehProduto()&&n===4)n=5;
-  etapa=n; document.querySelectorAll(".bk-etapa").forEach(s=>s.hidden=Number(s.dataset.etapa)!==n);
-  el.barra.style.width=(n/TOTAL*100)+"%";el.passoNum.textContent="Etapa "+n+" de "+TOTAL;el.passoNome.textContent=NOMES[n-1];
-  el.voltar.hidden=n===1;el.enviar.hidden=n<5;el.enviar.textContent=n===TOTAL?"Enviar no WhatsApp":"Continuar";
+  etapa=n;
+  let ativa=null;
+  document.querySelectorAll(".bk-etapa").forEach(sec=>{
+    const atual=Number(sec.dataset.etapa)===n;
+    sec.hidden=!atual;
+    sec.setAttribute("aria-hidden", atual?"false":"true");
+    if(atual){sec.setAttribute("tabindex","-1");sec.setAttribute("aria-label",NOMES[n-1]);ativa=sec;}
+  });
+  const prog=progressoDaEtapa(n);
+  el.barra.style.width=(prog.atual/prog.total*100)+"%";el.passoNum.textContent="Etapa "+prog.atual+" de "+prog.total;el.passoNome.textContent=NOMES[n-1];
+  el.voltar.hidden=n===1;el.enviar.hidden=n<5;el.enviar.textContent=n===6?"Enviar no WhatsApp":"Continuar";
   const nav=document.querySelector(".bk-nav");if(nav)nav.hidden=el.voltar.hidden&&el.enviar.hidden;
   if(n===3)montarPacotes();
   if(n===4){el.horaBloco.hidden=!usaHorario();el.combinar.hidden=usaHorario();irParaMesComVaga();montarCalendario();montarSlots();}
   if(n===5){garantirCampoLooks();el.localBloco.hidden=!precisaLocal();}
-  if(n===TOTAL)montarRevisao(); atualizar();
+  if(n===6)montarRevisao(); atualizar();
+  if(moverFoco&&ativa)requestAnimationFrame(()=>ativa.focus({preventScroll:true}));
 }
-function seguir(){if(travaAuto)return;setTimeout(()=>{if(etapaCompleta(etapa)&&etapa<TOTAL)mostrarEtapa(ehProduto()&&etapa===3?5:etapa+1);},220);}
+function seguir(){if(travaAuto)return;setTimeout(()=>{if(etapaCompleta(etapa)&&etapa<6)mostrarEtapa(ehProduto()&&etapa===3?5:etapa+1,true);},220);}
 
 function montarLinkWhatsApp(){
   const s=servicoAtual(), linhas=["Olá, Studio Araújo! 😊",ehProduto()?"Gostaria de solicitar um produto. 📸":"Gostaria de agendar uma sessão. 📸","• Serviço: "+s.nome];
   if(st.pacote&&!st.pacote.unico)linhas.push("• Pacote: "+st.pacote.name);
   if(st.servico==="moda")linhas.push("• Quantidade de looks: "+st.looks);
   linhas.push("• Valor: "+valorAtual());
-  if(!ehProduto()){linhas.push("• Data: "+dataPorExtenso());linhas.push("• Horário: "+(usaHorario()?st.hora:"a combinar"));}
+  if(!ehProduto()){linhas.push("• Data: "+dataPorExtenso());linhas.push("• Horário: "+(precisaHorarioSelecionado()?st.hora:"a combinar"));}
   linhas.push("• Nome: "+el.nome.value.trim(),"• WhatsApp: "+el.fone.value.trim());
   if(precisaLocal()&&el.local.value.trim())linhas.push("• Local: "+el.local.value.trim());
   if(el.nota.value.trim())linhas.push("• Observação: "+el.nota.value.trim());
@@ -299,18 +303,21 @@ function telaFinal(link){
 function enviar(){
   // Revalida no último instante. Se a agenda ainda está carregando ou o horário
   // ficou ocupado, o cliente volta ao calendário em vez de enviar dado obsoleto.
-  if(!ehProduto() && !validarEscolhaAgenda()){mostrarEtapa(4);el.slotHint.textContent=agendaCarregada?"Esse horário não está mais disponível. Escolha outro.":"Aguarde a verificação da agenda antes de continuar.";el.slotHint.classList.add("aviso");return;}
+  if(!ehProduto() && !validarEscolhaAgenda()){mostrarEtapa(4,true);el.slotHint.textContent=agendaCarregada?"Esse horário não está mais disponível. Escolha outro.":"Aguarde a verificação da agenda antes de continuar.";el.slotHint.classList.add("aviso");return;}
   const link=montarLinkWhatsApp(),aba=window.open(link,"_blank","noopener");telaFinal(link);if(!aba){const t=$("bkFinalTexto");if(t)t.innerHTML='Seu pedido está pronto. O navegador bloqueou a abertura automática — <strong>toque no botão abaixo</strong> para abrir o WhatsApp.';}memLimpar();
 }
 
 $("bkMesAnt").addEventListener("click",()=>{mesVisivel.setMonth(mesVisivel.getMonth()-1);montarCalendario();});
 $("bkMesProx").addEventListener("click",()=>{mesVisivel.setMonth(mesVisivel.getMonth()+1);montarCalendario();});
-el.trocar.addEventListener("click",()=>mostrarEtapa(2));
-el.voltar.addEventListener("click",()=>{if(etapa===5&&ehProduto())mostrarEtapa(3);else if(etapa>1)mostrarEtapa(etapa-1);});
-el.enviar.addEventListener("click",()=>{if(el.enviar.disabled)return;if(etapa<TOTAL)mostrarEtapa(etapa+1);else enviar();});
+el.trocar.addEventListener("click",()=>mostrarEtapa(2,true));
+el.voltar.addEventListener("click",()=>{if(etapa===5&&ehProduto())mostrarEtapa(3,true);else if(etapa>1)mostrarEtapa(etapa-1,true);});
+el.enviar.addEventListener("click",()=>{if(el.enviar.disabled)return;if(etapa<6)mostrarEtapa(etapa+1,true);else enviar();});
 el.fone.addEventListener("input",()=>{let v=el.fone.value.replace(/\D/g,"").slice(0,11);if(v.length>6)v="("+v.slice(0,2)+") "+v.slice(2,7)+"-"+v.slice(7);else if(v.length>2)v="("+v.slice(0,2)+") "+v.slice(2);else if(v.length)v="("+v;el.fone.value=v;atualizar();});
 [el.nome,el.local,el.nota].forEach(x=>x.addEventListener("input",atualizar));
 
+el.pacotes.setAttribute("role","radiogroup");
+el.pacotes.setAttribute("aria-label","Pacotes disponíveis");
+el.passoNum.parentElement?.setAttribute("aria-live","polite");
 montarTipos();
 (function retomar(){
   const chave=new URLSearchParams(location.search).get("servico"),m=memLer();memPronta=true;
@@ -337,7 +344,7 @@ if(AGENDA_API_URL){
       agendaCarregada=true;
       // Revalida estado restaurado mesmo que o usuário já tenha avançado.
       const tinhaData=!!st.data,tinhaHora=!!st.hora;validarEscolhaAgenda();
-      if((tinhaData&&!st.data)||(tinhaHora&&!st.hora)){if(!ehProduto())mostrarEtapa(4);}
+      if((tinhaData&&!st.data)||(tinhaHora&&!st.hora)){if(!ehProduto())mostrarEtapa(4,true);}
       else if(etapa===4){irParaMesComVaga();montarCalendario();montarSlots();}
       atualizar();
     })
