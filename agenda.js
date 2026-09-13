@@ -303,14 +303,31 @@ function valorAtual(){if(st.servico==="moda")return fmtPreco(Math.max(10,st.look
 
 function montarRevisao(){
   const s=servicoAtual(); if(!s)return;
-  let html='<div class="rev-topo"><div class="rev-topo-txt"><span class="rev-k">'+(ehProduto()?"Seu produto":"Sua sessão")+'</span><strong class="rev-servico">'+esc(s.nome)+'</strong>'+(st.pacote&&!st.pacote.unico?'<span class="rev-pacote">'+esc(st.pacote.name)+'</span>':"")+'</div><div class="rev-valor"><span class="rev-k">Investimento</span><strong>'+esc(valorAtual())+'</strong></div></div>';
-  if(!ehProduto()) html+='<div class="rev-bloco rev-quando"><div class="rev-item"><div><span class="rev-k">Data</span><span class="rev-v">'+esc(dataPorExtenso())+'</span></div></div><div class="rev-item"><div><span class="rev-k">Horário</span><span class="rev-v">'+esc(precisaHorarioSelecionado()?st.hora:"a combinar")+'</span></div></div></div>';
-  html+='<div class="rev-bloco"><div class="rev-item"><div><span class="rev-k">Nome</span><span class="rev-v">'+esc(el.nome.value.trim())+'</span></div></div><div class="rev-item"><div><span class="rev-k">WhatsApp</span><span class="rev-v">'+esc(el.fone.value.trim())+'</span></div></div>';
-  if(st.servico==="moda")html+='<div class="rev-item"><div><span class="rev-k">Looks</span><span class="rev-v">'+esc(st.looks)+'</span></div></div>';
-  if(precisaLocal()&&el.local.value.trim())html+='<div class="rev-item largo"><div><span class="rev-k">Local</span><span class="rev-v">'+esc(el.local.value.trim())+'</span></div></div>';
-  if(el.nota.value.trim())html+='<div class="rev-item largo"><div><span class="rev-k">Observação</span><span class="rev-v">'+esc(el.nota.value.trim())+'</span></div></div>';
-  html+='</div>'; el.revisao.innerHTML=html;
-  const txt=st.pacote&&st.pacote.items?st.pacote.items.join(" "):"";const m=txt.match(/entrada de (R\$ ?[\d.,]+)/i)||(/50%\s*na reserva/i.test(txt)?["","50% na reserva"]:null);
+  const pacoteNome=st.pacote&&!st.pacote.unico?st.pacote.name:"";
+  const itens=st.pacote&&Array.isArray(st.pacote.items)?st.pacote.items:[];
+  let html='<div class="rev-premium">';
+
+  html+='<div class="rev-hero"><div class="rev-hero-copy"><span class="rev-eyebrow"><i></i>'+(ehProduto()?"Resumo do pedido":"Resumo do agendamento")+'</span><strong class="rev-servico">'+esc(s.nome)+'</strong>'+(pacoteNome?'<span class="rev-pacote">'+esc(pacoteNome)+'</span>':"")+'</div><div class="rev-valor"><span class="rev-k">Investimento</span><strong>'+esc(valorAtual())+'</strong><small>valor do serviço</small></div></div>';
+
+  if(!ehProduto()){
+    html+='<div class="rev-section rev-section-quando"><div class="rev-section-head"><div><span class="rev-section-kicker">Quando</span><h4>Data e horário</h4></div><span class="rev-section-number">01</span></div><div class="rev-grid"><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Data escolhida</span><span class="rev-v rev-v-destaque">'+esc(dataPorExtenso())+'</span></div></div><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Horário</span><span class="rev-v rev-v-destaque">'+esc(precisaHorarioSelecionado()?st.hora:"a combinar")+'</span></div></div></div></div>';
+  }
+
+  html+='<div class="rev-section"><div class="rev-section-head"><div><span class="rev-section-kicker">Contato</span><h4>Seus dados</h4></div><span class="rev-section-number">'+(ehProduto()?"01":"02")+'</span></div><div class="rev-grid rev-grid-dados"><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Nome</span><span class="rev-v">'+esc(el.nome.value.trim())+'</span></div></div><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">WhatsApp</span><span class="rev-v">'+esc(el.fone.value.trim())+'</span></div></div>';
+  if(st.servico==="moda")html+='<div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Quantidade de looks</span><span class="rev-v">'+esc(st.looks)+'</span></div></div>';
+  if(precisaLocal()&&el.local.value.trim())html+='<div class="rev-detail rev-detail-wide"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Local</span><span class="rev-v">'+esc(el.local.value.trim())+'</span></div></div>';
+  if(el.nota.value.trim())html+='<div class="rev-detail rev-detail-wide rev-detail-note"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Observação</span><span class="rev-v">'+esc(el.nota.value.trim())+'</span></div></div>';
+  html+='</div></div>';
+
+  if(itens.length){
+    html+='<details class="rev-inclui"><summary><span><b>O que está incluído</b><small>'+itens.length+' '+(itens.length===1?"item":"itens")+' no pacote</small></span><i aria-hidden="true"></i></summary><ul>'+itens.map(i=>'<li>'+esc(i)+'</li>').join("")+'</ul></details>';
+  }
+
+  html+='<div class="rev-confirm-note"><span class="rev-confirm-icon" aria-hidden="true">✓</span><div><strong>Tudo certo?</strong><p>Ao confirmar, abriremos o WhatsApp com estes dados já organizados. Você revisa a mensagem e envia quando estiver pronto.</p></div></div></div>';
+  el.revisao.innerHTML=html;
+
+  const txt=itens.join(" ");
+  const m=txt.match(/entrada de (R\$ ?[\d.,]+)/i)||(/50%\s*na reserva/i.test(txt)?["","50% na reserva"]:null);
   if(m){el.sinal.hidden=false;el.sinal.textContent="Reserva da data: "+m[1]+". Combinamos a forma de pagamento pelo WhatsApp.";}else el.sinal.hidden=true;
 }
 
@@ -328,7 +345,7 @@ function mostrarEtapa(n, moverFoco=false){
   });
   const prog=progressoDaEtapa(n);
   el.barra.style.width=(prog.atual/prog.total*100)+"%";el.passoNum.textContent="Etapa "+prog.atual+" de "+prog.total;el.passoNome.textContent=NOMES[n-1];
-  el.voltar.hidden=n===1;el.enviar.hidden=n<5;el.enviar.textContent=n===6?"Enviar no WhatsApp":"Continuar";
+  el.voltar.hidden=n===1;el.enviar.hidden=n<5;el.enviar.textContent=n===6?"Confirmar no WhatsApp":"Continuar";
   const nav=document.querySelector(".bk-nav");if(nav)nav.hidden=el.voltar.hidden&&el.enviar.hidden;
   if(n===3)montarPacotes();
   if(n===4){el.horaBloco.hidden=!usaHorario();el.combinar.hidden=usaHorario();irParaMesComVaga();montarCalendario();montarSlots();}
