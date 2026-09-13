@@ -204,7 +204,7 @@ function montarCalendario(){
   for(let n=1;n<=total;n++){
     const d=new Date(ano,mes,n), b=document.createElement("button"), ok=diaDisponivel(d); b.type="button";b.className="bk-dia";b.textContent=n;b.disabled=!ok;b.setAttribute("role","gridcell");b.setAttribute("aria-disabled",ok?"false":"true");b.setAttribute("aria-selected",st.data===iso(d)?"true":"false");
     if(!ok)b.classList.add("indisponivel");if(st.data===iso(d))b.classList.add("selecionado");
-    b.addEventListener("click",()=>{st.data=iso(d);st.hora=null;montarCalendario();montarSlots();atualizar();if(!usaHorario())seguir();}); el.dias.appendChild(b);
+    b.addEventListener("click",()=>{st.data=iso(d);st.hora=null;montarCalendario();montarSlots();atualizar();if(!precisaHorarioSelecionado())seguir();}); el.dias.appendChild(b);
   }
   const lim=new Date();lim.setDate(1);$("bkMesAnt").disabled=mesVisivel<=lim;
 }
@@ -330,7 +330,7 @@ montarTipos();
   el.nome.value=m.nome||"";el.fone.value=m.fone||"";el.local.value=m.local||"";el.nota.value=m.nota||"";
   if(st.data&&doISO(st.data)<primeiraDataValida()){st.data=null;st.hora=null;}
   montarTipos();montarServicos();
-  let destino=Math.min(Number(m.etapa)||1,TOTAL);if(ehProduto()&&destino===4)destino=5;etapa=destino;
+  let destino=Math.min(Number(m.etapa)||1,6);if(ehProduto()&&destino===4)destino=5;etapa=destino;
 })();
 (function preselect(){const chave=new URLSearchParams(location.search).get("servico"),s=CATALOGO.find(x=>x.chave===chave);if(!s)return;st.grupo=s.grupo;st.servico=s.chave;montarTipos();montarServicos();montarPacotes();etapa=3;})();
 mostrarEtapa(etapa);
