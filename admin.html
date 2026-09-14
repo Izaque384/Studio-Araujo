@@ -4,20 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
-  <title>Biblioteca de Mídia | Studio Araújo</title>
+  <title>Painel Administrativo | Studio Araújo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=20260914-panel-polish">
 </head>
 <body>
   <main class="admin-shell">
     <section id="authView" class="auth-card">
       <img src="assets/logo-gold.png" alt="Studio Araújo Fotografia" class="auth-logo">
       <p class="eyebrow">Área administrativa</p>
-      <h1>Biblioteca de Mídia</h1>
-      <p class="auth-copy">Entre para publicar, organizar e atualizar as fotos e vídeos exibidos no site.</p>
+      <h1>Painel Studio Araújo</h1>
+      <p class="auth-copy">Entre para gerenciar o portfólio, os trabalhos recentes, as galerias de serviços e os depoimentos do site.</p>
 
       <button type="button" id="googleBtn" class="btn btn-primary">Entrar com Google</button>
 
@@ -46,16 +46,11 @@
     </section>
 
     <section id="panelView" class="panel" hidden>
-      <section id="panelHome" class="media-summary media-summary-compact" aria-label="Resumo da biblioteca">
-        <article><small>Total</small><span id="statTotal">—</span></article>
-        <article><small>Publicadas</small><span id="statVisible">—</span></article>
-        <article><small>Ocultas</small><span id="statHidden">—</span></article>
-        <article><small>Capas</small><span id="statCovers">—</span></article>
-      </section>
       <header class="panel-header">
         <div>
           <p class="eyebrow">Studio Araújo</p>
-          <h1>Painel de mídia</h1>
+          <h1>Painel administrativo</h1>
+          <p class="section-copy">Gerencie os principais conteúdos publicados no site em um só lugar.</p>
           <p id="welcome" class="muted"></p>
         </div>
         <div class="header-actions">
@@ -64,27 +59,33 @@
         </div>
       </header>
 
+      <section id="panelHome" class="media-summary media-summary-compact" aria-label="Resumo do conteúdo">
+        <article><small>Mídias</small><span id="statTotal">—</span></article>
+        <article><small>Publicadas</small><span id="statVisible">—</span></article>
+        <article><small>Ocultas</small><span id="statHidden">—</span></article>
+        <article><small>Capas</small><span id="statCovers">—</span></article>
+      </section>
 
       <section class="admin-hub" aria-label="Áreas de gerenciamento">
-        <button type="button" class="hub-card" data-overview-area="portfolio">
+        <button type="button" class="hub-card" data-overview-area="portfolio" aria-controls="mediaOverview">
           <span class="hub-icon" aria-hidden="true">01</span>
           <strong>Portfólio</strong>
           <small>Fotos e vídeos que compõem o portfólio principal.</small>
           <span class="hub-link">Ver visão geral →</span>
         </button>
-        <button type="button" class="hub-card" data-overview-area="recent">
+        <button type="button" class="hub-card" data-overview-area="recent" aria-controls="mediaOverview">
           <span class="hub-icon" aria-hidden="true">02</span>
           <strong>Trabalhos recentes</strong>
           <small>Cadastre e organize os trabalhos exibidos na Home.</small>
           <span class="hub-link">Ver visão geral →</span>
         </button>
-        <button type="button" class="hub-card" data-overview-area="servico">
+        <button type="button" class="hub-card" data-overview-area="servico" aria-controls="mediaOverview">
           <span class="hub-icon" aria-hidden="true">03</span>
           <strong>Galerias de serviços</strong>
           <small>Mídias e capas abertas pelos cards de serviços.</small>
           <span class="hub-link">Ver visão geral →</span>
         </button>
-        <button type="button" class="hub-card" id="openTestimonialsBtn">
+        <button type="button" class="hub-card" id="openTestimonialsBtn" aria-controls="testimonialsAdmin">
           <span class="hub-icon" aria-hidden="true">04</span>
           <strong>Depoimentos</strong>
           <small>Revise, publique ou oculte depoimentos enviados pelo site.</small>
