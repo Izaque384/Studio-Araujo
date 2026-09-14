@@ -1,5 +1,5 @@
 :root{
-  --bg: #0e0d0b;
+  --bg: #0d0d0c;
   --bg-alt: #17140f;
   --bg-card: #1c1812;
   --gold: #c9a24b;
@@ -120,7 +120,7 @@ header{
   border-bottom:1px solid transparent;
 }
 header.scrolled{
-  background:rgba(14,13,11,0.92);
+  background:rgba(13,13,12,0.92);
   backdrop-filter:blur(10px);
   padding:14px 0;
   border-bottom:1px solid var(--hairline);
