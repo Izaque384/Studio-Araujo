@@ -44,6 +44,13 @@ depoimentos=(ROOT/'depoimentos.js').read_text(encoding='utf-8')
 if 'DEPOIMENTOS_FIXOS' in depoimentos: errors.append('Depoimentos: conteúdo fixo voltou ao JavaScript')
 if '.from("site_testimonials").insert' in depoimentos or ".from('site_testimonials').insert" in depoimentos: errors.append('Depoimentos: fallback de INSERT público direto reintroduzido')
 if not (ROOT/'admin-testimonials.js').exists(): errors.append('Painel: módulo de moderação de depoimentos ausente')
+if not (ROOT/'admin-contextual-media.js').exists(): errors.append('Painel: gerenciador contextual de mídias ausente')
+else:
+    contextual=(ROOT/'admin-contextual-media.js').read_text(encoding='utf-8')
+    for required in ('header-media-stat','context-media-group','openAreaManager','saveEditor','deleteMedia'):
+        if required not in contextual: errors.append('Painel: gerenciador contextual incompleto: '+required)
+admin_testimonials=(ROOT/'admin-testimonials.js').read_text(encoding='utf-8')
+if 'initContextualMediaAdmin' not in admin_testimonials: errors.append('Painel: gerenciador contextual não está inicializado pelo módulo administrativo')
 
 services=(ROOT/'servicos.html').read_text(encoding='utf-8')
 data=(ROOT/'dados-servicos.js').read_text(encoding='utf-8')
@@ -59,7 +66,7 @@ if package_match:
     missing=sorted(service_keys-package_keys)
     if missing: print('AVISO: serviços sem pacote comercial: '+', '.join(missing))
 
-for js in ['script.js','servicos.js','dados-servicos.js','agenda.js','depoimentos.js','recent-works.js','admin.js','admin-testimonials.js','recent-works-admin.js']:
+for js in ['script.js','servicos.js','dados-servicos.js','agenda.js','depoimentos.js','recent-works.js','admin.js','admin-testimonials.js','admin-contextual-media.js','recent-works-admin.js']:
     r=subprocess.run(['node','--check',str(ROOT/js)],capture_output=True,text=True)
     if r.returncode: errors.append(f'{js}: falha de sintaxe: {r.stderr.strip()}')
 

@@ -55,36 +55,32 @@
           <p id="welcome" class="muted"></p>
         </div>
         <div class="header-actions">
+          <div id="headerMediaStat" class="header-media-stat" aria-label="Total de mídias cadastradas">
+            <small>Mídias</small><strong id="headerMediaStatValue">—</strong><span id="statTotal" hidden>—</span>
+          </div>
           <a class="btn btn-ghost" href="/" target="_blank" rel="noopener">Ver site</a>
           <button type="button" id="logoutBtn" class="btn btn-ghost">Sair</button>
         </div>
       </header>
 
-      <section id="panelHome" class="media-summary media-summary-compact" aria-label="Resumo do conteúdo">
-        <article><small>Mídias</small><span id="statTotal">—</span></article>
-        <article><small>Publicadas</small><span id="statVisible">—</span></article>
-        <article><small>Ocultas</small><span id="statHidden">—</span></article>
-        <article><small>Capas</small><span id="statCovers">—</span></article>
-      </section>
-
       <section class="admin-hub" aria-label="Áreas de gerenciamento">
-        <button type="button" class="hub-card" data-overview-area="portfolio" aria-controls="mediaOverview">
+        <button type="button" class="hub-card" data-overview-area="portfolio" aria-controls="uploadSection">
           <span class="hub-icon" aria-hidden="true">01</span>
           <strong>Portfólio</strong>
           <small>Fotos e vídeos que compõem o portfólio principal.</small>
-          <span class="hub-link">Ver visão geral →</span>
+          <span class="hub-link">Gerenciar conteúdo →</span>
         </button>
-        <button type="button" class="hub-card" data-overview-area="recent" aria-controls="mediaOverview">
+        <button type="button" class="hub-card" data-overview-area="recent" aria-controls="uploadSection">
           <span class="hub-icon" aria-hidden="true">02</span>
           <strong>Trabalhos recentes</strong>
           <small>Cadastre e organize os trabalhos exibidos na Home.</small>
-          <span class="hub-link">Ver visão geral →</span>
+          <span class="hub-link">Gerenciar conteúdo →</span>
         </button>
-        <button type="button" class="hub-card" data-overview-area="servico" aria-controls="mediaOverview">
+        <button type="button" class="hub-card" data-overview-area="servico" aria-controls="uploadSection">
           <span class="hub-icon" aria-hidden="true">03</span>
           <strong>Galerias de serviços</strong>
           <small>Mídias e capas abertas pelos cards de serviços.</small>
-          <span class="hub-link">Ver visão geral →</span>
+          <span class="hub-link">Gerenciar conteúdo →</span>
         </button>
         <button type="button" class="hub-card" id="openTestimonialsBtn" aria-controls="testimonialsAdmin">
           <span class="hub-icon" aria-hidden="true">04</span>
@@ -122,7 +118,7 @@
         <div id="mediaOverviewGrid" class="overview-grid"></div>
       </section>
 
-      <section id="uploadSection" class="upload-card admin-section">
+      <section id="uploadSection" class="upload-card admin-section" hidden>
         <div class="section-heading upload-head">
           <div>
             <p class="eyebrow">Atualizar o site</p>
@@ -131,7 +127,6 @@
           </div>
           <div class="upload-head-actions">
             <span class="upload-note">Fotos até 25 MB · Vídeos até 100 MB</span>
-            <button type="button" id="openLibraryBtn" class="btn btn-ghost btn-small">Abrir biblioteca</button>
           </div>
         </div>
 
@@ -244,18 +239,6 @@
       </section>
     </section>
   </main>
-  <script>
-    document.querySelectorAll('[data-overview-area]').forEach(button => {
-      button.addEventListener('click', () => {
-        const overview = document.getElementById('mediaOverview');
-        if (overview) overview.hidden = false;
-      });
-    });
-    document.getElementById('openTestimonialsBtn')?.addEventListener('click', () => {
-      const overview = document.getElementById('mediaOverview');
-      if (overview) overview.hidden = true;
-    });
-  </script>
-  <script type="module" src="admin.js?v=20260911-editor-v2"></script>
+  <script type="module" src="admin.js?v=20260915-context-manager"></script>
 </body>
 </html>

@@ -1,4 +1,7 @@
+import { initContextualMediaAdmin } from './admin-contextual-media.js?v=20260915-context-manager';
+
 export function initTestimonialsAdmin({ neon, setMsg, esc, elements }) {
+  initContextualMediaAdmin({ neon, esc });
   const { testimonialsAdmin, testimonialAdminGrid, testimonialAdminMsg, openTestimonialsBtn, closeTestimonialsBtn, refreshTestimonialsBtn } = elements;
   function testimonialDate(value){try{return new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return '';}}
   async function loadTestimonialsAdmin({silent=false}={}){
