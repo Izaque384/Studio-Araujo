@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Apply product service cleanup
-        run: python scripts/remove_product_services_temp.py
+        run: python scripts/run_product_cleanup_temp.py
 
       - name: Validate JavaScript
         run: |
