@@ -1,6 +1,5 @@
 from pathlib import Path
 from html.parser import HTMLParser
-from urllib.parse import urlparse
 import re, subprocess, sys
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -39,19 +38,25 @@ for page,css in required_css.items():
 index=(ROOT/'index.html').read_text(encoding='utf-8')
 if 'recent-works.js' not in index: errors.append('Home: recent-works.js não está carregado diretamente')
 if 'ensaios de casal' in index.lower(): errors.append('Home: referência SEO legada a ensaio de casal')
-if 'neon.rpc("submit_testimonial"' not in (ROOT/'depoimentos.js').read_text(encoding='utf-8'): errors.append('Depoimentos: submissão moderada via RPC ausente')
+
 depoimentos=(ROOT/'depoimentos.js').read_text(encoding='utf-8')
+if 'neon.rpc("submit_testimonial"' not in depoimentos: errors.append('Depoimentos: submissão moderada via RPC ausente')
 if 'DEPOIMENTOS_FIXOS' in depoimentos: errors.append('Depoimentos: conteúdo fixo voltou ao JavaScript')
 if '.from("site_testimonials").insert' in depoimentos or ".from('site_testimonials').insert" in depoimentos: errors.append('Depoimentos: fallback de INSERT público direto reintroduzido')
 if not (ROOT/'admin-testimonials.js').exists(): errors.append('Painel: módulo de moderação de depoimentos ausente')
+
+admin_html=(ROOT/'admin.html').read_text(encoding='utf-8')
+if 'id="panelHome"' in admin_html: errors.append('Painel: resumo antigo de métricas foi reintroduzido')
+for visible_metric in ('statVisible','statHidden','statCovers'):
+    if f'id="{visible_metric}"' in admin_html: errors.append(f'Painel: métrica removida foi reintroduzida: {visible_metric}')
+for required in ('headerMediaStatValue','uploadSection','mediaEditorSection','workspaceMediaSection','workspaceMediaGroups'):
+    if f'id="{required}"' not in admin_html: errors.append(f'Painel: estrutura do workspace ausente: {required}')
+if 'admin-workspace.js' not in admin_html or 'admin-workspace.css' not in admin_html: errors.append('Painel: workspace de mídias não está carregado')
 if not (ROOT/'admin-workspace.js').exists(): errors.append('Painel: módulo contextual de mídias ausente')
-if not (ROOT/'admin-contextual-media.js').exists(): errors.append('Painel: gerenciador contextual de mídias ausente')
 else:
-    contextual=(ROOT/'admin-contextual-media.js').read_text(encoding='utf-8')
-    for required in ('header-media-stat','context-media-group','openAreaManager','saveEditor','deleteMedia'):
-        if required not in contextual: errors.append('Painel: gerenciador contextual incompleto: '+required)
-admin_testimonials=(ROOT/'admin-testimonials.js').read_text(encoding='utf-8')
-if 'initContextualMediaAdmin' not in admin_testimonials: errors.append('Painel: gerenciador contextual não está inicializado pelo módulo administrativo')
+    workspace=(ROOT/'admin-workspace.js').read_text(encoding='utf-8')
+    for required in ('loadWorkspace','openEditor','saveEditor','deleteMedia','workspace-compact-grid'):
+        if required not in workspace: errors.append('Painel: workspace contextual incompleto: '+required)
 
 services=(ROOT/'servicos.html').read_text(encoding='utf-8')
 data=(ROOT/'dados-servicos.js').read_text(encoding='utf-8')
@@ -67,7 +72,7 @@ if package_match:
     missing=sorted(service_keys-package_keys)
     if missing: print('AVISO: serviços sem pacote comercial: '+', '.join(missing))
 
-for js in ['script.js','servicos.js','dados-servicos.js','agenda.js','depoimentos.js','recent-works.js','admin.js','admin-testimonials.js','admin-contextual-media.js','recent-works-admin.js']:
+for js in ['script.js','servicos.js','dados-servicos.js','agenda.js','depoimentos.js','recent-works.js','admin.js','admin-testimonials.js','admin-workspace.js','recent-works-admin.js']:
     r=subprocess.run(['node','--check',str(ROOT/js)],capture_output=True,text=True)
     if r.returncode: errors.append(f'{js}: falha de sintaxe: {r.stderr.strip()}')
 
