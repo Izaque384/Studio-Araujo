@@ -463,9 +463,39 @@ window.studioUploadMedia = async function({file: original, storageCategory, data
 };
 window.studioStorageCall = storageCall;
 
+function orderScopeKey(media){
+  if(media?.recent_work_id)return `recent:${media.recent_work_id}`;
+  return `category:${media?.category||''}`;
+}
+function orderValue(media){
+  const value=Number(media?.sort_order);
+  return Number.isFinite(value)&&value>0?value:Number.MAX_SAFE_INTEGER;
+}
+function compareMediaOrder(a,b){
+  return orderValue(a)-orderValue(b)
+    || new Date(a?.created_at||0)-new Date(b?.created_at||0)
+    || String(a?.id||'').localeCompare(String(b?.id||''));
+}
+function orderedScopeItems(media,source=allMedia){
+  const key=orderScopeKey(media);
+  return source.filter(item=>orderScopeKey(item)===key).slice().sort(compareMediaOrder);
+}
+function orderOptions(count,selected=1){
+  const total=Math.max(1,Number(count)||1);
+  const current=Math.min(total,Math.max(1,Math.trunc(Number(selected)||1)));
+  return Array.from({length:total},(_,index)=>`<option value="${index+1}" ${index+1===current?'selected':''}>${index+1}</option>`).join('');
+}
+async function persistMediaSequence(items){
+  for(let index=0;index<items.length;index++){
+    const wanted=index+1;
+    if(Number(items[index].sort_order)===wanted)continue;
+    const {error}=await neon.from('site_images').update({sort_order:wanted}).eq('id',items[index].id);
+    if(error)throw error;
+    items[index]={...items[index],sort_order:wanted};
+  }
+}
 function nextSortOrder(category){
-  const values=allMedia.filter(m=>m.category===category).map(m=>Number(m.sort_order||0)).filter(Number.isFinite);
-  return values.length?Math.max(...values)+1:1;
+  return allMedia.filter(m=>!m.recent_work_id&&m.category===category).length+1;
 }
 
 uploadBtn.addEventListener('click',async()=>{
@@ -579,19 +609,32 @@ function applyFilters(){
   renderMedia(items);
 }
 
+function cardOriginalMedia(card){
+  return allMedia.find(item=>String(item.id)===String(card.dataset.id))||null;
+}
+function syncCardOrderOptions(card,preferredPosition=null){
+  const original=cardOriginalMedia(card),select=card.querySelector('.card-order');
+  if(!original||!select)return;
+  const target={...original,category:card.querySelector('.card-category').value};
+  const count=allMedia.filter(item=>String(item.id)!==String(original.id)&&orderScopeKey(item)===orderScopeKey(target)).length+1;
+  const preferred=preferredPosition??Number(select.value||1);
+  select.innerHTML=orderOptions(count,preferred);
+}
 function renderMedia(items){
   if(!items.length){imageGrid.innerHTML='<div class="empty">Nenhuma mídia encontrada com estes filtros.</div>';return;}
   imageGrid.innerHTML=items.map(m=>{
     const video=isVideoType(m.mime_type);
     const preview=video?`<video src="${esc(m.public_url)}" controls preload="metadata"></video>`:`<img src="${esc(m.public_url)}" alt="${esc(m.alt_text||categoryLabel(m.category))}" loading="lazy">`;
     const badges=[video?'<span class="photo-badge">Vídeo</span>':'',m.is_cover?'<span class="photo-badge cover">Capa</span>':'',!m.is_visible?'<span class="photo-badge hidden">Oculta</span>':''].join('');
+    const peers=orderedScopeItems(m);
+    const position=Math.max(1,peers.findIndex(item=>String(item.id)===String(m.id))+1);
     return `<article class="photo-card" data-id="${esc(m.id)}" data-key="${esc(m.storage_key)}">
       <figure>${preview}<div class="photo-badges">${badges}</div><a class="preview-link" href="${esc(m.public_url)}" target="_blank" rel="noopener">Abrir mídia</a></figure>
       <div class="photo-body">
         <div class="photo-meta"><span>${esc(categoryLabel(m.category))}</span><span>${humanBytes(Number(m.bytes||0))}</span></div>
         <div class="photo-row">
           <label class="field-label">Categoria<select class="card-category">${categories.map(c=>`<option value="${esc(c.slug)}" ${c.slug===m.category?'selected':''}>${esc(c.label)}</option>`).join('')}</select></label>
-          <label class="field-label">Ordem<input class="card-order" type="number" value="${Number(m.sort_order||0)}"></label>
+          <label class="field-label">Posição<select class="card-order" aria-label="Posição na galeria">${orderOptions(peers.length,position)}</select></label>
         </div>
         <label class="field-label">Descrição<input class="card-alt" type="text" maxlength="180" value="${esc(m.alt_text||'')}" placeholder="Descrição da mídia"></label>
         <div class="toggles">
@@ -607,8 +650,10 @@ function renderMedia(items){
   imageGrid.querySelectorAll('.photo-card').forEach(card=>{
     card.querySelector('.save-btn').addEventListener('click',()=>saveCard(card));
     card.querySelector('.delete-btn').addEventListener('click',()=>deleteCard(card));
-    card.querySelectorAll('.card-category,.card-order,.card-alt,.card-visible,.card-cover').forEach(control=>{
-      control.addEventListener(control.matches('input[type=text],input[type=number]')?'input':'change',()=>markDirty(card));
+    card.querySelector('.card-category').addEventListener('change',()=>{syncCardOrderOptions(card);markDirty(card);});
+    card.querySelector('.card-order').addEventListener('change',()=>markDirty(card));
+    card.querySelectorAll('.card-alt,.card-visible,.card-cover').forEach(control=>{
+      control.addEventListener(control.matches('input[type=text]')?'input':'change',()=>markDirty(card));
     });
   });
 }
@@ -619,11 +664,18 @@ function markDirty(card){
 }
 
 async function saveCard(card){
-  const id=card.dataset.id,category=card.querySelector('.card-category').value;
+  const id=card.dataset.id,original=cardOriginalMedia(card);
+  if(!original){setMsg(libraryMsg,'Esta mídia não está mais disponível. Atualize a biblioteca.','error');return;}
+  const category=card.querySelector('.card-category').value;
   const isCover=card.querySelector('.card-cover').checked;
+  const updatedMedia={...original,category};
+  const oldScope=orderScopeKey(original),newScope=orderScopeKey(updatedMedia);
+  const targetItems=allMedia.filter(item=>String(item.id)!==String(id)&&orderScopeKey(item)===newScope).slice().sort(compareMediaOrder);
+  const maxPosition=targetItems.length+1;
+  const desiredPosition=Math.min(maxPosition,Math.max(1,Math.trunc(Number(card.querySelector('.card-order').value)||1)));
   const payload={
     category,
-    sort_order:Number(card.querySelector('.card-order').value||0),
+    sort_order:desiredPosition,
     alt_text:card.querySelector('.card-alt').value.trim(),
     is_visible:card.querySelector('.card-visible').checked,
     is_cover:isCover
@@ -636,7 +688,17 @@ async function saveCard(card){
     }
     const {error}=await neon.from('site_images').update(payload).eq('id',id);
     if(error)throw error;
-    setMsg(libraryMsg,'Alterações salvas.','success');
+
+    const targetSequence=targetItems;
+    targetSequence.splice(desiredPosition-1,0,{...original,...payload});
+    await persistMediaSequence(targetSequence);
+
+    if(oldScope!==newScope){
+      const oldSequence=allMedia.filter(item=>String(item.id)!==String(id)&&orderScopeKey(item)===oldScope).slice().sort(compareMediaOrder);
+      await persistMediaSequence(oldSequence);
+    }
+
+    setMsg(libraryMsg,'Alterações salvas e ordem da galeria reorganizada.','success');
     await loadMedia();
   }catch(e){
     console.error(e);setMsg(libraryMsg,'Não foi possível salvar esta mídia.','error');btn.disabled=false;btn.textContent='Salvar';
@@ -645,25 +707,31 @@ async function saveCard(card){
 
 async function deleteCard(card){
   if(!confirm('Excluir esta mídia da biblioteca e do site? Esta ação não pode ser desfeita.'))return;
-  const id=card.dataset.id,key=card.dataset.key,btn=card.querySelector('.delete-btn');
+  const id=card.dataset.id,key=card.dataset.key,btn=card.querySelector('.delete-btn'),removed=cardOriginalMedia(card);
   btn.disabled=true;btn.textContent='Excluindo…';
   try{
     const {error}=await neon.from('site_images').delete().eq('id',id);
     if(error)throw error;
 
-    let storageWarning=false;
+    let storageWarning=false,orderWarning=false;
     if(!key.startsWith('legacy:')){
       try{await storageCall({action:'delete',storageKey:key});}
       catch(storageErr){storageWarning=true;console.warn('Registro removido, mas o arquivo não pôde ser limpo do storage.',storageErr);}
     }
 
     allMedia=allMedia.filter(m=>String(m.id)!==String(id));
-    updateSummary();applyFilters();
-    setMsg(libraryMsg,storageWarning?'Mídia removida do site. O arquivo físico não pôde ser limpo do armazenamento.':'Mídia excluída com sucesso.',storageWarning?'warn':'success');
+    if(removed){
+      try{await persistMediaSequence(orderedScopeItems(removed,allMedia));}
+      catch(orderErr){orderWarning=true;console.warn('Mídia removida, mas a sequência não pôde ser renumerada.',orderErr);}
+    }
+    await loadMedia();
+    const warning=storageWarning||orderWarning;
+    setMsg(libraryMsg,warning?'Mídia removida. Parte da limpeza automática não pôde ser concluída; atualize a biblioteca e tente novamente se necessário.':'Mídia excluída e ordem da galeria reorganizada.',warning?'warn':'success');
   }catch(e){
     console.error(e);setMsg(libraryMsg,'Não foi possível excluir esta mídia.','error');btn.disabled=false;btn.textContent='Excluir';
   }
 }
+
 
 renderQueue();
 import('./recent-works-admin.js?v=20260911-editor-v2').catch(err=>console.error('Falha ao carregar trabalhos recentes no painel.',err));

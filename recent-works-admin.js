@@ -15,6 +15,7 @@ let editingId = null;
 let mediaWorkId = null;
 let mediaWorkCategory = null;
 let recentWorkCount = 0;
+let currentWorkMedia = [];
 
 function injectStyles() {
   if (document.getElementById('recentAdminStyles')) return;
@@ -47,7 +48,7 @@ function injectStyles() {
     .recent-media-topbar{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:18px;padding-right:34px}.recent-step-media{margin:0}.recent-media-close{position:absolute;top:14px;right:14px;width:32px;height:32px;display:grid;place-items:center;border:1px solid rgba(201,162,75,.18);border-radius:50%;background:transparent;color:#a89d86;font-size:1.35rem;line-height:1;cursor:pointer;transition:.2s}.recent-media-close:hover{color:#f3ecdc;border-color:rgba(230,200,120,.45);background:rgba(201,162,75,.06)}
     .recent-media-context{display:grid;gap:5px;padding:14px 16px;margin-bottom:16px;border:1px solid rgba(201,162,75,.11);border-radius:12px;background:rgba(201,162,75,.025)}.recent-media-context-label{color:#817765;font-size:.65rem;text-transform:uppercase;letter-spacing:.12em}.recent-media-context strong{font-size:1rem;font-weight:500;color:#f3ecdc}
     .recent-media-upload{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}.recent-media-upload input{display:none}.recent-media-add{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:auto;min-width:210px}.recent-media-add-icon{font-size:1rem;line-height:1}.recent-media-upload-help{color:#756d5d;font-size:.72rem}.recent-media-status{display:block;margin:6px 0 14px;min-height:18px}
-    .recent-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.recent-media-grid:empty{min-height:118px;border:1px dashed rgba(201,162,75,.15);border-radius:12px;display:grid;place-items:center}.recent-media-grid:empty:before{content:'Nenhuma mídia adicionada ainda.';color:#817765;font-size:.82rem}.recent-media-card{border:1px solid rgba(201,162,75,.14);border-radius:12px;overflow:hidden;background:#12100d}.recent-media-card figure{margin:0;aspect-ratio:4/3;background:#070706}.recent-media-card img,.recent-media-card video{width:100%;height:100%;object-fit:cover}.recent-media-card-body{padding:9px;display:grid;gap:8px}.recent-media-card-body input{width:100%;background:#0e0d0b;border:1px solid rgba(201,162,75,.18);color:#f3ecdc;border-radius:8px;padding:8px}.recent-media-actions{display:flex;gap:6px;flex-wrap:wrap}.recent-media-actions .btn{padding:7px 9px;font-size:.72rem}.recent-cover-on{color:#e6c878;border-color:rgba(230,200,120,.5)!important}
+    .recent-media-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.recent-media-grid:empty{min-height:118px;border:1px dashed rgba(201,162,75,.15);border-radius:12px;display:grid;place-items:center}.recent-media-grid:empty:before{content:'Nenhuma mídia adicionada ainda.';color:#817765;font-size:.82rem}.recent-media-card{border:1px solid rgba(201,162,75,.14);border-radius:12px;overflow:hidden;background:#12100d}.recent-media-card figure{margin:0;aspect-ratio:4/3;background:#070706}.recent-media-card img,.recent-media-card video{width:100%;height:100%;object-fit:cover}.recent-media-card-body{padding:9px;display:grid;gap:8px}.recent-media-card-body input,.recent-media-card-body select{width:100%;background:#0e0d0b;border:1px solid rgba(201,162,75,.18);color:#f3ecdc;border-radius:8px;padding:8px}.recent-media-actions{display:flex;gap:6px;flex-wrap:wrap}.recent-media-actions .btn{padding:7px 9px;font-size:.72rem}.recent-cover-on{color:#e6c878;border-color:rgba(230,200,120,.5)!important}
     .recent-card-footer{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:22px;padding-top:18px;border-top:1px solid rgba(201,162,75,.12)}.recent-save-indicator{margin-right:auto;display:inline-flex;align-items:center;gap:7px;color:#8fcf92;font-size:.8rem;letter-spacing:.02em}.recent-save-indicator[hidden]{display:none}.recent-footer-save{min-width:170px}.recent-footer-save:disabled{cursor:not-allowed}
     @media(max-width:980px){.recent-media-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
     @media(max-width:760px){.recent-form{grid-template-columns:1fr}.recent-span-2{grid-column:auto}.recent-row{grid-template-columns:1fr}.recent-row-actions{justify-content:flex-start}.recent-admin{padding:20px}.recent-media-manager{padding:16px}.recent-media-topbar{align-items:stretch}.recent-media-add{width:100%}.recent-media-upload-help{width:100%}}
@@ -333,15 +334,40 @@ async function storageCall(payload){
   const token=await neon.auth.getJWTToken?.(); if(!token)throw new Error('Sessão expirada. Entre novamente.');
   const res=await fetch(STORAGE_FN,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||'Falha no armazenamento.');return data;
 }
+function compareWorkMedia(a,b){
+  const av=Number(a?.sort_order),bv=Number(b?.sort_order);
+  const ao=Number.isFinite(av)&&av>0?av:Number.MAX_SAFE_INTEGER;
+  const bo=Number.isFinite(bv)&&bv>0?bv:Number.MAX_SAFE_INTEGER;
+  return ao-bo||new Date(a?.created_at||0)-new Date(b?.created_at||0)||String(a?.id||'').localeCompare(String(b?.id||''));
+}
+function workOrderOptions(count,selected){
+  const total=Math.max(1,Number(count)||1),current=Math.min(total,Math.max(1,Math.trunc(Number(selected)||1)));
+  return Array.from({length:total},(_,index)=>`<option value="${index+1}" ${index+1===current?'selected':''}>${index+1}</option>`).join('');
+}
+async function persistWorkMediaSequence(items){
+  for(let index=0;index<items.length;index++){
+    const wanted=index+1;
+    if(Number(items[index].sort_order)===wanted)continue;
+    const {error}=await neon.from('site_images').update({sort_order:wanted}).eq('id',items[index].id).eq('recent_work_id',mediaWorkId);
+    if(error)throw error;
+    items[index]={...items[index],sort_order:wanted};
+  }
+}
 async function loadWorkMedia(){
   const grid=document.getElementById('recentMediaGrid'); if(!grid||!mediaWorkId)return;
   grid.innerHTML='<div class="recent-empty">Carregando mídias…</div>';
-  const {data:media,error}=await neon.from('site_images').select('id,public_url,storage_key,mime_type,bytes,alt_text,sort_order,is_cover').eq('recent_work_id',mediaWorkId).order('sort_order',{ascending:true});
+  const {data:media,error}=await neon.from('site_images').select('id,public_url,storage_key,mime_type,bytes,alt_text,sort_order,is_cover,created_at').eq('recent_work_id',mediaWorkId).order('sort_order',{ascending:true}).order('created_at',{ascending:true});
   if(error){console.error('Falha ao carregar mídias do trabalho',error);grid.innerHTML='<div class="recent-empty">Não foi possível carregar as mídias.</div>';setMediaStatus(error.message||'Não foi possível carregar as mídias.','err');return;}
-  if(!media?.length){grid.innerHTML='<div class="recent-empty">Nenhuma mídia adicionada ainda.</div>';return;}
-  grid.innerHTML=media.map(m=>{const video=String(m.mime_type||'').startsWith('video/');const preview=video?`<video src="${esc(m.public_url)}" controls preload="metadata"></video>`:`<img src="${esc(m.public_url)}" alt="${esc(m.alt_text||'')}" loading="lazy">`;return `<article class="recent-media-card" data-media-id="${esc(m.id)}" data-key="${esc(m.storage_key)}"><figure>${preview}</figure><div class="recent-media-card-body"><label>Ordem<input class="recent-media-order" type="number" value="${Number(m.sort_order||0)}"></label><div class="recent-media-actions"><button type="button" class="btn btn-ghost recent-set-cover ${m.is_cover?'recent-cover-on':''}" ${video?'disabled title="Vídeo não pode ser capa"':''}>${m.is_cover?'Capa atual':'Definir capa'}</button><button type="button" class="btn btn-danger recent-remove-media">Excluir</button></div></div></article>`}).join('');
+  currentWorkMedia=(media||[]).slice().sort(compareWorkMedia);
+  if(!currentWorkMedia.length){grid.innerHTML='<div class="recent-empty">Nenhuma mídia adicionada ainda.</div>';return;}
+  if(currentWorkMedia.some((item,index)=>Number(item.sort_order)!==index+1)){
+    try{await persistWorkMediaSequence(currentWorkMedia);}
+    catch(repairError){console.warn('Não foi possível normalizar a sequência desta galeria.',repairError);setMediaStatus('A galeria foi carregada, mas a sequência antiga não pôde ser corrigida automaticamente.','err');}
+  }
+  grid.innerHTML=currentWorkMedia.map((m,index)=>{const video=String(m.mime_type||'').startsWith('video/');const preview=video?`<video src="${esc(m.public_url)}" controls preload="metadata"></video>`:`<img src="${esc(m.public_url)}" alt="${esc(m.alt_text||'')}" loading="lazy">`;return `<article class="recent-media-card" data-media-id="${esc(m.id)}" data-key="${esc(m.storage_key)}"><figure>${preview}</figure><div class="recent-media-card-body"><label>Posição<select class="recent-media-order" aria-label="Posição na galeria">${workOrderOptions(currentWorkMedia.length,index+1)}</select></label><div class="recent-media-actions"><button type="button" class="btn btn-ghost recent-set-cover ${m.is_cover?'recent-cover-on':''}" ${video?'disabled title="Vídeo não pode ser capa"':''}>${m.is_cover?'Capa atual':'Definir capa'}</button><button type="button" class="btn btn-danger recent-remove-media">Excluir</button></div></div></article>`}).join('');
   grid.querySelectorAll('.recent-media-card').forEach(card=>{card.querySelector('.recent-media-order')?.addEventListener('change',()=>updateMediaOrder(card));card.querySelector('.recent-set-cover')?.addEventListener('click',()=>setWorkCover(card));card.querySelector('.recent-remove-media')?.addEventListener('click',()=>deleteWorkMedia(card));});
 }
+
 async function openMediaManager(item, shouldScroll=true){
   mediaWorkCategory=item?.gallery_category||null;mediaWorkId=item.id;const box=document.getElementById('recentMediaManager');if(!box)return;box.hidden=false;document.getElementById('recentMediaTitle').textContent=item.title;setMediaStatus('');await loadWorkMedia();if(shouldScroll)box.scrollIntoView({behavior:'smooth',block:'start'});
 }
@@ -356,9 +382,7 @@ async function uploadWorkMedia(files){
   try{
     // A grade já contém as mídias atuais do trabalho. Usar seus valores elimina
     // a antiga consulta extra ao Data API que falhava com HTTP 404 antes do upload.
-    const visibleOrders=[...document.querySelectorAll('#recentMediaGrid .recent-media-order')]
-      .map(input=>Number(input.value||0)).filter(Number.isFinite);
-    let order=visibleOrders.length?Math.max(...visibleOrders)+1:1;
+    let order=currentWorkMedia.length+1;
     for(const original of valid){
       const uploader=window.studioUploadMedia;
       if(typeof uploader!=='function')throw new Error('O uploader principal do painel não está disponível. Recarregue a página.');
@@ -374,10 +398,19 @@ async function uploadWorkMedia(files){
   }
 }
 async function updateMediaOrder(card){
-  const mediaId=card.dataset.mediaId,order=Number(card.querySelector('.recent-media-order').value||0);
-  const {error}=await neon.from('site_images').update({sort_order:order}).eq('id',mediaId).eq('recent_work_id',mediaWorkId);
-  setMediaStatus(error?'Não foi possível alterar a ordem.':'Ordem atualizada.',error?'err':'ok');if(!error){notifyRecentWorksChanged();showSaveIndicator('Ordem salva automaticamente');await loadWorkMedia();}
+  const mediaId=card.dataset.mediaId,target=currentWorkMedia.find(item=>String(item.id)===String(mediaId));
+  if(!target)return;
+  const others=currentWorkMedia.filter(item=>String(item.id)!==String(mediaId));
+  const desired=Math.min(others.length+1,Math.max(1,Math.trunc(Number(card.querySelector('.recent-media-order').value)||1)));
+  const reordered=others.slice();reordered.splice(desired-1,0,target);
+  setMediaStatus('Atualizando ordem…');
+  try{
+    await persistWorkMediaSequence(reordered);
+    currentWorkMedia=reordered;
+    setMediaStatus('Ordem atualizada.','ok');notifyRecentWorksChanged();showSaveIndicator('Ordem salva automaticamente');await loadWorkMedia();
+  }catch(error){console.error(error);setMediaStatus('Não foi possível alterar a ordem.','err');await loadWorkMedia();}
 }
+
 async function setWorkCover(card){
   const mediaId=card.dataset.mediaId;setMediaStatus('Atualizando capa…');
   const {error:e1}=await neon.from('site_images').update({is_cover:false}).eq('recent_work_id',mediaWorkId);if(e1){setMediaStatus('Não foi possível atualizar a capa.','err');return;}
@@ -386,8 +419,13 @@ async function setWorkCover(card){
 async function deleteWorkMedia(card){
   if(!confirm('Excluir esta mídia deste trabalho?'))return;const mediaId=card.dataset.mediaId,key=card.dataset.key;setMediaStatus('Excluindo…');
   const {error}=await neon.from('site_images').delete().eq('id',mediaId).eq('recent_work_id',mediaWorkId);if(error){setMediaStatus('Não foi possível excluir esta mídia.','err');return;}
-  if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}setMediaStatus('Mídia excluída.','ok');notifyRecentWorksChanged();showSaveIndicator('Mídia removida');await loadWorkMedia();
+  currentWorkMedia=currentWorkMedia.filter(item=>String(item.id)!==String(mediaId));
+  let orderWarning=false;
+  try{await persistWorkMediaSequence(currentWorkMedia);}catch(sequenceError){orderWarning=true;console.warn('Mídia excluída, mas a sequência não pôde ser renumerada.',sequenceError);}
+  if(key&&!key.startsWith('legacy:')){const deleter=window.studioStorageCall||storageCall;await deleter({action:'delete',storageKey:key}).catch(()=>{});}
+  setMediaStatus(orderWarning?'Mídia excluída, mas a ordem precisa ser atualizada novamente.':'Mídia excluída e ordem reorganizada.',orderWarning?'err':'ok');notifyRecentWorksChanged();showSaveIndicator('Mídia removida');await loadWorkMedia();
 }
+
 
 async function init() {
   if (initialized) return;
