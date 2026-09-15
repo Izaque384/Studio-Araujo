@@ -11,6 +11,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="admin.css?v=20260914-panel-polish">
   <link rel="stylesheet" href="admin-theme.css?v=20260914-neutral">
+  <link rel="stylesheet" href="admin-workspace.css?v=20260915-v3">
 </head>
 <body>
   <main class="admin-shell">
@@ -106,7 +107,7 @@
         <div id="testimonialAdminGrid" class="testimonial-admin-grid"></div>
       </section>
 
-      <section id="mediaOverview" class="media-overview" aria-live="polite" hidden>
+      <section id="mediaOverview" class="media-overview legacy-overview" aria-live="polite" hidden>
         <div class="media-overview-head">
           <div>
             <p class="eyebrow">Visão geral</p>
@@ -118,11 +119,13 @@
         <div id="mediaOverviewGrid" class="overview-grid"></div>
       </section>
 
+      <section id="mediaEditorSection" class="workspace-editor admin-section" hidden></section>
+
       <section id="uploadSection" class="upload-card admin-section" hidden>
         <div class="section-heading upload-head">
           <div>
             <p class="eyebrow">Atualizar o site</p>
-            <h2>Enviar fotos ou vídeos</h2>
+            <h2 id="workspaceUploadTitle">Enviar fotos ou vídeos</h2>
             <p id="uploadContextHelp" class="section-copy">Escolha uma área abaixo. O painel mostra apenas as pastas compatíveis com esse destino.</p>
           </div>
           <div class="upload-head-actions">
@@ -163,6 +166,22 @@
           <button type="button" id="uploadBtn" class="btn btn-primary" disabled>Enviar selecionadas</button>
         </div>
         </div>
+      </section>
+
+      <section id="workspaceMediaSection" class="workspace-media admin-section" hidden>
+        <div class="section-heading workspace-media-head">
+          <div>
+            <p class="eyebrow">Mídias desta área</p>
+            <h2 id="workspaceMediaTitle">Mídias</h2>
+            <p id="workspaceMediaCopy" class="section-copy">As mídias aparecem agrupadas por galeria ou serviço.</p>
+          </div>
+          <div class="library-head-actions">
+            <span id="workspaceMediaCount" class="overview-count">—</span>
+            <button type="button" id="workspaceRefreshBtn" class="btn btn-ghost btn-small">Atualizar</button>
+          </div>
+        </div>
+        <p id="workspaceMsg" class="msg" role="status" aria-live="polite"></p>
+        <div id="workspaceMediaGroups" class="workspace-groups"></div>
       </section>
 
       <section id="librarySection" class="library admin-section" hidden>
@@ -239,6 +258,7 @@
       </section>
     </section>
   </main>
-  <script type="module" src="admin.js?v=20260915-context-manager"></script>
+  <script type="module" src="admin.js?v=20260915-workspace-v3"></script>
+  <script type="module" src="admin-workspace.js?v=20260915-workspace-v3"></script>
 </body>
 </html>

@@ -1,0 +1,54 @@
+/* Painel V3 — workspace contextual */
+.header-actions{align-items:center}
+.header-media-stat{display:flex;align-items:baseline;gap:8px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);white-space:nowrap}
+.header-media-stat small{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.header-media-stat span{font-family:'Cormorant Garamond',serif;font-size:1.45rem;line-height:1;color:var(--gold2)}
+.legacy-overview{display:none!important}
+.upload-area-tabs{display:none!important}
+.upload-card[hidden],.workspace-media[hidden],.workspace-editor[hidden]{display:none!important}
+.hub-card.workspace-active{border-color:rgba(216,210,199,.38);background:rgba(255,255,255,.055)}
+.hub-card.workspace-active .hub-link{color:var(--cream)}
+.workspace-editor{padding:22px 28px}
+.workspace-editor-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:18px}
+.workspace-editor-grid{display:grid;grid-template-columns:1.15fr 1fr .62fr;gap:12px}
+.workspace-editor-grid label{display:grid;gap:6px;color:var(--muted);font-size:.76rem}
+.workspace-editor-grid input,.workspace-editor-grid select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:9px;background:var(--card-2);color:var(--cream);outline:none}
+.workspace-editor-toggles{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:14px;color:var(--muted);font-size:.8rem}
+.workspace-editor-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.workspace-media{padding:24px 28px}
+.workspace-media-head{margin-bottom:14px}
+.workspace-groups{display:grid;gap:18px}
+.workspace-group{border-top:1px solid var(--line);padding-top:16px}
+.workspace-group:first-child{border-top:0;padding-top:4px}
+.workspace-group-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:10px}
+.workspace-group-head h3{margin:0;font:500 1.08rem 'Cormorant Garamond',serif;color:var(--cream)}
+.workspace-group-head small{color:var(--muted);font-size:.7rem}
+.workspace-compact-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.workspace-media-card{min-width:0;border:1px solid var(--line);border-radius:11px;background:var(--card-2);overflow:hidden}
+.workspace-media-card figure{position:relative;margin:0;aspect-ratio:1/1;background:#080807;overflow:hidden}
+.workspace-media-card img,.workspace-media-card video{width:100%;height:100%;object-fit:cover;display:block}
+.workspace-media-card video{pointer-events:none}
+.workspace-media-card .workspace-badges{position:absolute;left:6px;top:6px;display:flex;gap:4px;flex-wrap:wrap}
+.workspace-media-card .workspace-badge{padding:3px 5px;border:1px solid rgba(241,238,232,.16);border-radius:999px;background:rgba(8,8,7,.8);font-size:.52rem;color:var(--cream)}
+.workspace-media-card .workspace-badge.warn{color:#e3b5ad;border-color:rgba(228,138,128,.28)}
+.workspace-media-body{padding:8px;display:grid;gap:7px}
+.workspace-media-meta{min-width:0;color:var(--muted);font-size:.62rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.workspace-media-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.workspace-media-actions .btn{padding:6px 4px;border-radius:7px;font-size:.64rem}
+.workspace-empty{padding:34px 18px;border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center}
+@media(max-width:1100px){.workspace-compact-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:820px){
+  .header-media-stat{order:-1}
+  .workspace-editor-grid{grid-template-columns:1fr 1fr}
+  .workspace-editor-grid label:first-child{grid-column:1/-1}
+  .workspace-compact-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .header-actions{display:grid;grid-template-columns:auto 1fr 1fr}
+  .header-media-stat{padding:8px 10px}
+  .workspace-editor,.workspace-media{padding:18px 14px}
+  .workspace-editor-grid{grid-template-columns:1fr}
+  .workspace-editor-grid label:first-child{grid-column:auto}
+  .workspace-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .workspace-media-actions{grid-template-columns:1fr}
+}

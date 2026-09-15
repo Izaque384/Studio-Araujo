@@ -495,12 +495,11 @@ async function loadMedia(){
   updateSummary();
   renderOverview();
   applyFilters();
+  window.dispatchEvent(new CustomEvent('studio:media-updated'));
 }
 function updateSummary(){
-  $('statTotal').textContent=allMedia.length;
-  $('statVisible').textContent=allMedia.filter(m=>m.is_visible).length;
-  $('statHidden').textContent=allMedia.filter(m=>!m.is_visible).length;
-  $('statCovers').textContent=allMedia.filter(m=>m.is_cover).length;
+  if($('statTotal'))$('statTotal').textContent=allMedia.length;
+  if($('headerMediaStatValue'))$('headerMediaStatValue').textContent=allMedia.length;
   const byArea=area=>allMedia.filter(m=>categoryArea(m.category)===area).length;
   if($('folderCountAll'))$('folderCountAll').textContent=`${allMedia.length} mídias`;
   if($('folderCountPortfolio'))$('folderCountPortfolio').textContent=`${byArea('portfolio')} mídias`;

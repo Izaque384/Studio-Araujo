@@ -44,6 +44,7 @@ depoimentos=(ROOT/'depoimentos.js').read_text(encoding='utf-8')
 if 'DEPOIMENTOS_FIXOS' in depoimentos: errors.append('Depoimentos: conteúdo fixo voltou ao JavaScript')
 if '.from("site_testimonials").insert' in depoimentos or ".from('site_testimonials').insert" in depoimentos: errors.append('Depoimentos: fallback de INSERT público direto reintroduzido')
 if not (ROOT/'admin-testimonials.js').exists(): errors.append('Painel: módulo de moderação de depoimentos ausente')
+if not (ROOT/'admin-workspace.js').exists(): errors.append('Painel: módulo contextual de mídias ausente')
 if not (ROOT/'admin-contextual-media.js').exists(): errors.append('Painel: gerenciador contextual de mídias ausente')
 else:
     contextual=(ROOT/'admin-contextual-media.js').read_text(encoding='utf-8')
