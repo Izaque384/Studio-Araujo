@@ -262,7 +262,6 @@ const serviceLabels = {
   "acompanhamento-mensal": "Acompanhamento Mensal",
   corporativa: "Sessão Corporativa",
   moda: "Moda",
-  batizado: "Batizados",
   "pre-wedding": "Pré-Wedding",
 };
 
@@ -288,7 +287,6 @@ const serviceBookingMeta = {
   "pre-wedding": { nome: "Pré-Wedding", grupo: "externa", duracao: 120, local: true },
   casamento: { nome: "Casamento", grupo: "evento", horaLivre: true, local: true },
   aniversario: { nome: "Aniversário", grupo: "evento", horaLivre: true, local: true },
-  batizado: { nome: "Batizado", grupo: "evento", horaLivre: true, local: true },
 };
 
 const bookingCatalog = Object.entries(serviceBookingMeta)
