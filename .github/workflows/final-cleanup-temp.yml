@@ -1,0 +1,38 @@
+name: Final cleanup temporary
+
+on:
+  push:
+    branches:
+      - chore/final-cleanup-20260915
+    paths:
+      - 'scripts/final_cleanup_temp.py'
+      - '.github/workflows/final-cleanup-temp.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/final-cleanup-20260915
+          fetch-depth: 0
+      - name: Apply cleanup
+        run: python scripts/final_cleanup_temp.py
+      - name: Validate JavaScript
+        run: |
+          node --check depoimentos.js
+          node --check dados-servicos.js
+          node --check admin.js
+          node --check admin-testimonials.js
+      - name: Validate site
+        run: python scripts/validate_site.py
+      - name: Commit generated cleanup
+        run: |
+          git config user.name "Studio Araújo Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Consolidate testimonials and clean site maintenance" || exit 0
+          git push origin chore/final-cleanup-20260915
