@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/admin_workspace_v3_temp.py'
+      - 'scripts/fix_admin_workspace_v3_temp.py'
       - '.github/workflows/admin-workspace-v3-temp.yml'
 
 permissions:
@@ -18,6 +19,8 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+      - name: Adapt migration to current panel
+        run: python scripts/fix_admin_workspace_v3_temp.py
       - name: Apply panel workspace migration
         run: python scripts/admin_workspace_v3_temp.py
       - name: Validate JavaScript
