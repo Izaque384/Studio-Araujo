@@ -40,6 +40,10 @@ index=(ROOT/'index.html').read_text(encoding='utf-8')
 if 'recent-works.js' not in index: errors.append('Home: recent-works.js não está carregado diretamente')
 if 'ensaios de casal' in index.lower(): errors.append('Home: referência SEO legada a ensaio de casal')
 if 'neon.rpc("submit_testimonial"' not in (ROOT/'depoimentos.js').read_text(encoding='utf-8'): errors.append('Depoimentos: submissão moderada via RPC ausente')
+depoimentos=(ROOT/'depoimentos.js').read_text(encoding='utf-8')
+if 'DEPOIMENTOS_FIXOS' in depoimentos: errors.append('Depoimentos: conteúdo fixo voltou ao JavaScript')
+if '.from("site_testimonials").insert' in depoimentos or ".from('site_testimonials').insert" in depoimentos: errors.append('Depoimentos: fallback de INSERT público direto reintroduzido')
+if not (ROOT/'admin-testimonials.js').exists(): errors.append('Painel: módulo de moderação de depoimentos ausente')
 
 services=(ROOT/'servicos.html').read_text(encoding='utf-8')
 data=(ROOT/'dados-servicos.js').read_text(encoding='utf-8')
@@ -48,13 +52,14 @@ retired_product_services={'albuns','luva','maleta','caixa'}
 reintroduced=sorted(retired_product_services & service_keys)
 if reintroduced: errors.append('Serviços de produto reintroduzidos em Serviços: '+', '.join(reintroduced))
 if 'id: "produtos"' in data or 'grupo: "produtos"' in data: errors.append('Agendamento: grupo de produtos reintroduzido')
+if re.search(r'^\s*batizado\s*:',data,re.M): errors.append('Serviços: Batizado órfão reintroduzido sem pacote comercial')
 package_match=re.search(r'const servicePackages\s*=\s*\{(.*?)\n\};',data,re.S)
 if package_match:
     package_keys=set(re.findall(r'^\s*["\']?([a-z0-9-]+)["\']?\s*:',package_match.group(1),re.M))
     missing=sorted(service_keys-package_keys)
     if missing: print('AVISO: serviços sem pacote comercial: '+', '.join(missing))
 
-for js in ['script.js','servicos.js','dados-servicos.js','agenda.js','depoimentos.js','recent-works.js','admin.js','recent-works-admin.js']:
+for js in ['script.js','servicos.js','dados-servicos.js','agenda.js','depoimentos.js','recent-works.js','admin.js','admin-testimonials.js','recent-works-admin.js']:
     r=subprocess.run(['node','--check',str(ROOT/js)],capture_output=True,text=True)
     if r.returncode: errors.append(f'{js}: falha de sintaxe: {r.stderr.strip()}')
 

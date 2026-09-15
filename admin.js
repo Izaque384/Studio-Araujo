@@ -1,4 +1,5 @@
 import { createClient, BetterAuthVanillaAdapter } from 'https://esm.sh/@neondatabase/neon-js@0.7.0-beta?bundle';
+import { initTestimonialsAdmin } from './admin-testimonials.js';
 
 const AUTH_URL = 'https://ep-lucky-rice-axp36rxg.neonauth.c-4.us-east-2.aws.neon.tech/neondb/auth';
 const DATA_API_URL = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.neon.tech/neondb/rest/v1';
@@ -35,6 +36,10 @@ function fileIssue(f){
   return'';
 }
 function validFile(f){return !fileIssue(f);}
+const { loadTestimonialsAdmin } = initTestimonialsAdmin({
+  neon, setMsg, esc,
+  elements:{ testimonialsAdmin, testimonialAdminGrid, testimonialAdminMsg, openTestimonialsBtn, closeTestimonialsBtn, refreshTestimonialsBtn }
+});
 async function getSession(){
   const r=await neon.auth.getSession();
   if(r?.error)throw new Error(r.error.message||'Não foi possível consultar a sessão.');
@@ -303,62 +308,6 @@ document.querySelectorAll('[data-overview-area]').forEach(btn=>btn.addEventListe
 }));
 
 
-function testimonialDate(value){
-  try{return new Intl.DateTimeFormat('pt-BR',{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));}catch(_){return '';}
-}
-async function loadTestimonialsAdmin({silent=false}={}){
-  if(!testimonialAdminGrid)return;
-  if(!silent)testimonialAdminGrid.innerHTML='<div class="overview-empty">Carregando depoimentos…</div>';
-  const {data,error}=await neon.from('site_testimonials').select('id,name,instagram,comment,avatar_url,is_visible,created_at').order('created_at',{ascending:false});
-  if(error){console.error(error);if(!silent)setMsg(testimonialAdminMsg,'Não foi possível carregar os depoimentos.','error');return;}
-  const items=Array.isArray(data)?data:[];
-  openTestimonialsBtn?.classList.toggle('has-pending',items.some(x=>!x.is_visible));
-  openTestimonialsBtn?.setAttribute('data-pending',String(items.filter(x=>!x.is_visible).length));
-  if(!items.length){testimonialAdminGrid.innerHTML='<div class="overview-empty">Nenhum depoimento recebido ainda.</div>';return;}
-  testimonialAdminGrid.innerHTML=items.map(item=>{
-    const avatar=item.avatar_url?`<img src="${esc(item.avatar_url)}" alt="">`:`<span>${esc(String(item.name||'?').trim().charAt(0).toUpperCase())}</span>`;
-    const status=item.is_visible?'Publicado':'Pendente';
-    return `<article class="testimonial-admin-card ${item.is_visible?'is-visible':'is-pending'}" data-testimonial-id="${esc(item.id)}">
-      <div class="testimonial-admin-head"><div class="testimonial-admin-avatar">${avatar}</div><div><strong>${esc(item.name)}</strong><small>${item.instagram?'@'+esc(String(item.instagram).replace(/^@/,'')):testimonialDate(item.created_at)}</small></div><span class="testimonial-admin-status">${status}</span></div>
-      <p>${esc(item.comment)}</p>
-      <div class="testimonial-admin-actions">
-        <button type="button" class="btn btn-small testimonial-toggle">${item.is_visible?'Ocultar':'Aprovar'}</button>
-        <button type="button" class="btn btn-ghost btn-small testimonial-delete">Excluir</button>
-      </div>
-    </article>`;
-  }).join('');
-  testimonialAdminGrid.querySelectorAll('.testimonial-toggle').forEach(btn=>btn.addEventListener('click',async()=>{
-    const card=btn.closest('[data-testimonial-id]');const id=card.dataset.testimonialId;const visible=card.classList.contains('is-visible');
-    btn.disabled=true;
-    const {error}=await neon.from('site_testimonials').update({is_visible:!visible}).eq('id',id);
-    if(error){setMsg(testimonialAdminMsg,'Não foi possível atualizar o depoimento.','error');btn.disabled=false;return;}
-    setMsg(testimonialAdminMsg,!visible?'Depoimento publicado.':'Depoimento ocultado.','success');
-    await loadTestimonialsAdmin({silent:true});
-  }));
-  testimonialAdminGrid.querySelectorAll('.testimonial-delete').forEach(btn=>btn.addEventListener('click',async()=>{
-    const card=btn.closest('[data-testimonial-id]');const id=card.dataset.testimonialId;
-    if(!confirm('Excluir este depoimento? Esta ação não pode ser desfeita.'))return;
-    btn.disabled=true;
-    const {error}=await neon.from('site_testimonials').delete().eq('id',id);
-    if(error){setMsg(testimonialAdminMsg,'Não foi possível excluir o depoimento.','error');btn.disabled=false;return;}
-    setMsg(testimonialAdminMsg,'Depoimento excluído.','success');
-    await loadTestimonialsAdmin({silent:true});
-  }));
-}
-function openTestimonialsAdmin(){
-  if(!testimonialsAdmin)return;
-  testimonialsAdmin.hidden=false;
-  loadTestimonialsAdmin();
-  testimonialsAdmin.scrollIntoView({behavior:'smooth',block:'start'});
-}
-function closeTestimonialsAdmin(){
-  if(!testimonialsAdmin)return;
-  testimonialsAdmin.hidden=true;
-  document.querySelector('.admin-hub')?.scrollIntoView({behavior:'smooth',block:'start'});
-}
-openTestimonialsBtn?.addEventListener('click',openTestimonialsAdmin);
-closeTestimonialsBtn?.addEventListener('click',closeTestimonialsAdmin);
-refreshTestimonialsBtn?.addEventListener('click',()=>loadTestimonialsAdmin());
 
 fileInput.addEventListener('change',()=>setFiles([...fileInput.files]));
 ['dragenter','dragover'].forEach(t=>dropzone.addEventListener(t,e=>{e.preventDefault();dropzone.classList.add('drag');}));

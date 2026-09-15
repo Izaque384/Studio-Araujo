@@ -4,12 +4,6 @@
 // =====================================================================
 
 const DEPOIMENTOS_API_URL = "https://script.google.com/macros/s/AKfycbwqs_IWBW_6vFNvklpe7gqU4kuHWIPQIk4P23o7RsIzoqr1sWKmKOVcTPVLJrtI0zq4/exec";
-const DEPOIMENTOS_FIXOS = [
-  { nome: "Leane Santos", instagram: "leanesantos58", comentario: "Só temos a agradecer os excelentes profissionais que são, deixando a gente super à vontade e fazendo um belíssimo trabalho em dupla. 👏🏼👏🏼👏🏼", data: "", avatar_url: "" },
-  { nome: "Gessilene", instagram: "gessy.ts", comentario: "Só tenho a agradecer ao meu Studio preferido, Araújo claro, por todo o carinho, dedicação, respeito, amor e cuidado com cada detalhe. Obrigada Michele e Wellington. Amei, adorei, chorei de tanta emoção. ♥️", data: "", avatar_url: "" },
-  { nome: "Josineide", instagram: "josineides900", comentario: "Obrigado por vocês eternizarem esse momento tão lindo nas nossas vidas. 👏👏 Obrigado por todo o cuidado e carinho com a minha filha nesse dia tão esperado por todos nós.", data: "", avatar_url: "" }
-];
-
 const carrosselContainer = document.getElementById("testiCarrossel");
 const carrosselTrack = document.getElementById("testiTrack");
 const carrosselDots = document.getElementById("testiDots");
@@ -368,26 +362,16 @@ if (formDepoimento) {
     try {
       const neon = await neonPublicClient();
       const deleteToken = novoTokenExclusao();
-      const row = { name:nome, instagram, comment:comentario, avatar_url:avatarData, delete_token:deleteToken };
-      let data=null,error=null;
-      const rpc = await neon.rpc("submit_testimonial", {
+      const { data:id, error } = await neon.rpc("submit_testimonial", {
         p_name:nome,
         p_instagram:instagram,
         p_comment:comentario,
         p_avatar_url:avatarData,
         p_delete_token:deleteToken
       });
-      if (!rpc?.error && rpc?.data) {
-        data = {id:rpc.data};
-      } else {
-        // Compatibilidade somente enquanto a migração de moderação ainda não foi aplicada.
-        const legacy = await neon.from("site_testimonials").insert({...row,is_visible:true}).select("id").single();
-        data = legacy?.data || null;
-        error = legacy?.error || rpc?.error || null;
-      }
-      if (error || !data?.id) throw error || new Error("Depoimento não aceito");
+      if (error || !id) throw error || new Error("Depoimento não aceito");
 
-      salvarTokenExclusao(data.id, deleteToken);
+      salvarTokenExclusao(id, deleteToken);
       localStorage.setItem(TESTIMONIAL_COOLDOWN_KEY, String(Date.now()));
       mostrarMsg("Recebemos seu depoimento. Obrigado pelo carinho! Ele pode passar por uma rápida revisão antes de aparecer no site.", "sucesso");
       formDepoimento.reset();
@@ -417,7 +401,7 @@ function mostrarMsg(texto, tipo) {
 
 async function carregarDepoimentos() {
   let planilha = [], neonDeps = [];
-  montarCarrossel(DEPOIMENTOS_FIXOS);
+
   await Promise.all([
     fetch(DEPOIMENTOS_API_URL)
       .then(r => r.json())
@@ -432,7 +416,12 @@ async function carregarDepoimentos() {
       })
       .catch(() => {})
   ]);
-  montarCarrossel([...DEPOIMENTOS_FIXOS, ...neonDeps, ...planilha]);
+  const unique = new Map();
+  [...neonDeps, ...planilha].forEach(dep => {
+    const key=[String(dep.nome||'').trim().toLowerCase(),String(dep.comentario||'').trim()].join('::');
+    if(key!=='::'&&!unique.has(key)) unique.set(key,dep);
+  });
+  montarCarrossel([...unique.values()]);
 }
 
 carregarDepoimentos();
@@ -522,20 +511,7 @@ carregarDepoimentos();
 // DEPOIMENTOS — dados legados, fotos do site antigo e pausa no hover.
 // =====================================================================
 (function integrarDepoimentosLegados() {
-  const avataresFixos = {
-    'Leane Santos': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_0184.jpg?t=1586453358',
-    'Gessilene': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_6294.jpg?t=1586455182',
-    'Josineide': 'https://alfred.alboompro.com/crop/width/200/height/200/type/jpeg/quality/70/url/storage.alboom.ninja/sites/31197/testimonials/img_7149.jpg?t=1586455991'
-  };
-
-  try {
-    DEPOIMENTOS_FIXOS.forEach(dep => {
-      const url = avataresFixos[dep.nome];
-      if (url) dep.avatar_url = url;
-    });
-  } catch (_) {}
-
-  let pausadoPorHover = false;
+let pausadoPorHover = false;
   try {
     const iniciarAutoplayBase = iniciarAutoplay;
     iniciarAutoplay = function() {
@@ -559,7 +535,7 @@ carregarDepoimentos();
   try {
     carregarDepoimentos = async function() {
       let planilha = [], neonDeps = [];
-      montarCarrossel(DEPOIMENTOS_FIXOS);
+
       await Promise.all([
         fetch(DEPOIMENTOS_API_URL)
           .then(r => r.json())
@@ -583,7 +559,7 @@ carregarDepoimentos();
           })
           .catch(() => {})
       ]);
-      montarCarrossel([...DEPOIMENTOS_FIXOS, ...neonDeps, ...planilha]);
+      montarCarrossel([...neonDeps, ...planilha]);
     };
     carregarDepoimentos();
   } catch (_) {}
