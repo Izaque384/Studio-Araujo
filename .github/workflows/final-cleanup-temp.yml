@@ -6,6 +6,7 @@ on:
       - chore/final-cleanup-20260915
     paths:
       - 'scripts/final_cleanup_temp.py'
+      - 'scripts/fix_final_cleanup_temp.py'
       - '.github/workflows/final-cleanup-temp.yml'
 
 permissions:
@@ -20,7 +21,9 @@ jobs:
           ref: chore/final-cleanup-20260915
           fetch-depth: 0
       - name: Apply cleanup
-        run: python scripts/final_cleanup_temp.py
+        run: |
+          python scripts/fix_final_cleanup_temp.py
+          python scripts/final_cleanup_temp.py
       - name: Validate JavaScript
         run: |
           node --check depoimentos.js
