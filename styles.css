@@ -2570,3 +2570,38 @@ body.nav-open{
 @media (prefers-reduced-motion:reduce){
   .testi-swipe-mark{animation:none!important;}
 }
+
+
+/* ---------- MOBILE POLISH 2026-09 · ROUND 3 ---------- */
+@media (max-width:820px){
+  /* Sobre: desloca a composição discretamente para a direita no quadro. */
+  .hero-sobre .hero-photo img{
+    object-position:44% center !important;
+  }
+
+  /* Sobre: evita o vazio durante a rolagem em telas de toque. */
+  .sobre-article.reveal,
+  .sobre-article.reveal.in-view{
+    opacity:1 !important;
+    transform:none !important;
+    transition:none !important;
+  }
+}
+
+@media (max-width:380px){
+  .hero-sobre .hero-photo img{
+    object-position:42% center !important;
+  }
+}
+
+@media (max-width:600px){
+  /* O botão mobile volta a mostrar câmera + texto + contador. */
+  .gallery-btn .g-txt{
+    position:static !important;
+    width:auto !important;
+    height:auto !important;
+    overflow:visible !important;
+    clip:auto !important;
+    white-space:nowrap !important;
+  }
+}
