@@ -15,6 +15,7 @@ const carrosselTrack = document.getElementById("testiTrack");
 const carrosselDots = document.getElementById("testiDots");
 const carrosselPrev = document.getElementById("testiPrev");
 const carrosselNext = document.getElementById("testiNext");
+const swipeHint = document.getElementById("testiSwipeHint");
 const contadorEl = document.getElementById("depContador");
 const formDepoimento = document.getElementById("formDepoimento");
 const formMsg = document.getElementById("formMsg");
@@ -263,6 +264,7 @@ function montarCarrossel(depoimentos) {
   const sozinho = carrosselTotal < 2;
   if (carrosselPrev) carrosselPrev.hidden = sozinho;
   if (carrosselNext) carrosselNext.hidden = sozinho;
+  if (swipeHint) { swipeHint.hidden = sozinho; swipeHint.classList.remove("used"); }
   carrosselDots.hidden = sozinho;
 
   const t = carrosselTrack.style.transition;
@@ -304,7 +306,12 @@ let resizeTimer = null;
 window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(posicionarTrack, 120); });
 function avancar() { irPara(carrosselIndex + 1); }
 function voltar() { irPara(carrosselIndex - 1); }
-function iniciarAutoplay() { if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return; autoplayTimer = setInterval(avancar, 6000); }
+function iniciarAutoplay() {
+  clearInterval(autoplayTimer);
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  const delay = window.matchMedia?.("(max-width: 860px)").matches ? 12000 : 7000;
+  autoplayTimer = setInterval(avancar, delay);
+}
 function reiniciarAutoplay() { clearInterval(autoplayTimer); if (carrosselTotal > 1) iniciarAutoplay(); }
 if (carrosselPrev) carrosselPrev.addEventListener("click", voltar);
 if (carrosselNext) carrosselNext.addEventListener("click", avancar);
@@ -322,8 +329,13 @@ if (carrosselTrack) {
   carrosselTrack.addEventListener("touchend", e => {
     const dx = e.changedTouches[0].clientX - tx;
     const dy = e.changedTouches[0].clientY - ty;
-    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy)) dx < 0 ? avancar() : voltar();
-    if (carrosselTotal > 1) iniciarAutoplay();
+    const foiSwipe = Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy);
+    if (foiSwipe) {
+      dx < 0 ? avancar() : voltar();
+      swipeHint?.classList.add("used");
+    } else if (carrosselTotal > 1) {
+      iniciarAutoplay();
+    }
   }, { passive: true });
 }
 
