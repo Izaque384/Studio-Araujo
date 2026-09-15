@@ -44,6 +44,10 @@ if 'neon.rpc("submit_testimonial"' not in (ROOT/'depoimentos.js').read_text(enco
 services=(ROOT/'servicos.html').read_text(encoding='utf-8')
 data=(ROOT/'dados-servicos.js').read_text(encoding='utf-8')
 service_keys=set(re.findall(r'data-service="([^"]+)"',services))
+retired_product_services={'albuns','luva','maleta','caixa'}
+reintroduced=sorted(retired_product_services & service_keys)
+if reintroduced: errors.append('Serviços de produto reintroduzidos em Serviços: '+', '.join(reintroduced))
+if 'id: "produtos"' in data or 'grupo: "produtos"' in data: errors.append('Agendamento: grupo de produtos reintroduzido')
 package_match=re.search(r'const servicePackages\s*=\s*\{(.*?)\n\};',data,re.S)
 if package_match:
     package_keys=set(re.findall(r'^\s*["\']?([a-z0-9-]+)["\']?\s*:',package_match.group(1),re.M))

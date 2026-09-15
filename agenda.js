@@ -29,7 +29,7 @@ const el = {
 };
 
 const NOMES = ["Tipo de atendimento", "Serviço", "Pacote", "Data e horário", "Seus dados", "Revisão"];
-function fluxoAtual() { return ehProduto() ? [1, 2, 3, 5, 6] : [1, 2, 3, 4, 5, 6]; }
+function fluxoAtual() { return [1, 2, 3, 4, 5, 6]; }
 function progressoDaEtapa(n) {
   const fluxo = fluxoAtual();
   const indice = Math.max(0, fluxo.indexOf(n));
@@ -52,7 +52,6 @@ const pad = (n) => String(n).padStart(2, "0");
 const iso = (d) => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
 const doISO = (s) => { const [y,m,d] = String(s).split("-").map(Number); return new Date(y,m-1,d); };
 const servicoAtual = () => CATALOGO.find(s => s.chave === st.servico) || null;
-const ehProduto = () => !!(servicoAtual() && servicoAtual().produto);
 
 function opcoesDe(chave) {
   const d = typeof servicePackages !== "undefined" ? servicePackages[chave] : null;
@@ -81,7 +80,7 @@ function aniversarioEstudio() { return st.servico === "aniversario" && pacoteEh(
 function chaExterno() { return st.servico === "cha-revelacao" && pacoteEh("Opção 3 — Externo"); }
 function usaHorario() {
   const s = servicoAtual();
-  if (!s || ehProduto()) return false;
+  if (!s) return false;
   if (gestanteExterna() || chaExterno()) return false;
   if (aniversarioEstudio()) return true;
   return !s.horaLivre;
@@ -89,7 +88,7 @@ function usaHorario() {
 function precisaHorarioSelecionado() { return usaHorario() && !agendaFalhou; }
 function precisaLocal() {
   const s = servicoAtual();
-  if (!s || ehProduto()) return false;
+  if (!s) return false;
   if (aniversarioEstudio()) return false;
   return !!s.local || gestanteExterna() || chaExterno();
 }
@@ -118,7 +117,6 @@ const ICONES = {
   estudio:'<path d="M14 5.5h12l3 7H11l3-7Z"/><path d="M11 12.5h18M20 12.5v9M20 21.5 13 34M20 21.5 27 34"/>',
   externa:'<circle cx="27" cy="12" r="4"/><path d="M6 27l7-8 5.5 6.5L24 18l10 9M5 32h30"/>',
   evento:'<path d="M13 7h14l-1.5 7a5.5 5.5 0 0 1-11 0L13 7ZM20 20v9M15 33h10"/>',
-  produtos:'<rect x="8" y="8" width="24" height="25" rx="2.5"/><path d="M14 8v25M19 17.5l4.5 5 3-3L31 24"/>'
 };
 function icone(id) { return '<span class="bk-tipo-icone" aria-hidden="true"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">'+(ICONES[id]||"")+'</svg></span>'; }
 
@@ -151,7 +149,6 @@ const DESCRICOES_SERVICOS = {
   batizado: "Cobertura de evento"
 };
 function metaDoServico(s) {
-  if (s.produto) return "Produto personalizado";
   return DESCRICOES_SERVICOS[s.chave] || (s.horaLivre ? "Horário a combinar" : "Atendimento personalizado");
 }
 
@@ -197,7 +194,7 @@ function montarServicos() {
   el.servicos.innerHTML="";
   CATALOGO.filter(s=>s.grupo===st.grupo).forEach(s=>{
     const b=document.createElement("button");
-    const esperaFoto=s.grupo!=="produtos";
+    const esperaFoto=true;
     b.type="button"; b.className="bk-servico"+(esperaFoto?" com-foto":""); b.dataset.chave=s.chave; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.servico===s.chave ? "true" : "false");
     const media=esperaFoto?'<span class="bk-servico-media" aria-hidden="true"><img class="bk-servico-foto" alt="" loading="lazy" decoding="async" hidden></span>':"";
     b.innerHTML=media+'<span class="bk-servico-texto"><span class="bk-servico-linha"><span class="bk-servico-nome">'+esc(s.nome)+'</span><span class="bk-servico-preco">'+esc(resumoPreco(s.chave))+'</span></span><span class="bk-servico-meta">'+esc(metaDoServico(s))+'</span></span>';
@@ -218,7 +215,7 @@ function montarPacotes() {
     const b=document.createElement("button"); b.type="button"; b.className="bk-pacote"; b.setAttribute("role","radio"); b.setAttribute("aria-checked", st.pacote && st.pacote.name===o.name ? "true" : "false");
     b.innerHTML='<div class="bk-pacote-topo"><span>'+esc(o.name)+'</span><b>'+esc(o.price)+'</b></div>'+(o.items.length?'<ul>'+o.items.map(i=>'<li>'+esc(i)+'</li>').join("")+'</ul>':"")+'<span class="bk-pacote-cta">Escolher</span>';
     if(st.pacote && st.pacote.name===o.name) b.classList.add("selecionado");
-    b.addEventListener("click",()=>{ st.pacote=o; st.data=null; st.hora=null; montarPacotes(); atualizar(); if(ehProduto()) mostrarEtapa(5, true); else seguir(); });
+    b.addEventListener("click",()=>{ st.pacote=o; st.data=null; st.hora=null; montarPacotes(); atualizar(); seguir(); });
     el.pacotes.appendChild(b);
   });
 }
@@ -239,7 +236,6 @@ function diaDisponivel(d){
   return !usaHorario() || horariosDoServico().some(h=>!ocupado(iso(d),h));
 }
 function validarEscolhaAgenda(){
-  if(ehProduto()) return true;
   if(!st.data || doISO(st.data)<primeiraDataValida() || doISO(st.data).getDay()===0 || busyDays.has(st.data)){st.data=null;st.hora=null;return false;}
   if(precisaHorarioSelecionado()){
     if(!agendaCarregada && !agendaFalhou) return false;
@@ -294,7 +290,7 @@ function garantirCampoLooks(){
 function foneValido(){return el.fone.value.replace(/\D/g,"").length>=10;}
 function etapaCompleta(n){
   if(n===1)return !!st.grupo;if(n===2)return !!st.servico;if(n===3)return !!st.pacote;
-  if(n===4)return ehProduto() || (!!st.data && (!precisaHorarioSelecionado() || !!st.hora) && validarEscolhaAgenda());
+  if(n===4)return !!st.data && (!precisaHorarioSelecionado() || !!st.hora) && validarEscolhaAgenda();
   if(n===5)return el.nome.value.trim().length>=2&&foneValido()&&(!precisaLocal()||el.local.value.trim().length>=3)&&(st.servico!=="moda"||st.looks>=10);
   return true;
 }
@@ -307,13 +303,13 @@ function montarRevisao(){
   const itens=st.pacote&&Array.isArray(st.pacote.items)?st.pacote.items:[];
   let html='<div class="rev-premium">';
 
-  html+='<div class="rev-hero"><div class="rev-hero-copy"><span class="rev-eyebrow"><i></i>'+(ehProduto()?"Resumo do pedido":"Resumo do agendamento")+'</span><strong class="rev-servico">'+esc(s.nome)+'</strong>'+(pacoteNome?'<span class="rev-pacote">'+esc(pacoteNome)+'</span>':"")+'</div><div class="rev-valor"><span class="rev-k">Investimento</span><strong>'+esc(valorAtual())+'</strong><small>valor do serviço</small></div></div>';
+  html+='<div class="rev-hero"><div class="rev-hero-copy"><span class="rev-eyebrow"><i></i>'+"Resumo do agendamento"+'</span><strong class="rev-servico">'+esc(s.nome)+'</strong>'+(pacoteNome?'<span class="rev-pacote">'+esc(pacoteNome)+'</span>':"")+'</div><div class="rev-valor"><span class="rev-k">Investimento</span><strong>'+esc(valorAtual())+'</strong><small>valor do serviço</small></div></div>';
 
-  if(!ehProduto()){
+  {
     html+='<div class="rev-section rev-section-quando"><div class="rev-section-head"><div><span class="rev-section-kicker">Quando</span><h4>Data e horário</h4></div><span class="rev-section-number">01</span></div><div class="rev-grid"><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Data escolhida</span><span class="rev-v rev-v-destaque">'+esc(dataPorExtenso())+'</span></div></div><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Horário</span><span class="rev-v rev-v-destaque">'+esc(precisaHorarioSelecionado()?st.hora:"a combinar")+'</span></div></div></div></div>';
   }
 
-  html+='<div class="rev-section"><div class="rev-section-head"><div><span class="rev-section-kicker">Contato</span><h4>Seus dados</h4></div><span class="rev-section-number">'+(ehProduto()?"01":"02")+'</span></div><div class="rev-grid rev-grid-dados"><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Nome</span><span class="rev-v">'+esc(el.nome.value.trim())+'</span></div></div><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">WhatsApp</span><span class="rev-v">'+esc(el.fone.value.trim())+'</span></div></div>';
+  html+='<div class="rev-section"><div class="rev-section-head"><div><span class="rev-section-kicker">Contato</span><h4>Seus dados</h4></div><span class="rev-section-number">'+"02"+'</span></div><div class="rev-grid rev-grid-dados"><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Nome</span><span class="rev-v">'+esc(el.nome.value.trim())+'</span></div></div><div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">WhatsApp</span><span class="rev-v">'+esc(el.fone.value.trim())+'</span></div></div>';
   if(st.servico==="moda")html+='<div class="rev-detail"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Quantidade de looks</span><span class="rev-v">'+esc(st.looks)+'</span></div></div>';
   if(precisaLocal()&&el.local.value.trim())html+='<div class="rev-detail rev-detail-wide"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Local</span><span class="rev-v">'+esc(el.local.value.trim())+'</span></div></div>';
   if(el.nota.value.trim())html+='<div class="rev-detail rev-detail-wide rev-detail-note"><span class="rev-detail-mark" aria-hidden="true"></span><div><span class="rev-k">Observação</span><span class="rev-v">'+esc(el.nota.value.trim())+'</span></div></div>';
@@ -333,8 +329,6 @@ function montarRevisao(){
 
 function atualizar(){el.enviar.disabled=!etapaCompleta(etapa);memGravar();}
 function mostrarEtapa(n, moverFoco=false){
-  // Produtos não passam pelo calendário.
-  if(ehProduto()&&n===4)n=5;
   etapa=n;
   let ativa=null;
   document.querySelectorAll(".bk-etapa").forEach(sec=>{
@@ -353,14 +347,14 @@ function mostrarEtapa(n, moverFoco=false){
   if(n===6)montarRevisao(); atualizar();
   if(moverFoco&&ativa)requestAnimationFrame(()=>ativa.focus({preventScroll:true}));
 }
-function seguir(){if(travaAuto)return;setTimeout(()=>{if(etapaCompleta(etapa)&&etapa<6)mostrarEtapa(ehProduto()&&etapa===3?5:etapa+1,true);},220);}
+function seguir(){if(travaAuto)return;setTimeout(()=>{if(etapaCompleta(etapa)&&etapa<6)mostrarEtapa(etapa+1,true);},220);}
 
 function montarLinkWhatsApp(){
-  const s=servicoAtual(), linhas=["Olá, Studio Araújo! 😊",ehProduto()?"Gostaria de solicitar um produto. 📸":"Gostaria de agendar uma sessão. 📸","• Serviço: "+s.nome];
+  const s=servicoAtual(), linhas=["Olá, Studio Araújo! 😊","Gostaria de agendar uma sessão. 📸","• Serviço: "+s.nome];
   if(st.pacote&&!st.pacote.unico)linhas.push("• Pacote: "+st.pacote.name);
   if(st.servico==="moda")linhas.push("• Quantidade de looks: "+st.looks);
   linhas.push("• Valor: "+valorAtual());
-  if(!ehProduto()){linhas.push("• Data: "+dataPorExtenso());linhas.push("• Horário: "+(precisaHorarioSelecionado()?st.hora:"a combinar"));}
+  linhas.push("• Data: "+dataPorExtenso());linhas.push("• Horário: "+(precisaHorarioSelecionado()?st.hora:"a combinar"));
   linhas.push("• Nome: "+el.nome.value.trim(),"• WhatsApp: "+el.fone.value.trim());
   if(precisaLocal()&&el.local.value.trim())linhas.push("• Local: "+el.local.value.trim());
   if(el.nota.value.trim())linhas.push("• Observação: "+el.nota.value.trim());
@@ -374,14 +368,14 @@ function telaFinal(link){
 function enviar(){
   // Revalida no último instante. Se a agenda ainda está carregando ou o horário
   // ficou ocupado, o cliente volta ao calendário em vez de enviar dado obsoleto.
-  if(!ehProduto() && !validarEscolhaAgenda()){mostrarEtapa(4,true);el.slotHint.textContent=agendaCarregada?"Esse horário não está mais disponível. Escolha outro.":"Aguarde a verificação da agenda antes de continuar.";el.slotHint.classList.add("aviso");return;}
+  if(!validarEscolhaAgenda()){mostrarEtapa(4,true);el.slotHint.textContent=agendaCarregada?"Esse horário não está mais disponível. Escolha outro.":"Aguarde a verificação da agenda antes de continuar.";el.slotHint.classList.add("aviso");return;}
   const link=montarLinkWhatsApp(),aba=window.open(link,"_blank","noopener");telaFinal(link);if(!aba){const t=$("bkFinalTexto");if(t)t.innerHTML='Seu pedido está pronto. O navegador bloqueou a abertura automática — <strong>toque no botão abaixo</strong> para abrir o WhatsApp.';}memLimpar();
 }
 
 $("bkMesAnt").addEventListener("click",()=>{mesVisivel.setMonth(mesVisivel.getMonth()-1);montarCalendario();});
 $("bkMesProx").addEventListener("click",()=>{mesVisivel.setMonth(mesVisivel.getMonth()+1);montarCalendario();});
 el.trocar.addEventListener("click",()=>mostrarEtapa(2,true));
-el.voltar.addEventListener("click",()=>{if(etapa===5&&ehProduto())mostrarEtapa(3,true);else if(etapa>1)mostrarEtapa(etapa-1,true);});
+el.voltar.addEventListener("click",()=>{if(etapa>1)mostrarEtapa(etapa-1,true);});
 el.enviar.addEventListener("click",()=>{if(el.enviar.disabled)return;if(etapa<6)mostrarEtapa(etapa+1,true);else enviar();});
 el.fone.addEventListener("input",()=>{let v=el.fone.value.replace(/\D/g,"").slice(0,11);if(v.length>6)v="("+v.slice(0,2)+") "+v.slice(2,7)+"-"+v.slice(7);else if(v.length>2)v="("+v.slice(0,2)+") "+v.slice(2);else if(v.length)v="("+v;el.fone.value=v;atualizar();});
 [el.nome,el.local,el.nota].forEach(x=>x.addEventListener("input",atualizar));
@@ -401,7 +395,7 @@ montarTipos();
   el.nome.value=m.nome||"";el.fone.value=m.fone||"";el.local.value=m.local||"";el.nota.value=m.nota||"";
   if(st.data&&doISO(st.data)<primeiraDataValida()){st.data=null;st.hora=null;}
   montarTipos();montarServicos();
-  let destino=Math.min(Number(m.etapa)||1,6);if(ehProduto()&&destino===4)destino=5;etapa=destino;
+  let destino=Math.min(Number(m.etapa)||1,6);if(false&&destino===4)destino=5;etapa=destino;
 })();
 (function preselect(){const chave=new URLSearchParams(location.search).get("servico"),s=CATALOGO.find(x=>x.chave===chave);if(!s)return;st.grupo=s.grupo;st.servico=s.chave;montarTipos();montarServicos();montarPacotes();etapa=3;})();
 mostrarEtapa(etapa);
@@ -415,7 +409,7 @@ if(AGENDA_API_URL){
       agendaCarregada=true;
       // Revalida estado restaurado mesmo que o usuário já tenha avançado.
       const tinhaData=!!st.data,tinhaHora=!!st.hora;validarEscolhaAgenda();
-      if((tinhaData&&!st.data)||(tinhaHora&&!st.hora)){if(!ehProduto())mostrarEtapa(4,true);}
+      if((tinhaData&&!st.data)||(tinhaHora&&!st.hora)){mostrarEtapa(4,true);}
       else if(etapa===4){irParaMesComVaga();montarCalendario();montarSlots();}
       atualizar();
     })

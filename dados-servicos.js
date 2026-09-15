@@ -209,7 +209,7 @@ const servicePackages = {
           "Entrega via Google Fotos em até 10 dias úteis após a escolha das fotos",
           "Deslocamento incluso em até 10 km da base do estúdio (acima disso, taxa à parte)",
           "Em caso de chuva, reagendamento sem custo",
-          "Look extra do estúdio: R$ 30,00 · Fotos adicionais: R$ 10,00 cada · Pen drive: R$ 40,00 · Álbum: sob consulta",
+          "Look extra do estúdio: R$ 30,00 · Fotos adicionais: R$ 10,00 cada · Pen drive: R$ 40,00",
           "Pagamento: 50% na reserva da data + 50% no dia do ensaio (Pix, transferência ou dinheiro)"
         ]
       }
@@ -244,50 +244,7 @@ const servicePackages = {
     note: "Valor válido para o mínimo de 10 looks."
   },
 
-  albuns: {
-    title: "Álbum Fotográfico Diagramado",
-    options: [
-      { name: "Álbum 30x30", price: "R$ 980,00" },
-      { name: "Álbum 25x25", price: "R$ 820,00" },
-      { name: "Álbum 20x30", price: "R$ 820,00" },
-      { name: "Álbum 20x20", price: "R$ 690,00" },
-      { name: "Álbum 15x21", price: "R$ 470,00" }
-    ],
-    note: "Capa personalizada, 30 páginas (15 lâminas) e acabamento premium. Memórias que ficam para sempre — feito para durar gerações."
-  },
 
-  luva: {
-    title: "Luva / Estojo",
-    options: [
-      { name: "Luva 30x30 / 25x25", price: "R$ 130,00" },
-      { name: "Luva 20x30", price: "R$ 115,00" },
-      { name: "Luva 20x20", price: "R$ 115,00" },
-      { name: "Luva 15x21", price: "R$ 95,00" }
-    ],
-    note: "Revestida em courino. Proteção e elegância para suas fotografias e memórias."
-  },
-
-  maleta: {
-    title: "Maleta / Estojo",
-    options: [
-      { name: "Maleta 30x30 / 25x25", price: "R$ 210,00" },
-      { name: "Maleta 20x30", price: "R$ 190,00" },
-      { name: "Maleta 20x20", price: "R$ 190,00" },
-      { name: "Maleta 15x21", price: "R$ 160,00" }
-    ],
-    note: "Revestida em courino, com fecho e pegador. Sofisticação, proteção e praticidade para guardar suas memórias com carinho."
-  },
-
-  caixa: {
-    title: "Caixa para Fotos",
-    options: [
-      { name: "Caixa 30x30 / 25x25", price: "R$ 226,00" },
-      { name: "Caixa 20x30", price: "R$ 209,00" },
-      { name: "Caixa 20x20", price: "R$ 209,00" },
-      { name: "Caixa 15x21", price: "R$ 170,00" }
-    ],
-    note: "Revestida em courino. Acabamento premium para suas fotografias e momentos especiais — elegância que protege memórias."
-  }
 
   // ✎ Para adicionar os demais serviços, copie um dos blocos acima e ajuste a chave
   // (deve ser igual ao "data-service" do botão no servicos.html).
@@ -307,10 +264,6 @@ const serviceLabels = {
   moda: "Moda",
   batizado: "Batizados",
   "pre-wedding": "Pré-Wedding",
-  albuns: "Álbuns Fotográficos",
-  luva: "Luva / Estojo",
-  maleta: "Maleta / Estojo",
-  caixa: "Caixa para Fotos"
 };
 
 
@@ -322,7 +275,6 @@ const bookingGroups = [
   { id: "estudio", titulo: "Sessão no estúdio", desc: "Cenário montado, luz e direção de poses" },
   { id: "externa", titulo: "Ensaio externo", desc: "Ao ar livre, em locação combinada" },
   { id: "evento", titulo: "Evento", desc: "Cobertura de casamento, festa ou celebração" },
-  { id: "produtos", titulo: "Álbuns e produtos", desc: "Álbum, luva, maleta e caixa para fotos" }
 ];
 
 const serviceBookingMeta = {
@@ -337,10 +289,6 @@ const serviceBookingMeta = {
   casamento: { nome: "Casamento", grupo: "evento", horaLivre: true, local: true },
   aniversario: { nome: "Aniversário", grupo: "evento", horaLivre: true, local: true },
   batizado: { nome: "Batizado", grupo: "evento", horaLivre: true, local: true },
-  albuns: { nome: "Álbum Fotográfico", grupo: "produtos", produto: true },
-  luva: { nome: "Luva / Estojo", grupo: "produtos", produto: true },
-  maleta: { nome: "Maleta / Estojo", grupo: "produtos", produto: true },
-  caixa: { nome: "Caixa para Fotos", grupo: "produtos", produto: true }
 };
 
 const bookingCatalog = Object.entries(serviceBookingMeta)

@@ -2594,14 +2594,4 @@ body.nav-open{
   }
 }
 
-@media (max-width:600px){
-  /* O botão mobile volta a mostrar câmera + texto + contador. */
-  .gallery-btn .g-txt{
-    position:static !important;
-    width:auto !important;
-    height:auto !important;
-    overflow:visible !important;
-    clip:auto !important;
-    white-space:nowrap !important;
-  }
-}
+

@@ -5,6 +5,7 @@ const DATA_API_URL = 'https://ep-lucky-rice-axp36rxg.apirest.c-4.us-east-2.aws.n
 const STORAGE_FN = 'https://br-gentle-water-axxtumld-siteimages.compute.c-4.us-east-2.aws.neon.tech/';
 const MAX_IMAGE_BYTES = 25 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+const RETIRED_PRODUCT_SERVICES = new Set(['albuns','luva','maleta','caixa']);
 
 const neon = createClient({ auth: { adapter: BetterAuthVanillaAdapter(), url: AUTH_URL }, dataApi: { url: DATA_API_URL } });
 const $ = id => document.getElementById(id);
@@ -231,7 +232,7 @@ logoutBtn.addEventListener('click',async()=>{
 async function loadCategories(){
   const {data,error}=await neon.from('site_categories').select('slug,label,area,sort_order').order('sort_order',{ascending:true});
   if(error)throw error;
-  categories=data||[];
+  categories=(data||[]).filter(c=>!RETIRED_PRODUCT_SERVICES.has(c.slug));
   syncUploadCategories();
   filterCategory.innerHTML='<option value="">Todas as pastas</option>'+categories.map(c=>`<option value="${esc(c.slug)}">${esc(c.label)}</option>`).join('');
   renderCategoryFolders();
@@ -541,7 +542,7 @@ async function loadMedia(){
   if(error){
     console.error(error);imageGrid.innerHTML='<div class="empty">Não foi possível carregar a biblioteca.</div>';setMsg(libraryMsg,'Falha ao carregar as mídias.','error');return;
   }
-  allMedia=data||[];
+  allMedia=(data||[]).filter(m=>!RETIRED_PRODUCT_SERVICES.has(m.category));
   updateSummary();
   renderOverview();
   applyFilters();
