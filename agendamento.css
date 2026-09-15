@@ -1173,3 +1173,133 @@
   border-color:rgba(201,162,75,.38);
   background:rgba(201,162,75,.05);
 }
+
+
+/* ---------- AGENDAMENTO MOBILE · CONTENÇÃO E RODAPÉ ---------- */
+@media (max-width:620px){
+  .booking-panel,
+  .bk-corpo,
+  .bk-etapa,
+  .booking-step,
+  .bk-tipos,
+  .bk-servicos,
+  .bk-pacote,
+  .rev-premium,
+  .rev-hero,
+  .rev-section,
+  .rev-inclui,
+  .bk-nav{
+    min-width:0;
+    max-width:100%;
+  }
+
+  .booking-label,
+  .booking-hint,
+  .aviso-privacidade,
+  .bk-sinal,
+  .bk-passo,
+  .bk-tipo strong,
+  .bk-tipo em,
+  .bk-servico-nome,
+  .bk-servico-meta,
+  .bk-pacote-topo span,
+  .bk-pacote li,
+  .svc-consulta,
+  .svc-note,
+  .rev-servico,
+  .rev-pacote,
+  .rev-v,
+  .rev-inclui li,
+  .rev-confirm-note p{
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+
+  .booking-input,
+  .booking-select,
+  .dd-toggle,
+  .svc-opt{
+    min-width:0;
+    max-width:100%;
+  }
+  .dd-toggle{
+    white-space:normal;
+  }
+  .svc-opt .o-name{
+    min-width:0;
+    overflow-wrap:anywhere;
+  }
+  .svc-opt .o-price{
+    white-space:normal;
+  }
+  .bk-pacote-topo{
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .bk-pacote-topo b{
+    white-space:normal;
+  }
+  .bk-cal-topo strong{
+    min-width:0;
+    text-align:center;
+    overflow-wrap:anywhere;
+  }
+  .bk-legenda{
+    row-gap:6px;
+  }
+}
+
+@media (max-width:700px){
+  .agenda-rodape{
+    grid-template-columns:1fr;
+    gap:20px;
+    margin-top:46px;
+    padding-top:34px;
+  }
+  .agenda-rodape-texto{
+    max-width:520px;
+    margin:0 auto;
+    text-align:center;
+  }
+  .agenda-rodape-texto h2{
+    margin-bottom:10px;
+    font-size:clamp(1.55rem,7vw,1.85rem);
+    line-height:1.12;
+  }
+  .agenda-rodape-texto p{
+    margin-bottom:10px;
+    font-size:.88rem;
+    line-height:1.55;
+  }
+  .agenda-rodape-texto .btn{
+    margin-top:4px;
+  }
+  .agenda-rodape-cam{
+    display:flex;
+    justify-content:center;
+    margin-top:2px;
+  }
+  .agenda-logo{
+    width:min(420px,100%);
+    margin:0 auto;
+  }
+  .agenda-logo .lens{
+    width:min(400px,100%);
+    max-width:100%;
+  }
+}
+
+@media (max-width:420px){
+  .agenda-rodape{
+    gap:14px;
+    margin-top:38px;
+    padding-top:28px;
+  }
+  .agenda-logo{
+    width:100%;
+  }
+  .agenda-logo .lens{
+    width:100%;
+  }
+}

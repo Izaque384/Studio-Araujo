@@ -585,3 +585,27 @@
     @media(prefers-reduced-motion:reduce){
       #serviceModal .proposal-footer .btn span{transition:none}
     }
+
+
+/* ---------- SERVIÇOS MOBILE · RENDER IMEDIATO ---------- */
+@media (max-width:860px){
+  .servicos-grid.reveal,
+  .servicos-grid.reveal.in-view{
+    opacity:1 !important;
+    transform:none !important;
+    transition:none !important;
+  }
+  .servicos-grid.reveal .servico-card,
+  .servicos-grid.reveal.in-view .servico-card{
+    opacity:1 !important;
+    transform:none !important;
+    transition:background .25s ease !important;
+    transition-delay:0s !important;
+  }
+  .servico-card::after{
+    display:none;
+  }
+  .servico-card .card-photo{
+    background:linear-gradient(145deg,rgba(201,162,75,.045),rgba(255,255,255,.012)),var(--bg);
+  }
+}

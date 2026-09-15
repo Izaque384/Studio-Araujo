@@ -273,13 +273,14 @@ document.querySelectorAll('.mosaic-item[data-slide-prefix]').forEach((item, idx)
       .cta-panel .cta-actions .btn-outline:hover{border-color:var(--gold)!important;background:rgba(14,13,11,.52)!important}
       @media(max-width:820px){
         .cta-band{padding:54px 0 92px!important}
-        .cta-panel{min-height:520px!important;padding:54px 38px!important;justify-content:flex-end!important;background:linear-gradient(180deg,rgba(9,7,5,.03) 0%,rgba(9,7,5,.06) 24%,rgba(9,7,5,.22) 44%,rgba(9,7,5,.58) 66%,rgba(9,7,5,.88) 84%,#090705 100%),url('assets/cta-final-hq.webp') 72% 16%/auto 122% no-repeat,#090705!important}
+        .cta-panel{min-height:520px!important;padding:54px 38px!important;justify-content:flex-end!important;background:linear-gradient(180deg,rgba(9,7,5,.03) 0%,rgba(9,7,5,.06) 24%,rgba(9,7,5,.22) 44%,rgba(9,7,5,.58) 66%,rgba(9,7,5,.88) 84%,#090705 100%),url('assets/cta-final-hq.webp') 50% 16%/auto 122% no-repeat,#090705!important}
         .cta-panel::after{background:linear-gradient(180deg,rgba(14,13,11,.05) 0%,rgba(14,13,11,.04) 18%,rgba(14,13,11,.16) 36%,rgba(14,13,11,.48) 56%,rgba(14,13,11,.82) 74%,rgba(14,13,11,.97) 100%)!important}
+        .cta-panel .eyebrow{width:max-content!important;max-width:100%!important;padding:8px 13px!important;border-radius:999px!important;background:rgba(6,5,4,.76)!important;backdrop-filter:blur(8px)!important;-webkit-backdrop-filter:blur(8px)!important;box-shadow:0 8px 26px rgba(0,0,0,.34)!important;text-shadow:0 1px 10px rgba(0,0,0,.8)!important}
         .cta-panel h2{max-width:560px!important}
         .cta-panel p{max-width:520px!important}
       }
       @media(max-width:560px){
-        .cta-panel{min-height:540px!important;padding:42px 24px!important;border-radius:16px!important;background:linear-gradient(180deg,rgba(9,7,5,.03) 0%,rgba(9,7,5,.08) 24%,rgba(9,7,5,.28) 46%,rgba(9,7,5,.62) 68%,rgba(9,7,5,.90) 84%,#090705 100%),url('assets/cta-final-hq.webp') 66% 14%/auto 108% no-repeat,#090705!important}
+        .cta-panel{min-height:540px!important;padding:42px 24px!important;border-radius:16px!important;background:linear-gradient(180deg,rgba(9,7,5,.03) 0%,rgba(9,7,5,.08) 24%,rgba(9,7,5,.28) 46%,rgba(9,7,5,.62) 68%,rgba(9,7,5,.90) 84%,#090705 100%),url('assets/cta-final-hq.webp') 50% 14%/auto 108% no-repeat,#090705!important}
         .cta-panel::after{background:linear-gradient(180deg,rgba(14,13,11,.05) 0%,rgba(14,13,11,.04) 20%,rgba(14,13,11,.20) 42%,rgba(14,13,11,.55) 60%,rgba(14,13,11,.85) 78%,rgba(14,13,11,.98) 100%)!important}
         .cta-panel .eyebrow{font-size:.63rem!important;letter-spacing:.2em!important}
         .cta-panel h2{font-size:clamp(2rem,10vw,2.7rem)!important}

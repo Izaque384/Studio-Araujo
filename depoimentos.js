@@ -313,9 +313,18 @@ if (carrosselContainer) {
   carrosselContainer.addEventListener("mouseleave", () => { if (carrosselTotal > 1) iniciarAutoplay(); });
 }
 if (carrosselTrack) {
-  let tx = 0;
-  carrosselTrack.addEventListener("touchstart", e => { tx = e.changedTouches[0].clientX; }, { passive: true });
-  carrosselTrack.addEventListener("touchend", e => { const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) dx < 0 ? avancar() : voltar(); }, { passive: true });
+  let tx = 0, ty = 0;
+  carrosselTrack.addEventListener("touchstart", e => {
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+    clearInterval(autoplayTimer);
+  }, { passive: true });
+  carrosselTrack.addEventListener("touchend", e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 42 && Math.abs(dx) > Math.abs(dy)) dx < 0 ? avancar() : voltar();
+    if (carrosselTotal > 1) iniciarAutoplay();
+  }, { passive: true });
 }
 
 if (campoComentario && contadorEl) {
