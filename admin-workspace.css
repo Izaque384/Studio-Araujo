@@ -3,6 +3,14 @@
 .header-media-stat{display:flex;align-items:baseline;gap:8px;padding:9px 13px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);white-space:nowrap}
 .header-media-stat small{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .header-media-stat span{font-family:'Cormorant Garamond',serif;font-size:1.45rem;line-height:1;color:var(--gold2)}
+
+/* Login principal simplificado: somente Google fica visível.
+   Os elementos alternativos permanecem no DOM como contingência técnica. */
+.auth-card .divider,.auth-card .login-form,.auth-card .otp-login{display:none!important}
+.auth-card #googleBtn{width:100%;max-width:290px;margin:4px auto 10px}
+.auth-card .auth-copy{margin-bottom:24px}
+.auth-card #authMsg{margin-top:8px}
+
 .legacy-overview{display:none!important}
 .upload-area-tabs{display:none!important}
 .upload-card[hidden],.workspace-media[hidden],.workspace-editor[hidden]{display:none!important}
@@ -51,4 +59,5 @@
   .workspace-editor-grid label:first-child{grid-column:auto}
   .workspace-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
   .workspace-media-actions{grid-template-columns:1fr}
+  .auth-card #googleBtn{max-width:none}
 }
